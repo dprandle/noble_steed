@@ -18,6 +18,8 @@ set(DEPENDENCY_DIR ${CMAKE_SOURCE_DIR}/deps)
 # Set dependency directories
 set(GLFW_DIR ${DEPENDENCY_DIR}/glfw)
 set(BGFX_DIR ${DEPENDENCY_DIR}/bgfx)
+set(BX_DIR ${DEPENDENCY_DIR}/bx)
+set(BIMG_DIR ${DEPENDENCY_DIR}/bimg)
 
 # Set library source directory
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -26,9 +28,11 @@ set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(NOBLE_STEED_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
 set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
+set(BX_INCLUDE_DIR ${BX_DIR}/include)
+set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
 
 # Set dependency library paths
-set(BGFX_LIB_PATH ${BGFX_DIR}/.build/linux64_gcc/bin/libbgfx${CMAKE_BUILD_TYPE}.a)
+set(BGFX_LIB_PATH ${BGFX_DIR}/.build/linux64_gcc/bin/libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
 set(GLFW_LIB_PATH ${GLFW_DIR}/build/${CMAKE_BUILD_TYPE}/src/libglfw3.a)
 
 # Debug and release specific settings
@@ -47,6 +51,8 @@ file(GLOB SRC_FILES
 include_directories(
   "${NOBLE_STEED_INCLUDE_DIR}"
   "${BGFX_INCLUDE_DIR}"
+  "${BX_INCLUDE_DIR}"
+  "${BIMG_INCLUDE_DIR}"
   "${GLFW_INCLUDE_DIR}"
   )
 
@@ -59,10 +65,10 @@ target_link_libraries(${TARGET_NAME}
   # link in the libraries for Urho3d
 target_link_libraries(${TARGET_NAME}
   pthread
-  X11
-  #GL
   ${BGFX_LIB_PATH}
   ${GLFW_LIB_PATH}
+  X11
+  GL
 )
 
 # Create a shortcut for the compile commands

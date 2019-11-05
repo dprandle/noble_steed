@@ -10,3 +10,6 @@
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "deps/bullet3"]
+	path = deps/bullet3
+	url = https://github.com/bulletphysics/bullet3.git
