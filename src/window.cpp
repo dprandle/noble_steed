@@ -12,6 +12,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 #include <GLFW/glfw3native.h>
+#include <mat4x4.hpp>
+#include <iostream>
+#include <dbg.h>
 
 static bx::DefaultAllocator s_allocator;
 static bx::SpScUnboundedQueue s_apiThreadEvents(&s_allocator);
@@ -108,26 +111,26 @@ static int32_t runApiThread(bx::Thread * self, void * userData)
         }
         // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
         bgfx::touch(kClearView);
-        // Use debug font to print information about this example.
+        // // Use debug font to print information about this example.
         bgfx::dbgTextClear();
-        bgfx::dbgTextImage(bx::max<uint16_t>(uint16_t(width / 2 / 8), 20) - 20,
-                           bx::max<uint16_t>(uint16_t(height / 2 / 16), 6) - 6,
-                           40,
-                           12,
-                           s_logo,
-                           160);
-        bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
-        bgfx::dbgTextPrintf(
-            0,
-            1,
-            0x0f,
-            "Color can be changed with ANSI "
-            "\x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-        bgfx::dbgTextPrintf(80,
-                            1,
-                            0x0f,
-                            "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; "
-                            "5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
+        // bgfx::dbgTextImage(bx::max<uint16_t>(uint16_t(width / 2 / 8), 20) - 20,
+        //                    bx::max<uint16_t>(uint16_t(height / 2 / 16), 6) - 6,
+        //                    40,
+        //                    12,
+        //                    s_logo,
+        //                    160);
+        // bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
+        // bgfx::dbgTextPrintf(
+        //     0,
+        //     1,
+        //     0x0f,
+        //     "Color can be changed with ANSI "
+        //     "\x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
+        // bgfx::dbgTextPrintf(80,
+        //                     1,
+        //                     0x0f,
+        //                     "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; "
+        //                     "5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
         bgfx::dbgTextPrintf(80,
                             2,
                             0x0f,
@@ -153,6 +156,7 @@ static int32_t runApiThread(bx::Thread * self, void * userData)
 
 int GLFW_func(void)
 {
+
     // Create a GLFW window without an OpenGL context.
     glfwSetErrorCallback(glfw_errorCallback);
     if (!glfwInit())
@@ -167,6 +171,7 @@ int GLFW_func(void)
     bgfx::renderFrame();
     // Create a thread to call the bgfx API from (except bgfx::renderFrame).
     ApiThreadArgs apiThreadArgs;
+
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
     apiThreadArgs.platformData.ndt = glfwGetX11Display();
     apiThreadArgs.platformData.nwh = (void *)(uintptr_t)glfwGetX11Window(window);
@@ -175,6 +180,7 @@ int GLFW_func(void)
 #elif BX_PLATFORM_WINDOWS
     apiThreadArgs.platformData.nwh = glfwGetWin32Window(window);
 #endif
+
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     apiThreadArgs.width = (uint32_t)width;
@@ -202,6 +208,7 @@ int GLFW_func(void)
             resize->height = (uint32_t)height;
             s_apiThreadEvents.push(resize);
         }
+        
         // Wait for the API thread to call bgfx::frame, then process submitted rendering primitives.
         bgfx::renderFrame();
     }
@@ -211,5 +218,5 @@ int GLFW_func(void)
     }
     apiThread.shutdown();
     glfwTerminate();
-    return apiThread.getExitCode();
+    return apiThread.getExitCode();    
 }

@@ -13,3 +13,9 @@
 [submodule "deps/bullet3"]
 	path = deps/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
+[submodule "deps/glm"]
+	path = deps/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "deps/assimp"]
+	path = deps/assimp
+	url = https://github.com/assimp/assimp.git
