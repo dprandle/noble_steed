@@ -12,11 +12,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Set some Dependency values
-set(GLFW_BUILD_EXAMPLES, OFF)
-set(GLFW_BUILD_TESTS, OFF)
-set(ASSIMP_BUILD_TESTS, OFF)
-
 # Dependency directory
 set(DEPENDENCY_DIR ${CMAKE_SOURCE_DIR}/deps)
 
@@ -27,6 +22,11 @@ set(BX_DIR ${DEPENDENCY_DIR}/bx)
 set(BIMG_DIR ${DEPENDENCY_DIR}/bimg)
 set(GLM_DIR ${DEPENDENCY_DIR}/glm)
 set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
+set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
+set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
+set(MEMORY_ALLOCATORS_DIR ${DEPENDENCY_DIR}/memory-allocators)
+set(RTTR_DIR ${DEPENDENCY_DIR}/rttr)
+set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
 
 # Set library source directory
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -38,11 +38,17 @@ set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
 set(BX_INCLUDE_DIR ${BX_DIR}/include)
 set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
 set(GLM_INCLUDE_DIR ${GLM_DIR}/glm)
+set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
+set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
+set(MEMORY_ALLOCATORS_INCLUDE_DIR ${MEMORY_ALLOCATORS_DIR}/includes)
+set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src/rttr)
+set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/pybind11/include)
+
+
 #set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
 # Set dependency library paths
 set(BGFX_LIB_PATH ${BGFX_DIR}/.build/linux64_gcc/bin/libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
-#set(GLFW_LIB_PATH ${GLFW_DIR}/build/${CMAKE_BUILD_TYPE}/src/libglfw3.a)
 
 # Debug and release specific settings
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
@@ -54,6 +60,8 @@ endif()
 # Set the src files for the project
 file(GLOB SRC_FILES 
   "${NOBLE_STEED_SRC_DIR}/*.cpp"
+  "${NOBLE_STEED_SRC_DIR}/core/*.cpp"
+  "${NOBLE_STEED_SRC_DIR}/graphics/*.cpp"
   )
 
 # Set project includes dir
@@ -64,10 +72,20 @@ include_directories(
   "${BIMG_INCLUDE_DIR}"
   "${GLFW_INCLUDE_DIR}"
   "${GLM_INCLUDE_DIR}"
+  "${BULLET_INCLUDE_DIR}"
+  "${SPDLOG_INCLUDE_DIR}"
+  "${MEMORY_ALLOCATORS_INCLUDE_DIR}"
+  "${RTTR_INCLUDE_DIR}"
+  "${PYBIND_INCLUDE_DIR}"
   )
 
+add_subdirectory(${RTTR_DIR})
+add_subdirectory(${PYBIND_DIR})
 add_subdirectory(${GLFW_DIR})
 add_subdirectory(${ASSIMP_DIR})
+add_subdirectory(${BULLET_DIR})
+add_subdirectory(${SPDLOG_DIR})
+add_subdirectory(${MEMORY_ALLOCATORS_DIR})
 
 # Add shared libary
 add_library(${TARGET_NAME} SHARED ${SRC_FILES})
@@ -79,7 +97,23 @@ target_link_libraries(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
   pthread
   ${BGFX_LIB_PATH}
-  glfw#${GLFW_LIB_PATH}
+  glfw
+  RTTR::Core
+  pybind11::pybind11
+  assimp
+  Bullet2FileLoader
+  Bullet3Dynamics
+  Bullet3OpenCL_clew
+  Bullet3Collision
+  BulletInverseDynamics
+  Bullet3Geometry
+  BulletSoftBody
+  BulletCollision
+  Bullet3Common
+  memory_allocators
+  LinearMath
+  BulletDynamics
+  spdlog
   X11
   GL
 )
