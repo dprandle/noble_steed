@@ -42,7 +42,8 @@ set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(MEMORY_ALLOCATORS_INCLUDE_DIR ${MEMORY_ALLOCATORS_DIR}/includes)
 set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src/rttr)
-set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/pybind11/include)
+set(PYTHON_INCLUDE_DIR /usr/include/python3.6)
+set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
 
 
 #set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
@@ -76,6 +77,7 @@ include_directories(
   "${SPDLOG_INCLUDE_DIR}"
   "${MEMORY_ALLOCATORS_INCLUDE_DIR}"
   "${RTTR_INCLUDE_DIR}"
+  "${PYTHON_INCLUDE_DIR}"
   "${PYBIND_INCLUDE_DIR}"
   )
 
@@ -95,7 +97,6 @@ target_link_libraries(${TARGET_NAME}
 
   # link in the libraries for Urho3d
 target_link_libraries(${TARGET_NAME}
-  pthread
   ${BGFX_LIB_PATH}
   glfw
   RTTR::Core
@@ -110,12 +111,14 @@ target_link_libraries(${TARGET_NAME}
   BulletSoftBody
   BulletCollision
   Bullet3Common
-  memory_allocators
-  LinearMath
   BulletDynamics
+  LinearMath
+  memory_allocators
+  /usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6.so
   spdlog
   X11
   GL
+  pthread
 )
 
 # Create a shortcut for the compile commands
