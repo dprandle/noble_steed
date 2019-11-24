@@ -244,6 +244,8 @@ int GLFW_func(void)
 {
     noble_steed::Context ctxt;    
     noble_steed::Video_Device device;
+    noble_steed::System sys;
+    sys.set_internal("Scooby");
     device.init();
 
     // Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.11)
 project(noble_steed)
 
 set(TARGET_NAME noble_steed)
+set(PYTHON_MODULE_NAME Noble_Steed)
 
 # Some basica CMAKE values
 set(CMAKE_CXX_STANDARD 14)
@@ -41,19 +42,22 @@ set(GLM_INCLUDE_DIR ${GLM_DIR}/glm)
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(MEMORY_ALLOCATORS_INCLUDE_DIR ${MEMORY_ALLOCATORS_DIR}/includes)
-set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src/rttr)
+set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src)
 set(PYTHON_INCLUDE_DIR /usr/include/python3.6)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
-
-
-#set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
+set(RTTR_VERSION_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/deps/rttr/src)
+set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
 # Set dependency library paths
 set(BGFX_LIB_PATH ${BGFX_DIR}/.build/linux64_gcc/bin/libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
 
+set(PYTHON_APPEND_STRING .cpython-36m-x86_64-linux-gnu.so)
+
 # Debug and release specific settings
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   add_definitions(-DDEBUG_VERSION)
+  add_definitions(-DDBG_MACRO_NO_WARNING)
+  set(PYTHON_APPEND_STRING d${PYTHON_APPEND_STRING})
 else()
   add_definitions(-DRELEASE_VERSION)
 endif()
@@ -79,6 +83,8 @@ include_directories(
   "${RTTR_INCLUDE_DIR}"
   "${PYTHON_INCLUDE_DIR}"
   "${PYBIND_INCLUDE_DIR}"
+  "${RTTR_VERSION_INCLUDE_DIR}"
+  "${ASSIMP_INCLUDE_DIR}"
   )
 
 add_subdirectory(${RTTR_DIR})
@@ -89,18 +95,16 @@ add_subdirectory(${BULLET_DIR})
 add_subdirectory(${SPDLOG_DIR})
 add_subdirectory(${MEMORY_ALLOCATORS_DIR})
 
+
 # Add shared libary
 add_library(${TARGET_NAME} SHARED ${SRC_FILES})
 
-target_link_libraries(${TARGET_NAME}
-)
-
   # link in the libraries for Urho3d
-target_link_libraries(${TARGET_NAME}
+target_link_libraries(${TARGET_NAME} PRIVATE
   ${BGFX_LIB_PATH}
+  pybind11::pybind11
   glfw
   RTTR::Core
-  pybind11::pybind11
   assimp
   Bullet2FileLoader
   Bullet3Dynamics
@@ -127,5 +131,15 @@ add_custom_target(move_compile_commands ALL
   DEPENDS ${TARGET_NAME}
   )
 
+pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
+
+target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
+  ${TARGET_NAME}
+)
+
+add_custom_target(deploy_files ALL
+  COMMAND mv ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}${PYTHON_APPEND_STRING} ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}.so
+  DEPENDS ${PYTHON_MODULE_NAME}
+  )
 
 add_subdirectory(samples)
