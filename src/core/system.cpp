@@ -1,6 +1,5 @@
 #include <noble_steed/core/system.h>
 #include <noble_steed/dbg.h>
-#include <rttr/registration>
 
 namespace noble_steed
 {
@@ -36,13 +35,18 @@ void System::set_num(int num)
     internal_num_ = num;
 }
 
+
+} // namespace noble_steed
+
+#include <rttr/registration>
+
 RTTR_REGISTRATION
 {
     using namespace rttr;
+    using namespace noble_steed;
+
     registration::class_<System>("System")
         .constructor<>()
         .method("log_internal", &System::log_internal, registration::public_access)
         .property("internal", &System::get_internal, &System::set_internal);
 }
-
-} // namespace noble_steed

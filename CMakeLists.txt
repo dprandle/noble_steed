@@ -102,7 +102,8 @@ add_library(${TARGET_NAME} SHARED ${SRC_FILES})
   # link in the libraries for Urho3d
 target_link_libraries(${TARGET_NAME} PRIVATE
   ${BGFX_LIB_PATH}
-  pybind11::pybind11
+  #pybind11::pybind11
+  pybind11::embed
   glfw
   RTTR::Core
   assimp
@@ -131,15 +132,15 @@ add_custom_target(move_compile_commands ALL
   DEPENDS ${TARGET_NAME}
   )
 
-pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
+# pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
-  ${TARGET_NAME}
-)
+# target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
+#   ${TARGET_NAME}
+# )
 
-add_custom_target(deploy_files ALL
-  COMMAND mv ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}${PYTHON_APPEND_STRING} ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}.so
-  DEPENDS ${PYTHON_MODULE_NAME}
-  )
+# add_custom_target(deploy_files ALL
+#   COMMAND mv ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}${PYTHON_APPEND_STRING} ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}.so
+#   DEPENDS ${PYTHON_MODULE_NAME}
+#   )
 
 add_subdirectory(samples)
