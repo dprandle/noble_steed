@@ -1,12 +1,16 @@
 project(samples)
 
-add_executable(Window basic_window.cpp)
+add_executable(Basic_Window basic_window.cpp)
+add_executable(Comp_And_Entity comp_and_entity.cpp)
+
+target_link_libraries(Basic_Window ${TARGET_NAME})
+target_link_libraries(Comp_And_Entity ${TARGET_NAME})
+
 
 #if (UNIX)
-target_link_libraries(Window pthread)
-target_link_libraries(Window X11)
-target_link_libraries(Window dl)
-target_link_libraries(Window GL)
+target_link_libraries(Comp_And_Entity RTTR::Core)
+#target_link_libraries(Comp_And_Entity X11)
+#target_link_libraries(Comp_And_Entity dl)
+#target_link_libraries(Comp_And_Entity GL)
 #endif()
 
-target_link_libraries(Window ${TARGET_NAME})

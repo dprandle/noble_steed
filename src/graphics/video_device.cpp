@@ -2,6 +2,8 @@
 #include <bx/bx.h>
 #include <bx/spscqueue.h>
 #include <bx/thread.h>
+#include <bx/debug.h>
+
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
@@ -16,11 +18,13 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 #include <GLFW/glfw3native.h>
-#include <mat4x4.hpp>
+#include <glm/mat4x4.hpp>
 #include <iostream>
+#include <sstream>
 
 #include <noble_steed/dbg.h>
 #include <noble_steed/core/context.h>
+#include <noble_steed/core/logger.h>
 #include <noble_steed/graphics/video_device.h>
 
 #include <pybind11/embed.h>
@@ -145,20 +149,21 @@ struct ApiThreadArgs
 static int32_t runApiThread(bx::Thread *self, void *userData)
 {
     auto args = (ApiThreadArgs *)userData;
+
     // Initialize bgfx using the native window handle and window resolution.
     bgfx::Init init;
     init.platformData = args->platformData;
     init.resolution.width = args->width;
     init.resolution.height = args->height;
     init.resolution.reset = BGFX_RESET_VSYNC;
+
     if (!bgfx::init(init))
         return 1;
-    // Set view 0 to the same dimensions as the window and to clear the color buffer.
+
     const bgfx::ViewId kClearView = 0;
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
     bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-    //uint32_t width = args->width;
-    //uint32_t height = args->height;
+    
     bool showStats = false;
     bool exit = false;
     while (!exit)
@@ -177,8 +182,6 @@ static int32_t runApiThread(bx::Thread *self, void *userData)
                 auto resizeEvent = (ResizeEvent *)ev;
                 bgfx::reset(resizeEvent->width, resizeEvent->height, BGFX_RESET_VSYNC);
                 bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-                //width = resizeEvent->width;
-                //height = resizeEvent->height;
             }
             else if (*ev == EventType::Exit)
             {
@@ -188,43 +191,6 @@ static int32_t runApiThread(bx::Thread *self, void *userData)
         }
         // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
         bgfx::touch(kClearView);
-        // // Use debug font to print information about this example.
-        // bgfx::dbgTextClear();
-        // bgfx::dbgTextImage(bx::max<uint16_t>(uint16_t(width / 2 / 8), 20) - 20,
-        //                    bx::max<uint16_t>(uint16_t(height / 2 / 16), 6) - 6,
-        //                    40,
-        //                    12,
-        //                    s_logo,
-        //                    160);
-        // bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
-        // bgfx::dbgTextPrintf(
-        //     0,
-        //     1,
-        //     0x0f,
-        //     "Color can be changed with ANSI "
-        //     "\x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-        // bgfx::dbgTextPrintf(80,
-        //                     1,
-        //                     0x0f,
-        //                     "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; "
-        //                     "5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
-        // bgfx::dbgTextPrintf(80,
-        //                     2,
-        //                     0x0f,
-        //                     "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    "
-        //                     "\x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
-        // const bgfx::Stats * stats = bgfx::getStats();
-        // bgfx::dbgTextPrintf(0,
-        //                     2,
-        //                     0x0f,
-        //                     "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.",
-        //                     stats->width,
-        //                     stats->height,
-        //                     stats->textWidth,
-        //                     stats->textHeight);
-        // // Enable stats or debug text.
-        // bgfx::setDebug(showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
-        // Advance to next frame. Main thread will be kicked to process submitted rendering primitives.
         bgfx::frame();
     }
     bgfx::shutdown();
@@ -233,19 +199,23 @@ static int32_t runApiThread(bx::Thread *self, void *userData)
 
 int GLFW_func(void)
 {
+    using namespace noble_steed;
+
 //    auto m = pybind11::module::import("Noble_Steed");
     
-    noble_steed::Context ctxt;
-    noble_steed::Video_Device device;
+    Context ctxt;
+    ctxt.initialize();
+
+    Video_Device device;
     device.init();
 
     pybind11::scoped_interpreter guard{};
     auto m = pybind11::module::import("Noble_Steed");
-    pybind11::object obj = pybind11::cast(&noble_steed::Context::inst());
+    pybind11::object obj = pybind11::cast(&Context::inst());
     m.attr("context") = obj;
 
     ctxt.sys_.set_internal("Testing woohoo!");
-
+    
 
     // Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
     // Most graphics APIs must be used on the same thread that created the window.
@@ -302,11 +272,22 @@ int GLFW_func(void)
     apiThread.shutdown();
     glfwTerminate();
 
+
     pybind11::exec(R"(
         import Noble_Steed
         Noble_Steed.context.sys.log_internal()
         Noble_Steed.context.sys.internal = "poopy yo yo"
     )");
     ctxt.sys_.log_internal();
+
+    tlog("Trace message");
+    dlog("Debug message");
+    ilog("Info message");
+    wlog("Warning message");
+    elog("Error message");
+    clog("Critical message");
+
+
+    ctxt.terminate();
     return apiThread.getExitCode();
 }

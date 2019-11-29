@@ -38,7 +38,7 @@ set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
 set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
 set(BX_INCLUDE_DIR ${BX_DIR}/include)
 set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
-set(GLM_INCLUDE_DIR ${GLM_DIR}/glm)
+set(GLM_INCLUDE_DIR ${GLM_DIR})
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(MEMORY_ALLOCATORS_INCLUDE_DIR ${MEMORY_ALLOCATORS_DIR}/includes)
@@ -57,9 +57,11 @@ set(PYTHON_APPEND_STRING .cpython-36m-x86_64-linux-gnu.so)
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   add_definitions(-DDEBUG_VERSION)
   add_definitions(-DDBG_MACRO_NO_WARNING)
+  add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
   set(PYTHON_APPEND_STRING d${PYTHON_APPEND_STRING})
 else()
-  add_definitions(-DRELEASE_VERSION)
+add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+add_definitions(-DRELEASE_VERSION)
 endif()
 
 # Set the src files for the project
@@ -67,6 +69,7 @@ file(GLOB SRC_FILES
   "${NOBLE_STEED_SRC_DIR}/*.cpp"
   "${NOBLE_STEED_SRC_DIR}/core/*.cpp"
   "${NOBLE_STEED_SRC_DIR}/graphics/*.cpp"
+  "${NOBLE_STEED_SRC_DIR}/scene/*.cpp"
   )
 
 # Set project includes dir
@@ -123,6 +126,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
   spdlog
   X11
   GL
+  stdc++fs
   pthread
 )
 
