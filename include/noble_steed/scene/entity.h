@@ -1,5 +1,7 @@
 #pragma once
 
+#include <noble_steed/core/common.h>
+
 namespace noble_steed
 {
 class Component;
@@ -23,5 +25,7 @@ class Entity
 
     // destroy component
   private:
+    uint32_t id_;
+
 };
 } // namespace noble_steed

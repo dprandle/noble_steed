@@ -214,7 +214,7 @@ int GLFW_func(void)
     pybind11::object obj = pybind11::cast(&Context::inst());
     m.attr("context") = obj;
 
-    ctxt.sys_.set_internal("Testing woohoo!");
+    // ctxt.sys_.set_internal("Testing woohoo!");
     
 
     // Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
@@ -273,12 +273,12 @@ int GLFW_func(void)
     glfwTerminate();
 
 
-    pybind11::exec(R"(
-        import Noble_Steed
-        Noble_Steed.context.sys.log_internal()
-        Noble_Steed.context.sys.internal = "poopy yo yo"
-    )");
-    ctxt.sys_.log_internal();
+    // pybind11::exec(R"(
+    //     import Noble_Steed
+    //     Noble_Steed.context.sys.log_internal()
+    //     Noble_Steed.context.sys.internal = "poopy yo yo"
+    // )");
+    // ctxt.sys_.log_internal();
 
     tlog("Trace message");
     dlog("Debug message");

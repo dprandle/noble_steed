@@ -124,6 +124,8 @@ class Router
 
     void remove_slot(Slot_Base * slot);
 
+    std::size_t signals_connected_count();
+
   private:
     Vector<Slot_Base*> con_slots;
 };

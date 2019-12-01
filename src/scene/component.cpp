@@ -28,7 +28,7 @@ void Component::set_id(uint32_t id)
     id_ = id;
     if (old_id && (old_id != id_))
     {
-        ilog("Re-assigning component id from {} to {}", old_id, id_);
+        tlog("Re-assigning component id from {} to {}", old_id, id_);
         id_change(glm::ivec2(old_id, id_));
     }
 }
@@ -44,7 +44,7 @@ void Component::set_owner_id(uint32_t owner_id)
     owner_id_ = owner_id;
     if (old_id && (old_id != owner_id_))
     {
-        ilog("Re-assigning component owner_id from {} to {}", old_id, owner_id_);
+        tlog("Re-assigning component owner_id from {} to {}", old_id, owner_id_);
         owner_id_change(glm::ivec2(old_id, owner_id_));
     }
 }

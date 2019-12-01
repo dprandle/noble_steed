@@ -1,4 +1,5 @@
 #include <noble_steed/scene/transform.h>
+#include <noble_steed/core/logger.h>
 
 namespace noble_steed
 {
@@ -6,7 +7,9 @@ Transform::Transform()
 {}
 
 Transform::~Transform()
-{}
+{
+    dlog("TForm");
+}
 
 } // namespace noble_steed
 

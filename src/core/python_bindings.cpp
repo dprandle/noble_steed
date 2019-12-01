@@ -20,6 +20,6 @@ PYBIND11_EMBEDDED_MODULE(Noble_Steed,m)
 
     py::class_<Context>(m,"Context")
         .def(py::init<>())
-        .def("inst",&Context::inst)
-        .def_readwrite("sys", &Context::sys_);
+        .def("inst",&Context::inst);
+        //.def_readwrite("sys", &Context::sys_);
 }
