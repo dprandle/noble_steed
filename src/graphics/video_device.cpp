@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <noble_steed/dbg.h>
 #include <noble_steed/core/context.h>
 #include <noble_steed/core/logger.h>
 #include <noble_steed/graphics/video_device.h>
@@ -63,20 +62,18 @@ void Video_Device::init()
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
     {
-        dbg("Can't init glfw!");
         return;
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window_ = glfwCreateWindow(1024, 768, "helloworld multithreaded", nullptr, nullptr);
     if (!window_)
     {
-        dbg("Can't init window");
         return;
     }
     glfwSetKeyCallback(window_, glfw_key_press_callback);
 }
 
-void Video_Device::glfw_key_press_callback(GLFWwindow *window_, int32_t pKey, int32_t scancode_, int32_t action_, int32_t mods_)
+void Video_Device::glfw_key_press_callback(GLFWwindow *window_, i32 pKey, i32 scancode_, i32 action_, i32 mods_)
 {
     auto keyEvent = new KeyEvent;
     keyEvent->key = pKey;
@@ -84,7 +81,7 @@ void Video_Device::glfw_key_press_callback(GLFWwindow *window_, int32_t pKey, in
     s_apiThreadEvents.push(keyEvent);
 }
 
-void Video_Device::glfw_mouse_button_callback(GLFWwindow *window_, int32_t pButton, int32_t action_, int32_t mods_)
+void Video_Device::glfw_mouse_button_callback(GLFWwindow *window_, i32 pButton, i32 action_, i32 mods_)
 {
 }
 
@@ -96,7 +93,7 @@ void Video_Device::glfw_scroll_callback(GLFWwindow *window_, double x_offset, do
 {
 }
 
-void Video_Device::glfw_resize_window_callback(GLFWwindow *window, int32_t width, int32_t height)
+void Video_Device::glfw_resize_window_callback(GLFWwindow *window, i32 width, i32 height)
 {
 }
 
@@ -120,7 +117,7 @@ void Video_Device::glfw_window_position_callback(GLFWwindow *window, int x_pos, 
 {
 }
 
-void Video_Device::glfw_error_callback(int32_t error, const char *description)
+void Video_Device::glfw_error_callback(i32 error, const char *description)
 {
     fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
@@ -135,18 +132,18 @@ struct ExitEvent
 struct ResizeEvent
 {
     EventType type = EventType::Resize;
-    uint32_t width;
-    uint32_t height;
+    noble_steed::u32 width;
+    noble_steed::u32 height;
 };
 
 struct ApiThreadArgs
 {
     bgfx::PlatformData platformData;
-    uint32_t width;
-    uint32_t height;
+    noble_steed::u32 width;
+    noble_steed::u32 height;
 };
 
-static int32_t runApiThread(bx::Thread *self, void *userData)
+static noble_steed::i32 runApiThread(bx::Thread *self, void *userData)
 {
     auto args = (ApiThreadArgs *)userData;
 
@@ -234,8 +231,8 @@ int GLFW_func(void)
 
     int width, height;
     glfwGetWindowSize(device.window_, &width, &height);
-    apiThreadArgs.width = (uint32_t)width;
-    apiThreadArgs.height = (uint32_t)height;
+    apiThreadArgs.width = (u32)width;
+    apiThreadArgs.height = (u32)height;
     bx::Thread apiThread;
     apiThread.init(runApiThread, &apiThreadArgs);
 
@@ -256,8 +253,8 @@ int GLFW_func(void)
         if (width != oldWidth || height != oldHeight)
         {
             auto resize = new ResizeEvent;
-            resize->width = (uint32_t)width;
-            resize->height = (uint32_t)height;
+            resize->width = (u32)width;
+            resize->height = (u32)height;
             s_apiThreadEvents.push(resize);
         }
 

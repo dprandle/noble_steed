@@ -1,5 +1,4 @@
 #include <noble_steed/core/system.h>
-#include <noble_steed/dbg.h>
 
 namespace noble_steed
 {
@@ -16,8 +15,6 @@ const String & System::get_internal()
 
 void System::log_internal()
 {
-    dbg(internal_);
-    dbg(internal_num_);
 }
 
 void System::set_internal(const String & to_set)

@@ -8,7 +8,6 @@ Transform::Transform()
 
 Transform::~Transform()
 {
-    dlog("TForm");
 }
 
 } // namespace noble_steed
@@ -20,6 +19,5 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Transform>("Transform")
-        .constructor<>();
+    registration::class_<Transform>("Transform").constructor<>();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <noble_steed/container/vector.h>
+#include <noble_steed/core/common.h>
 
 namespace noble_steed
 {
@@ -124,7 +125,7 @@ class Router
 
     void remove_slot(Slot_Base * slot);
 
-    std::size_t signals_connected_count();
+    sizet signals_connected_count();
 
   private:
     Vector<Slot_Base*> con_slots;

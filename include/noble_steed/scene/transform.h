@@ -6,8 +6,8 @@ namespace noble_steed
 {
 class Transform : public Component
 {
-  RTTR_ENABLE(Component)
-  
+    RTTR_ENABLE(Component)
+
   public:
     Transform();
     ~Transform();

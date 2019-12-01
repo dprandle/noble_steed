@@ -1,15 +1,17 @@
 #pragma once
 
 #include <noble_steed/core/signal.h>
-#include <rttr/type>
-#include <glm/vec2.hpp>
+#include <noble_steed/core/common.h>
+#include <rttr/registration_friend>
 
 namespace noble_steed
 {
 class Component
 {
+    RTTR_REGISTRATION_FRIEND
     RTTR_ENABLE()
     SLOT_OBJECT
+    friend class Entity;
 
   public:
     Component();
@@ -19,20 +21,7 @@ class Component
 
     virtual void terminate();
 
-    void set_id(uint32_t id);
-
-    uint32_t get_id();
-
-    void set_owner_id(uint32_t owner_id);
-
-    uint32_t get_owner_id();
-
-    Signal<glm::uvec2> id_change;
-
-    Signal<glm::uvec2> owner_id_change;
-
   private:
-    uint32_t id_;
-    uint32_t owner_id_;
+    u32 owner_id_;
 };
 } // namespace noble_steed

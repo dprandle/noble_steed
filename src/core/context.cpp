@@ -13,14 +13,14 @@ namespace noble_steed
 {
 Context * Context::s_this_ = nullptr;
 
-uint32_t Context::current_id_ = 0;
-
 Context::Context()
     : comp_allocators_(),
-    comp_ptrs_(),
+      comp_ptrs_(),
       ent_allocator_(nullptr),
       ent_ptrs(),
-      mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST)
+      mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
+      ent_id_stack_(),
+      ent_current_id_(0)
 {
     mem_free_list_.Init();
     world_ = malloc<World>();
@@ -46,19 +46,20 @@ void Context::initialize(const Variant_Map & init_params)
 
 void Context::create_entity_allocator_(const Variant_Map & init_params)
 {
-    uint16_t ent_alloc = DEFAULT_ENTITY_ALLOC;
+    u16 ent_alloc = DEFAULT_ENTITY_ALLOC;
 
-    std::size_t ent_byte_size = sizeof(Entity);
+    sizet ent_byte_size = sizeof(Entity);
     if (ent_byte_size < MIN_CHUNK_ALLOC_SIZE)
         ent_byte_size = MIN_CHUNK_ALLOC_SIZE;
 
     // Create the entity allocator based on settings
     auto fiter = init_params.find(ENTITY_ALLOC_KEY);
-    if (fiter != init_params.end() && fiter->second.is_type<uint16_t>())
-        ent_alloc = fiter->second.get_value<uint16_t>();
+    if (fiter != init_params.end() && fiter->second.is_type<u16>())
+        ent_alloc = fiter->second.get_value<u16>();
 
-    ilog("Creating {} byte pool allocator for entities", ent_alloc*ent_byte_size);
+    ilog("Creating {} byte pool allocator for entities", ent_alloc * ent_byte_size);
     ent_allocator_ = malloc<PoolAllocator>(ent_alloc * ent_byte_size, ent_byte_size);
+    ent_allocator_->Init();
     ent_ptrs.reserve(ent_alloc);
 }
 
@@ -68,13 +69,13 @@ void Context::create_component_allocators_(const Variant_Map & init_params)
     auto t = rttr::type::get<Component>();
     auto derived = t.get_derived_classes();
     auto type_iter = derived.begin();
-    std::size_t total_comp_count = 0;
+    sizet total_comp_count = 0;
     while (type_iter != derived.end())
     {
-        uint16_t comp_alloc = DEFAULT_COMP_ALLOC;
+        u16 comp_alloc = DEFAULT_COMP_ALLOC;
         auto fiter = init_params.find(String(type_iter->get_name()) + "_Alloc");
-        if (fiter != init_params.end() && fiter->second.is_type<uint16_t>())
-            comp_alloc = fiter->second.get_value<uint16_t>();
+        if (fiter != init_params.end() && fiter->second.is_type<u16>())
+            comp_alloc = fiter->second.get_value<u16>();
         register_component_type_(*type_iter, comp_alloc);
         total_comp_count += comp_alloc;
         ++type_iter;
@@ -84,21 +85,20 @@ void Context::create_component_allocators_(const Variant_Map & init_params)
 
 void Context::terminate()
 {
-    //ent_allocator_->Reset();
-//    while (!ent_ptrs.empty())
-        // destroy enttites
+    world_->terminate();
+
+    // Not really job of the context... but just in case delete any leftover entities and components
+    // Terminating the world should destroy all entities, destroying all entities should destroy all components
+    // We track them here just in case
+    while (!ent_ptrs.empty())
+        destroy_entity(ent_ptrs[0]);
+
     free(ent_allocator_);
-
-    while (!comp_ptrs_.empty())
-        destroy_component(comp_ptrs_[0]);
-
     while (comp_allocators_.begin() != comp_allocators_.end())
     {
-        //comp_allocators_.begin()->second->Reset();
         free(comp_allocators_.begin()->second);
         comp_allocators_.erase(comp_allocators_.begin());
     }
-    world_->terminate();
     logger_->terminate();
 }
 
@@ -117,21 +117,21 @@ Context & Context::inst()
     return *s_this_;
 }
 
-void Context::on_component_id_change(glm::uvec2 id)
+void Context::on_entity_id_change(Pair<u32> id)
 {
-    tlog("Context dealing with component id change - old id: {} and new id {}", id.x, id.y);
+    dlog("Context dealing with entity id change - old id: {} and new id {}", id.x, id.y);
 }
 
-void Context::on_component_owner_id_change(glm::uvec2 owner_id)
+void Context::on_entity_owner_id_change(Pair<sizet> owner_id)
 {
-    tlog("Context dealing with component owner change - old id: {} and new id {}",
+    dlog("Context dealing with entity owner change - old id: {} and new id {}",
          owner_id.x,
          owner_id.y);
 }
 
-void Context::register_component_type_(const rttr::type & type, uint16_t expected_component_count)
+void Context::register_component_type_(const rttr::type & type, u16 expected_component_count)
 {
-    std::size_t type_size = type.get_sizeof();
+    sizet type_size = type.get_sizeof();
 
     if (type_size < MIN_CHUNK_ALLOC_SIZE)
         type_size = MIN_CHUNK_ALLOC_SIZE;
@@ -142,7 +142,9 @@ void Context::register_component_type_(const rttr::type & type, uint16_t expecte
     comp_alloc->Init();
     comp_allocators_.emplace(type.get_id(), comp_alloc);
     String str(type.get_name());
-    ilog("Creating {0} byte pool allocator for component type {1}", expected_component_count * type_size, str);
+    ilog("Creating {0} byte pool allocator for component type {1}",
+         expected_component_count * type_size,
+         str);
 }
 
 void Context::raw_free(void * to_free)
@@ -150,56 +152,80 @@ void Context::raw_free(void * to_free)
     mem_free_list_.Free(to_free);
 }
 
-Component * Context::create_component_(const rttr::type & type)
+Entity * Context::create_entity(const Entity * copy)
 {
-    PoolAllocator * alloc = get_comp_allocator_(type);
-    ilog("Allocating {0} bytes for {1}", type.get_sizeof(), String(type.get_name()));
-    Component * comp_ptr = static_cast<Component *>(alloc->Allocate(type.get_sizeof()));
-    comp_ptrs_.push_back(comp_ptr);
-    return comp_ptr;
+    sizet ent_size = sizeof(Entity);
+    ilog("Allocating {0} bytes for entity", ent_size);
+    Entity * ent = static_cast<Entity *>(ent_allocator_->Allocate(ent_size));
+
+    // If crashing here means not enough mem for entities - allocate more
+    assert(ent != nullptr);
+
+    ent_ptrs.push_back(ent);
+    if (copy != nullptr)
+        new (ent) Entity(*copy);
+    else
+        new (ent) Entity();
+
+    // Assign id to entity
+    if (!ent_id_stack_.empty())
+    {
+        ent->set_id(ent_id_stack_.top());
+        ent_id_stack_.pop();
+    }
+    else
+    {
+        ++ent_current_id_;
+        ent->set_id(ent_current_id_);
+    }
+
+    ent->initialize();
+
+    // Any time the entity has it's id or owner changed we can propagate those changes correctly here
+    sig_connect(ent->id_change, Context::on_entity_id_change);
+    sig_connect(ent->owner_id_change, Context::on_entity_owner_id_change);
+
+    return ent;
 }
 
-void Context::destroy_component(Component * comp)
+void Context::destroy_entity(Entity * ent)
 {
-    comp->terminate();
+    ent->terminate();
 
     // Take the id back
-    id_stack_.push(comp->get_id());
+    ent_id_stack_.push(ent->get_id());
 
     // This should also call the signal to change the comp id
-    comp->set_id(0);
+    ent->set_id(0);
 
-    // Must get the type before calling the destructor
-    rttr::type type = comp->get_derived_info().m_type;
-
-    // Calling the destructor of the comp will automatically disconnect its signals so no
+    // Calling the destructor of the ent will automatically disconnect its signals so no
     // need to do that here
-    comp->~Component();
+    ent->~Entity();
 
-    PoolAllocator * alloc = get_comp_allocator_(type);
-    ilog("De-allocating {0} bytes for {1}", type.get_sizeof(), String(type.get_name()));
-    alloc->Free(comp);
+    ilog("De-allocating {} bytes for entity {}", sizeof(Entity), ent->get_name());
+    ent_allocator_->Free(ent);
 
-    if (comp_ptrs_.empty())
+    if (ent_ptrs.empty())
     {
-        elog("There was no pointer in comp_ptrs_ vector which means the context has lost track of it somehow");
+        elog("There was no pointer in ent_ptrs vector which means the context has lost track of "
+             "it somehow");
         return;
     }
 
     // Find the pointer - copy the last element of the vector to overwrite the pointer's value
     // and decrease the vector size by one
-    for (std::size_t i = 0; i < comp_ptrs_.size(); ++i)
+    for (sizet i = 0; i < ent_ptrs.size(); ++i)
     {
-        if (comp == comp_ptrs_[i])
+        if (ent == ent_ptrs[i])
         {
-            comp_ptrs_[i] = comp_ptrs_[comp_ptrs_.size()-1];
+            ent_ptrs[i] = ent_ptrs[ent_ptrs.size() - 1];
             break;
         }
     }
-    comp_ptrs_.pop_back();
+    ent_ptrs.pop_back();    
 }
 
-PoolAllocator * Context::get_comp_allocator_(const rttr::type & type)
+PoolAllocator * Context::get_comp_allocator(const rttr::type & type)
 {
     auto fiter = comp_allocators_.find(type.get_id());
     if (fiter != comp_allocators_.end())
@@ -208,3 +234,18 @@ PoolAllocator * Context::get_comp_allocator_(const rttr::type & type)
 }
 
 } // namespace noble_steed
+
+
+#include <rttr/registration>
+
+RTTR_REGISTRATION
+{
+    using namespace rttr;
+    using namespace noble_steed;
+
+    registration::class_<Context>("Context")
+        .constructor<>();
+        // .property("id_", &Component::initialize, registration::public_access)
+        // .property("terminate", &Component::terminate, registration::public_access)
+        // .property("owner_id", &Component::owner_id_, registration::private_access);
+}

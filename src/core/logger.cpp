@@ -4,8 +4,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-#include <noble_steed/dbg.h>
-
 namespace noble_steed
 {
 Logger::Logger()// : logger(nullptr)

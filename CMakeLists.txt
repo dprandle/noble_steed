@@ -62,6 +62,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
 else()
 add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
 add_definitions(-DRELEASE_VERSION)
+add_definitions(-DNDEBUG)
 endif()
 
 # Set the src files for the project

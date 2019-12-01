@@ -39,7 +39,7 @@ void assist_delete(Slot_Base * del)
     del->router->remove_slot(del);
 }
 
-std::size_t Router::signals_connected_count()
+sizet Router::signals_connected_count()
 {
     return con_slots.size();
 }
