@@ -7,9 +7,6 @@
 
 namespace noble_steed
 {
-const int KB_SIZE = 1024 * 8;
-const int MB_SIZE = 1024 * KB_SIZE;
-
 using Variant_Map = Hash_Map<String, rttr::variant>;
 
 using i8 = int8_t;
@@ -26,6 +23,24 @@ using char16 = char16_t;
 using char32 = char32_t;
 
 using sizet = std::size_t;
+
+const int KB_SIZE = 1024 * 8;
+const int MB_SIZE = 1024 * KB_SIZE;
+
+// This is the default alloc amount - in terms of quantity of the components.. To set this to a different value
+// set the key CompName_Alloc with a u16 value indicating the quantity in init_params - where CompName is replaced with the rttr registerd component name
+const u16 DEFAULT_COMP_ALLOC = 1000;
+
+// This is the default number of resources that will be allocated in each resource pool allocator
+// Set this to a different value by including ResType_Alloc as a key in init_params with the value as a u16
+const u16 DEFAULT_RES_ALLOC = 100;
+
+// This is the pre-allocated amount for entities - adjust this as required
+const u16 DEFAULT_ENTITY_ALLOC = 1000;
+
+// Init params key to override the default entity allocation amount
+const String ENTITY_ALLOC_KEY = "Entity_Alloc";
+
 
 template<class T>
 struct Pair

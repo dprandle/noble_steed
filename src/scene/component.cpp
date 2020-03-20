@@ -12,14 +12,14 @@ Component::~Component()
 
 void Component::initialize()
 {
-    ilog("Initializing base component with derived type {} and owner id {}",
+    ilog("Initializing component type {} and owner id {}",
          String(get_derived_info().m_type.get_name()),
          owner_id_);
 }
 
 void Component::terminate()
 {
-    ilog("Terminating base component with derived type {} and owner id {}",
+    ilog("Terminating component type {} and owner id {}",
          String(get_derived_info().m_type.get_name()),
          owner_id_);
 }

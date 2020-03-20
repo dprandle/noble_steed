@@ -7,7 +7,7 @@
 namespace noble_steed
 {
 class Component;
-
+class World;
 class Entity
 {
   public:
@@ -15,53 +15,43 @@ class Entity
     ~Entity();
 
     // add component
-    template<class T, class... Args>
-    T * create_component(const Args &... args)
+    template<class CompType>
+    CompType * add()
     {
-        rttr::type t = rttr::type::get<T>();
-        T * comp_ptr = static_cast<T *>(create_component_(t));
-        new (comp_ptr) T(args...);
-
-        comp_ptr->initialize();
-
-        if (!add_component(comp_ptr))
-        {
-            destroy_component(comp_ptr);
-            return nullptr;
-        }
-        return comp_ptr;
+        rttr::type t = rttr::type::get<CompType>();
+        return static_cast<CompType *>(add(t));
     }
 
-    bool add_component(Component * comp);
-
-    template<class T>
-    T * get_component()
+    template<class CompType>
+    CompType * add(const CompType & copy)
     {
-        rttr::type t = rttr::type::get<T>();
-        return static_cast<T*>(get_component(t));
+        rttr::type t = rttr::type::get<CompType>();
+        return static_cast<CompType *>(add(t,copy));
     }
 
-    Component * get_component(const rttr::type & type);
+    Component * add(const rttr::type & component_type);
 
-    template<class T>
-    T * remove_component()
+    Component * add(const Component & copy);
+
+    template<class CompType>
+    CompType * get()
     {
-        rttr::type t = rttr::type::get<T>();
-        return static_cast<T*>(remove_component(t));
+        rttr::type t = rttr::type::get<CompType>();
+        return static_cast<CompType*>(get(t));
     }
 
-    Component * remove_component(const rttr::type & type);
+    Component * get(const rttr::type & component_type);
 
-    template<class T>
-    bool destroy_component()
+    template<class CompType>
+    bool remove()
     {
-        rttr::type t = rttr::type::get<T>();
-        return static_cast<T*>(destroy_component(t));
+        rttr::type t = rttr::type::get<CompType>();
+        return remove(t);
     }
 
-    bool destroy_component(const rttr::type & type);
+    bool remove(const rttr::type & component_type);
 
-    bool destroy_component(Component * comp);
+    bool remove(Component * component);
 
     void initialize();
 
@@ -75,30 +65,23 @@ class Entity
 
     u32 get_id();
 
-    // Set the id of the chunk that owns this entity
-    void set_owner_id(sizet owner_id);
-
-    // Get the id of the chunk that owns this entity
-    sizet get_owner_id();
-
-    // remove component
-
-    // create component
-
-    // destroy component
-
-    // Emitted when the id is changed from a non-zero value to some different value
     Signal<Pair<u32>> id_change;
 
-    // Emitted when the owner id is changed from a non-zero value to some different value
-    Signal<Pair<sizet>> owner_id_change;
-
   private:
-    Component * create_component_(const rttr::type & type);
+    Component * allocate_comp_(const rttr::type & type);
+    
+    Component * allocate_comp_(const rttr::type & type, const Component & copy);
 
+    bool add_component_(Component * comp, const rttr::type & comp_type);
+
+    void deallocate_comp_(Component * comp, const rttr::type & comp_type);
+    
+    Component * remove_component_(const rttr::type & type);
+    
     u32 id_;
-    sizet owner_id_;
+    
     String name_;
+    
     Hash_Map<u64, Component *> comps_;
 };
 } // namespace noble_steed

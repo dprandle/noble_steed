@@ -12,12 +12,6 @@ PYBIND11_EMBEDDED_MODULE(Noble_Steed,m)
     using namespace noble_steed;
     namespace py = pybind11;
     
-    py::class_<System>(m,"System")
-        .def(py::init<>())
-        .def_property("internal", &System::get_internal, &System::set_internal)
-        .def("log_internal", &System::log_internal)
-        .def_property("internal_num",&System::get_num,&System::set_num);
-
     py::class_<Context>(m,"Context")
         .def(py::init<>())
         .def("inst",&Context::inst);

@@ -1,12 +1,12 @@
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/core/logger.h>
 #include <noble_steed/core/context.h>
+#include <noble_steed/scene/world.h>
 #include <noble_steed/scene/component.h>
-#include <PoolAllocator.h>
 
 namespace noble_steed
 {
-Entity::Entity() : id_(0), owner_id_(0), name_()
+Entity::Entity() : id_(0), name_()
 {}
 
 Entity::~Entity()
@@ -19,9 +19,7 @@ void Entity::initialize()
 
 void Entity::terminate()
 {
-    ilog("Terminating enttiy with name {} and id {}", name_, id_);
-    while (comps_.begin() != comps_.end())
-        destroy_component(comps_.begin()->second);
+    ilog("Terminating entity with name {} and id {}", name_, id_);
 }
 
 void Entity::set_name(const String & name)
@@ -51,51 +49,31 @@ u32 Entity::get_id()
     return id_;
 }
 
-void Entity::set_owner_id(sizet owner_id)
+Component * Entity::add(const rttr::type & comp_type)
 {
-    sizet old_id = owner_id_;
-    owner_id_ = owner_id;
-    if (old_id && (old_id != owner_id_))
+    Component * comp = allocate_comp_(comp_type);
+    if (!add_component_(comp,comp_type))
     {
-        dlog("Re-assigning entity owner_id from {} to {}", old_id, owner_id_);
-        owner_id_change(Pair<sizet>(old_id, owner_id_));
+        deallocate_comp_(comp,comp_type);
+        return nullptr;
     }
+    return comp;
 }
 
-sizet Entity::get_owner_id()
+Component * Entity::add(const Component & copy)
 {
-    return owner_id_;
-}
-
-Component * Entity::create_component_(const rttr::type & type)
-{
-    PoolAllocator * alloc = ns_ctxt.get_comp_allocator(type);
-    ilog("Allocating {0} bytes for {1}", type.get_sizeof(), String(type.get_name()));
-    Component * comp_ptr = static_cast<Component *>(alloc->Allocate(type.get_sizeof()));
-    return comp_ptr;
-}
-
-bool Entity::add_component(Component * comp)
-{
-    rttr::type t = comp->get_derived_info().m_type;
-    auto fiter = comps_.emplace(t.get_id(), comp);
-    if (fiter.second)
+    // Get derived info is non const likely because of the m_ptr returned with m_type
+    rttr::type t = const_cast<Component &>(copy).get_derived_info().m_type;
+    Component * comp = allocate_comp_(t,copy);
+    if (!add_component_(comp,t))
     {
-        comp->owner_id_ = id_;
+        deallocate_comp_(comp,t);
+        return nullptr;
     }
-    else
-    {
-        wlog("Could not add component type {} to entity {} (name: {}) as the component "
-             "already exists",
-             String(t.get_name()),
-             id_,
-             name_);
-    }
-
-    return fiter.second;
+    return comp;
 }
 
-Component * Entity::get_component(const rttr::type & type)
+Component * Entity::get(const rttr::type & type)
 {
     auto fiter = comps_.find(type.get_id());
     if (fiter != comps_.end())
@@ -103,40 +81,85 @@ Component * Entity::get_component(const rttr::type & type)
     return nullptr;
 }
 
-Component * Entity::remove_component(const rttr::type & type)
+Component * Entity::remove_component_(const rttr::type & type)
 {
     Component * ret = nullptr;
     auto fiter = comps_.find(type.get_id());
     if (fiter != comps_.end())
     {
         ret = fiter->second;
+        ret->terminate();
         fiter = comps_.erase(fiter);
     }
     else
     {
-        wlog("Could not remove component type {} from entity {} (name:{}) as that type of component wasn't found",String(type.get_name()),id_, name_);
+        wlog("Could not remove component type {} from entity {} (name:{}) as that type of component wasn't found",
+             String(type.get_name()),
+             id_,
+             name_);
     }
     return ret;
 }
 
-bool Entity::destroy_component(const rttr::type & type)
+Component * Entity::allocate_comp_(const rttr::type & type)
 {
-    Component * comp = remove_component(type);
+    Component_Factory * fac = ns_ctxt.get_factory<Component_Factory>(type);
+    assert(fac!=nullptr);
+    Component * comp = fac->create();
+    assert(comp!=nullptr);
+    return comp;
+}
+
+Component * Entity::allocate_comp_(const rttr::type & type, const Component & copy)
+{
+    Component_Factory * fac = ns_ctxt.get_factory<Component_Factory>(type);
+    assert(fac!=nullptr);
+    Component * comp = fac->create(copy);
+    assert(comp!=nullptr);
+    return comp;
+}
+
+bool Entity::add_component_(Component * comp, const rttr::type & comp_type)
+{
+    auto fiter = comps_.emplace(comp_type.get_id(), comp);
+    if (fiter.second)
+    {
+        comp->owner_id_ = id_;
+        comp->initialize();
+    }
+    else
+    {
+        wlog("Could not add component type {} to entity {} (name: {}) as the component "
+             "already exists",
+             String(comp_type.get_name()),
+             id_,
+             name_);
+    }
+    return fiter.second;
+}
+
+void Entity::deallocate_comp_(Component * comp, const rttr::type & comp_type)
+{
+    assert(comp != nullptr);
+    comp->~Component();
+    PoolAllocator * alloc = ns_ctxt.get_comp_allocator(comp_type);
+    ilog("De-allocating {0} bytes for {1}", comp_type.get_sizeof(), String(comp_type.get_name()));
+    alloc->Free(comp);
+}
+
+bool Entity::remove(const rttr::type & type)
+{
+    Component * comp = remove_component_(type);
     if (comp == nullptr)
         return false;
-    
-    comp->terminate();
-    comp->~Component();
-    PoolAllocator * alloc = ns_ctxt.get_comp_allocator(type);
-    ilog("De-allocating {0} bytes for {1}", type.get_sizeof(), String(type.get_name()));
-    alloc->Free(comp);
+    deallocate_comp_(comp,type);
     return true;
 }
 
-bool Entity::destroy_component(Component * comp)
+bool Entity::remove(Component * comp)
 {
-    return destroy_component(comp->get_derived_info().m_type);
-}   
+    return remove(comp->get_derived_info().m_type);
+}
 
 } // namespace noble_steed
 
@@ -147,9 +170,8 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Entity>("Entity")
-        .constructor<>();
-        // .property("id_", &Component::initialize, registration::public_access)
-        // .property("terminate", &Component::terminate, registration::public_access)
-        // .property("owner_id", &Component::owner_id_, registration::private_access);
+    registration::class_<Entity>("Entity").constructor<>();
+    // .property("id_", &Component::initialize, registration::public_access)
+    // .property("terminate", &Component::terminate, registration::public_access)
+    // .property("owner_id", &Component::owner_id_, registration::private_access);
 }

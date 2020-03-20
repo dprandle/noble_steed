@@ -1,44 +1,20 @@
 #pragma once
 
-#include <FreeListAllocator.h>
-
-#include <noble_steed/core/common.h>
+#include <noble_steed/core/factory.h>
 #include <noble_steed/core/signal.h>
-#include <noble_steed/container/hash_map.h>
-#include <noble_steed/container/stack.h>
 
 #define ns_ctxt Context::inst()
 
-class PoolAllocator;
-
 namespace noble_steed
 {
-const String ENTITY_ALLOC_KEY = "Entity_Alloc";
-
-// TODO: Create a way to register per-component values for this - some components will be added way more than others
-// This is the pre-allocated amount for a component type
-const u16 DEFAULT_COMP_ALLOC = 1000;
-
-// TODO: This should also be a part of paremeters that can be set per-game basically
-// This is the pre-allocated amount for entities - adjust this as required
-const u16 DEFAULT_ENTITY_ALLOC = 1000;
-
-// The min alloc size was determined by running in debugger and seing what the min size was
-// required by the FreeListAllocator
-const uint8_t MIN_ALLOC_SIZE = 16;
-
-// The min align size was determined by running in debugger and seing what the min size was
-// required by the FreeListAllocator
-const uint8_t MIN_ALIGN_SIZE = 8;
 
 // A Pool allocator must at least allocate a single chunk size of this size - ie even if a component is 5 bytes, each
 // component will still be allocated 8 bytes
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 
-class World;
 class Logger;
-class Component;
-class Entity;
+class World;
+class System;
 class Context
 {
     SLOT_OBJECT
@@ -50,26 +26,25 @@ class Context
 
     void terminate();
 
-    World * get_world();
-
     Logger * get_logger();
+
+    World * get_world();
 
     template<class T>
     T * raw_malloc()
     {
-        T * mem_ptr = static_cast<T *>(mem_free_list_.Allocate(sizeof(T)));
+        rttr::type type = rttr::type::get<T>();
+        T * mem_ptr = static_cast<T *>(malloc_(type));
         return mem_ptr;
     }
 
     /// Get a block large enough to hold type T from our pre-allocation amount - should crash program if not enough
-    /// memory. Args will be used to construct the item within the block.
+    // /// memory. Args will be used to construct the item within the block.
     template<class T, class... Args>
     T * malloc(const Args &... args)
     {
-        sizet type_size = sizeof(T);
-        if (type_size < MIN_ALLOC_SIZE)
-            type_size = MIN_ALLOC_SIZE;
-        T * mem_ptr = static_cast<T *>(mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE));
+        rttr::type type = rttr::type::get<T>();
+        T * mem_ptr = static_cast<T *>(malloc_(type));
         new (mem_ptr) T(args...);
         return mem_ptr;
     }
@@ -83,43 +58,84 @@ class Context
 
     void raw_free(void * to_free);
 
-    Entity * create_entity(const Entity * copy = nullptr);
+    template<class T>
+    void register_system_type(const Variant_Map & init_params=Variant_Map())
+    {
+        Factory * fac = nullptr;
+        rttr::type t = rttr::type::get<T>();
+        if (type_factories_.find(t.get_id()) != type_factories_.end())
+            return;
 
-    void destroy_entity(Entity * ent);
+        // No special allocator for systems
+        fac = malloc<System_Factory_Type<T>>(&mem_free_list_);
+        type_factories_[t.get_id()] = fac;
+    }
 
-    PoolAllocator * get_comp_allocator(const rttr::type & type);
+    template<class T>
+    void register_component_type(const Variant_Map & init_params=Variant_Map())
+    {
+        Factory * fac = nullptr;
+        rttr::type t = rttr::type::get<T>();
+        if (type_factories_.find(t.get_id()) != type_factories_.end())
+            return;
+
+        PoolAllocator * alloc = create_component_allocator_(t, init_params);
+        fac = malloc<Component_Factory_Type<T>>(alloc);
+        type_factories_[t.get_id()] = fac;
+    }
+
+    template<class T>
+    void register_resource_type(const Variant_Map & init_params=Variant_Map())
+    {
+        Factory * fac = nullptr;
+        rttr::type t = rttr::type::get<T>();
+        if (type_factories_.find(t.get_id()) != type_factories_.end())
+            return;
+
+        // Create the resource allocator
+        PoolAllocator * alloc = create_resource_allocator_(t, init_params);
+        fac = malloc<Resource_Factory_Type<T>>(alloc);
+        type_factories_[t.get_id()] = fac;
+    }
+
+    Factory * get_base_factory(const rttr::type & obj_type);
+
+    template<class Base_Fac_Type>
+    Base_Fac_Type * get_factory(const rttr::type & obj_type)
+    {
+        return static_cast<Base_Fac_Type *>(get_base_factory(obj_type));
+    }
 
     static Context & inst();
 
+    PoolAllocator * get_comp_allocator(const rttr::type & type);
+
+    PoolAllocator * get_resource_allocator(const rttr::type & type);
+
+    PoolAllocator * get_entity_allocator();
+
   private:
+    void * malloc_(const rttr::type & type);
 
-    void on_entity_id_change(Pair<u32> id);
+    PoolAllocator * create_entity_allocator_(const Hash_Map<String, rttr::variant> & init_params);
 
-    void on_entity_owner_id_change(Pair<sizet> owner_id);
+    PoolAllocator * create_component_allocator_(const rttr::type & type, const Variant_Map & init_params);
 
-    void create_entity_allocator_(const Hash_Map<String, rttr::variant> & init_params);
-
-    void create_component_allocators_(const Hash_Map<String, rttr::variant> & init_params);
-
-    void register_component_type_(const rttr::type & type, u16 expected_component_count);
-
-    Hash_Map<u64, PoolAllocator *> comp_allocators_;
-
-    Vector<Component*> comp_ptrs_;
-
-    PoolAllocator * ent_allocator_;
-
-    Vector<Entity*> ent_ptrs;
+    PoolAllocator * create_resource_allocator_(const rttr::type & type, const Variant_Map & init_params);
 
     FreeListAllocator mem_free_list_;
 
-    Stack<u32> ent_id_stack_;
+    Hash_Map<u64, PoolAllocator *> comp_allocators_;
 
-    World * world_;
+    Hash_Map<u64, PoolAllocator *> resource_allocators_;
+
+    Hash_Map<u64, Factory *> type_factories_;
+
+    PoolAllocator * ent_allocator_;
 
     Logger * logger_;
 
-    u32 ent_current_id_;
+    World * world_;
 
     static Context * s_this_;
 };

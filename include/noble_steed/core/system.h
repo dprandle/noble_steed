@@ -1,31 +1,23 @@
 #pragma once
 
-#include <noble_steed/container/string.h>
-#include <rttr/type>
+#include <noble_steed/core/signal.h>
+#include <noble_steed/core/common.h>
 
 namespace noble_steed
 {
 class System
 {
     RTTR_ENABLE()
-
   public:
     System();
     virtual ~System();
 
-    const String & get_internal();
+    virtual void initialize(const Variant_Map & init_params);
 
-    int get_num();
+    virtual void terminate();
 
-    void set_num(int num);
-
-    void log_internal();
-
-    void set_internal(const String & to_set);
-
-  private:
-    String internal_;
-    int internal_num_;
+  protected:
+    SLOT_OBJECT
 };
 
 } // namespace noble_steed

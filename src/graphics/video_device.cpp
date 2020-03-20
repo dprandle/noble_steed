@@ -16,7 +16,10 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #elif BX_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elif BX_PLATFORM_OSX
+#define GLFW_EXPOSE_NATIVE_COCOA
 #endif
+
 #include <GLFW/glfw3native.h>
 #include <glm/mat4x4.hpp>
 #include <iostream>
@@ -143,7 +146,7 @@ struct ApiThreadArgs
     noble_steed::u32 height;
 };
 
-static noble_steed::i32 runApiThread(bx::Thread *self, void *userData)
+noble_steed::i32 runApiThread(bx::Thread *self, void *userData)
 {
     auto args = (ApiThreadArgs *)userData;
 
@@ -210,6 +213,7 @@ int GLFW_func(void)
     auto m = pybind11::module::import("Noble_Steed");
     pybind11::object obj = pybind11::cast(&Context::inst());
     m.attr("context") = obj;
+    dlog("Scooby");
 
     // ctxt.sys_.set_internal("Testing woohoo!");
     
@@ -223,8 +227,8 @@ int GLFW_func(void)
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
     apiThreadArgs.platformData.ndt = glfwGetX11Display();
     apiThreadArgs.platformData.nwh = (void *)(uintptr_t)glfwGetX11Window(device.window_);
-#elif BX_PLATFORM_OSXrttr_core
-    apiThreadArgs.platformData.nwh = glfwGetCocoaWindow(window);
+#elif BX_PLATFORM_OSX
+    apiThreadArgs.platformData.nwh = glfwGetCocoaWindow(device.window_);
 #elif BX_PLATFORM_WINDOWS
     apiThreadArgs.platformData.nwh = glfwGetWin32Window(window);
 #endif
