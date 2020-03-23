@@ -49,10 +49,10 @@ u32 Entity::get_id()
     return id_;
 }
 
-Component * Entity::add(const rttr::type & comp_type)
+Component * Entity::add(const rttr::type & comp_type, const Variant_Map & init_params)
 {
     Component * comp = allocate_comp_(comp_type);
-    if (!add_component_(comp,comp_type))
+    if (!add_component_(comp,comp_type,init_params))
     {
         deallocate_comp_(comp,comp_type);
         return nullptr;
@@ -65,7 +65,7 @@ Component * Entity::add(const Component & copy)
     // Get derived info is non const likely because of the m_ptr returned with m_type
     rttr::type t = const_cast<Component &>(copy).get_derived_info().m_type;
     Component * comp = allocate_comp_(t,copy);
-    if (!add_component_(comp,t))
+    if (!add_component_(comp,t,Variant_Map()))
     {
         deallocate_comp_(comp,t);
         return nullptr;
@@ -119,13 +119,13 @@ Component * Entity::allocate_comp_(const rttr::type & type, const Component & co
     return comp;
 }
 
-bool Entity::add_component_(Component * comp, const rttr::type & comp_type)
+bool Entity::add_component_(Component * comp, const rttr::type & comp_type, const Variant_Map & init_params)
 {
     auto fiter = comps_.emplace(comp_type.get_id(), comp);
     if (fiter.second)
     {
         comp->owner_id_ = id_;
-        comp->initialize();
+        comp->initialize(init_params);
     }
     else
     {

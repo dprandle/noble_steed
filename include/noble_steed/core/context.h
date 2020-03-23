@@ -13,6 +13,7 @@ namespace noble_steed
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 
 class Logger;
+class Resource_Cache;
 class World;
 class System;
 class Context
@@ -29,6 +30,8 @@ class Context
     Logger * get_logger();
 
     World * get_world();
+
+    Resource_Cache * get_resource_cache();
 
     template<class T>
     T * raw_malloc()
@@ -136,6 +139,8 @@ class Context
     Logger * logger_;
 
     World * world_;
+
+    Resource_Cache * resource_cache_;
 
     static Context * s_this_;
 };

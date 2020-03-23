@@ -75,6 +75,7 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/core/*.cpp
   ${NOBLE_STEED_SRC_DIR}/graphics/*.cpp
   ${NOBLE_STEED_SRC_DIR}/scene/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/serialization/*.cpp
   )
 
 # Set project includes dir
@@ -158,12 +159,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE
   pthread
 )
 endif()
-
-# Create a shortcut for the compile commands
-add_custom_target(move_compile_commands ALL
-  COMMAND cmake -E create_symlink ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/build/compile_commands.json
-  DEPENDS ${TARGET_NAME}
-  )
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 

@@ -2,12 +2,15 @@
 
 #include <noble_steed/container/string.h>
 #include <noble_steed/container/hash_map.h>
+#include <noble_steed/container/hash_set.h>
 #include <rttr/type>
 #include <utility>
 
 namespace noble_steed
 {
-using Variant_Map = Hash_Map<String, rttr::variant>;
+    
+using Variant = rttr::variant;
+using Variant_Map = Hash_Map<String, Variant>;
 
 using i8 = int8_t;
 using u8 = uint8_t;

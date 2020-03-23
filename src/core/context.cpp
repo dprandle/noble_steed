@@ -4,6 +4,7 @@
 #include <noble_steed/core/system.h>
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/scene/world.h>
+#include <noble_steed/core/resource_cache.h>
 
 namespace noble_steed
 {
@@ -16,7 +17,8 @@ Context::Context()
       type_factories_(),
       ent_allocator_(nullptr),
       logger_(nullptr),
-      world_(nullptr)
+      world_(nullptr),
+      resource_cache_(nullptr)
 {
     s_this_ = this;
 }
@@ -35,16 +37,19 @@ void Context::initialize(const Variant_Map & init_params)
     // Initialize logger before other stuff so logging works
     logger_ = malloc<Logger>();
     logger_->initialize();
+    resource_cache_ = malloc<Resource_Cache>();
     world_ = malloc<World>();
     create_entity_allocator_(init_params);
 
     // Do rest of initialization
+    resource_cache_->initialize(init_params);
     world_->initialize(init_params);
 }
 
 void Context::terminate()
 {
     world_->terminate();
+    resource_cache_->terminate();
 
     // Free all component memory
     while (comp_allocators_.begin() != comp_allocators_.end())
@@ -68,6 +73,9 @@ void Context::terminate()
     free(world_);
     world_ = nullptr;
 
+    free(resource_cache_);
+    resource_cache_ = nullptr;
+
     // Kill logger last so that we can log stuff when needed
     logger_->terminate();
     free(logger_);
@@ -83,6 +91,11 @@ Logger * Context::get_logger()
 World * Context::get_world()
 {
     return world_;
+}
+
+Resource_Cache * Context::get_resource_cache()
+{
+    return resource_cache_;
 }
 
 Context & Context::inst()

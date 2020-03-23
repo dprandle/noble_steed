@@ -17,7 +17,7 @@ class Component
     Component();
     virtual ~Component();
 
-    virtual void initialize();
+    virtual void initialize(const Variant_Map & init_params);
 
     virtual void terminate();
 

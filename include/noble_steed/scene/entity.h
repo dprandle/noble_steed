@@ -16,7 +16,7 @@ class Entity
 
     // add component
     template<class CompType>
-    CompType * add()
+    CompType * add(const Variant_Map & init_params = Variant_Map())
     {
         rttr::type t = rttr::type::get<CompType>();
         return static_cast<CompType *>(add(t));
@@ -29,7 +29,7 @@ class Entity
         return static_cast<CompType *>(add(t,copy));
     }
 
-    Component * add(const rttr::type & component_type);
+    Component * add(const rttr::type & component_type, const Variant_Map & init_params = Variant_Map());
 
     Component * add(const Component & copy);
 
@@ -72,7 +72,7 @@ class Entity
     
     Component * allocate_comp_(const rttr::type & type, const Component & copy);
 
-    bool add_component_(Component * comp, const rttr::type & comp_type);
+    bool add_component_(Component * comp, const rttr::type & comp_type, const Variant_Map & init_params);
 
     void deallocate_comp_(Component * comp, const rttr::type & comp_type);
     

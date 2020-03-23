@@ -10,7 +10,7 @@ Component::Component() : owner_id_(0)
 Component::~Component()
 {}
 
-void Component::initialize()
+void Component::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing component type {} and owner id {}",
          String(get_derived_info().m_type.get_name()),
