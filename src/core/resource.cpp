@@ -2,6 +2,9 @@
 #include <noble_steed/core/resource.h>
 #include <noble_steed/core/logger.h>
 #include <noble_steed/serialization/json_archive.h>
+#include <noble_steed/core/context.h>
+
+#include <noble_steed/core/filesystem.h>
 
 namespace noble_steed
 {
@@ -11,27 +14,63 @@ Resource::Resource()
 Resource::~Resource()
 {}
 
-void Resource::save()
+bool Resource::save()
 {
-    dlog("Calling base save");
-    JSON_Archive ar;
-    ar.io_dir = JSON_Archive::DIR_OUT;
-    pack_unpack(ar);
-    dlog("Saved:\n{}", ar.json_str);
+    return save(get_relative_path());
 }
 
-void Resource::load()
+// Save data to custom file path - no regards to naming, packages, or extensions.
+bool Resource::save(const String & custom_path)
 {
-    dlog("Calling base load");
-    JSON_Archive ar;
-    ar.io_dir = JSON_Archive::DIR_IN;
-    pack_unpack(ar);
+    String str;
+
+    // Create directories if needed...
+    sizet pos = custom_path.find_last_of('/');
+    if (pos != String::npos)
+    {
+        String dir = custom_path.substr(0,pos);
+        if (!fs::is_directory(dir) && fs::create_directories(dir))
+        {
+            ilog("Created directory {} for {}",dir,custom_path);
+        }
+    }
+
+    std::ofstream file(custom_path);
+    if (file)
+    {
+        str = to_json();
+        file << str;
+        ilog("Saved {} in package {} to {}", name_, package_, custom_path);
+        return true;
+    }
+    else
+    {
+        wlog("Could not open file {}", custom_path);
+    }
+    return false;
 }
 
-void Resource::pack_unpack(JSON_Archive & ar)
+bool Resource::load(const String & custom_path)
 {
-    dlog("Calling pack unpack in base");
-    noble_steed::pack_unpack(ar, *this);
+    std::ifstream file(custom_path);
+    String str;
+    if (file)
+    {
+        file >> str;
+        from_json(str);
+        ilog("Loaded {} in package {} from {}", name_, package_, custom_path);
+        return true;
+    }
+    else
+    {
+        wlog("Could not open file {}", custom_path);
+    }
+    return false;
+}
+
+bool Resource::load()
+{
+    return load(get_relative_path());
 }
 
 void Resource::initialize(const Variant_Map & init_params)
@@ -46,7 +85,8 @@ void Resource::terminate()
 
 String Resource::get_relative_path()
 {
-    return package_ + name_;
+    String ext = ns_ctxt.get_resource_extension(get_derived_info().m_type);
+    return package_ + name_ + ext;
 }
 
 const String & Resource::get_name()
@@ -77,10 +117,14 @@ void Resource::set_name(const String & name)
     if (id_ != -1 && hashed_id != id_)
     {
         String type_str(get_derived_info().m_type.get_name());
-        dlog("{} name changed from {} to {}", type_str, name_, name);
-        change_id(id_, hashed_id);
-        id_ = hashed_id;
-        name_ = name;
+        bool do_change = true;
+        change_id(id_, hashed_id, &do_change);
+        if (do_change)
+        {
+            dlog("{} name changed from {} to {}", type_str, name_, name);
+            id_ = hashed_id;
+            name_ = name;
+        }
     }
 }
 
@@ -97,10 +141,14 @@ void Resource::set_package(const String & package_name)
     if (id_ != -1 && hashed_id != id_)
     {
         String type_str(get_derived_info().m_type.get_name());
-        dlog("{} package changed from {} to {}", type_str, package_, package_name);
-        change_id(id_, hashed_id);
-        id_ = hashed_id;
-        package_ = package_name;
+        bool do_change = true;
+        change_id(id_, hashed_id, &do_change);
+        if (do_change)
+        {
+            dlog("{} package changed from {} to {}", type_str, package_, package_name);
+            id_ = hashed_id;
+            package_ = package_name;
+        }
     }
 }
 
@@ -115,8 +163,10 @@ RTTR_REGISTRATION
 
     registration::class_<Resource>("Resource")
         .constructor<>()
-        .method("save", &Resource::save, registration::public_access)
-        .method("load", &Resource::load, registration::public_access)
+        .method("save_json", select_overload<bool(void)>(&Resource::save), registration::public_access)
+        .method("load_json", select_overload<bool(void)>(&Resource::load), registration::public_access)
+        .method("save_json", select_overload<bool(const String &)>(&Resource::save), registration::public_access)
+        .method("load_json", select_overload<bool(const String &)>(&Resource::load), registration::public_access)
         .method("pack_unpack", &Resource::pack_unpack, registration::public_access)
         .method("initialize", &Resource::initialize, registration::public_access)
         .method("terminate", &Resource::terminate, registration::public_access)

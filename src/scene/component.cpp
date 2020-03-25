@@ -36,6 +36,5 @@ RTTR_REGISTRATION
     registration::class_<Component>("Component")
         .constructor<>()
         .method("initialize", &Component::initialize, registration::public_access)
-        .method("terminate", &Component::terminate, registration::public_access)
-        .property("owner_id", &Component::owner_id_, registration::private_access);
+        .method("terminate", &Component::terminate, registration::public_access);
 }

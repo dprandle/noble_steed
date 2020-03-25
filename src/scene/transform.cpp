@@ -19,5 +19,6 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Transform>("Transform").constructor<>();
+    registration::class_<Transform>("Transform").constructor<>()
+    .property("position",&Transform::position_,registration::private_access);
 }

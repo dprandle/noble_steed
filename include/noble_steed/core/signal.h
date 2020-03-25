@@ -47,10 +47,15 @@ struct Slot_Concrete : public Slot<Args...>
 template<class... Args>
 struct Signal
 {
+    Signal():con_slots() {}
+    
+    // Do not copy signals!
+    Signal(const Signal<Args...> & copy):con_slots() {}
+
     ~Signal()
     {
         while (con_slots.begin() != con_slots.end())
-            assist_delete(con_slots.back());
+            assist_delete(*con_slots.begin());
     }
 
     void operator()(Args... args)
@@ -92,6 +97,9 @@ class Router
 {
   public:
     Router();
+
+    Router(const Router & copy);
+
     ~Router();
 
     void disconnect_all();

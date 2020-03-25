@@ -4,6 +4,7 @@
 #include <noble_steed/scene/world.h>
 #include <noble_steed/core/resource.h>
 #include <noble_steed/core/resource_cache.h>
+#include <noble_steed/scene/world_chunk.h>
 
 using namespace noble_steed;
 
@@ -35,6 +36,19 @@ class silly_resource : public Resource
     }
 };
 
+#include <rttr/registration>
+
+RTTR_REGISTRATION
+{
+    using namespace rttr;
+    using namespace noble_steed;
+
+    registration::class_<silly_resource>("silly_resource")
+        .constructor<>()
+        .property("scooby", &silly_resource::scooby, registration::public_access)
+        .property("dooby", &silly_resource::dooby, registration::public_access);
+}
+
 int main()
 {
     Context ctxt;
@@ -46,33 +60,34 @@ int main()
     
     ctxt.initialize(vm);
     ctxt.register_system_type<silly_system>(vm);
-    ctxt.register_component_type<Transform>(vm);
-    ctxt.register_resource_type<silly_resource>(vm);
+    ctxt.register_resource_type<silly_resource>(".silly",vm);
 
     World * world = ctxt.get_world();
     Entity * ent = world->create();
     ent->set_name("BlaBla");
-    auto sys = world->add_system<silly_system>();
-    world->add_system<silly_system>();
-    world->remove_system<silly_system>();
-    world->remove_system<silly_system>();
+    
     world->add_system<silly_system>();
 
     silly_resource * res = ctxt.get_resource_cache()->add<silly_resource>("Scooby.mdl");
-    sys->router_.connect(sys, &silly_system::received_id_change, res->change_id);
 
-    res->set_name("OhNo.jpg");
-    res->set_package("Jeese_Louise/");
     res->set_display_name("Poopity poo");
     res->scooby = 1;
     res->save();
 
+    silly_resource * cpy = ctxt.get_resource_cache()->add<silly_resource>(*res,"Copy");
+    cpy->save();
 
-    Transform * tform = ent->add<Transform>();
-    ent->remove<Transform>();
-    tform = ent->add<Transform>();
-    ent->add<Transform>();
-    ent->remove(tform);
+    silly_resource * finally = ctxt.get_resource_cache()->add<silly_resource>("Finally/There");
+    finally->set_name("Scooby.mdl");
+    finally->save();
+
+    World_Chunk * wc = ctxt.get_resource_cache()->add<World_Chunk>("funky_town/my_blue_panet");
+    wc->add(ent);
+
+    Entity * ent2 = wc->add();
+
+    wc->save();
+
     ctxt.terminate();
     return 0;
 }

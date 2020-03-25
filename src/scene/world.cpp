@@ -19,7 +19,7 @@ void World::initialize(const Variant_Map & init_params)
     auto fiter = init_params.find(ENTITY_ALLOC_KEY);
     if (fiter != init_params.end() && fiter->second.is_type<u16>())
         alloc_amount = fiter->second.get_value<u16>();
-    
+
     ent_ptrs_.reserve(alloc_amount);
 }
 
@@ -28,7 +28,7 @@ void World::terminate()
     ilog("Terminating world");
     while (systems_.begin() != systems_.end())
         remove_system_(systems_.begin()->first);
-    
+
     while (!ent_ptrs_.empty())
         destroy(ent_ptrs_.back());
 }
@@ -79,23 +79,19 @@ void World::remove_system_(u64 type_id)
     }
 }
 
-Entity * World::create(const Entity * copy)
+Entity * World::create(const Entity * copy, const Variant_Map & init_params)
 {
     PoolAllocator * ent_allocator = ns_ctxt.get_entity_allocator();
     sizet ent_size = sizeof(Entity);
     ilog("Allocated {0} bytes for entity", ent_size);
     Entity * ent = static_cast<Entity *>(ent_allocator->Allocate(ent_size));
 
-    // If crashing here means not enough mem for entities - allocate more
-    assert(ent != nullptr);
-
-    ent_ptrs_.push_back(ent);
     if (copy != nullptr)
         new (ent) Entity(*copy);
     else
         new (ent) Entity();
 
-    // Assign id to entity
+    // Assign id to entity - if crashes here then ent is nullptr likely from insufficient memory block (up the size)
     if (!ent_id_stack_.empty())
     {
         ent->set_id(ent_id_stack_.top());
@@ -107,35 +103,40 @@ Entity * World::create(const Entity * copy)
         ent->set_id(ent_current_id_);
     }
 
-    ent->initialize();
+    ent_ptrs_.push_back(ent);
+    auto ret = entity_ids_.emplace(ent->get_id(), ent);
+
+    // Should always be true - if an entity isn't given a unique id there is something waaay wacko
+    assert(ret.second);
+
+    ent->initialize(init_params);
     return ent;
 }
 
-void World::destroy(Entity * ent)
+Entity * World::get(u64 id)
 {
+    auto fiter = entity_ids_.find(id);
+    if (fiter != entity_ids_.end())
+        return fiter->second;
+    return nullptr;
+}
+
+bool World::destroy(u64 id)
+{
+    return destroy(get(id));
+}
+
+bool World::destroy(Entity * ent)
+{
+    if (ent == nullptr)
+        return false;
+    
     PoolAllocator * ent_allocator = ns_ctxt.get_entity_allocator();
 
     ent->terminate();
 
-    // Take the id back
-    ent_id_stack_.push(ent->get_id());
-
-    // This should also call the signal to change the comp id
-    ent->set_id(0);
-
-    // Calling the destructor of the ent will automatically disconnect its signals so no
-    // need to do that here
-    ent->~Entity();
-
-    ilog("De-allocated {} bytes for entity {}", sizeof(Entity), ent->get_name());
-    ent_allocator->Free(ent);
-
-    if (ent_ptrs_.empty())
-    {
-        elog("There was no pointer in ent_ptrs_ vector which means the context has lost track of "
-             "it somehow");
-        return;
-    }
+    sizet rem = entity_ids_.erase(ent->get_id());
+    bool removed_from_vec = false;
 
     // Find the pointer - copy the last element of the vector to overwrite the pointer's value
     // and decrease the vector size by one
@@ -144,10 +145,31 @@ void World::destroy(Entity * ent)
         if (ent == ent_ptrs_[i])
         {
             ent_ptrs_[i] = ent_ptrs_[ent_ptrs_.size() - 1];
+            removed_from_vec = true;
             break;
         }
     }
     ent_ptrs_.pop_back();
+
+    // Make sure we were able to correctly remove the id from both containers
+    assert(removed_from_vec == (rem == 1));
+
+    if (!removed_from_vec)
+    {
+        wlog("Could not remove {} from world... isn't included in world's memory. Terminated entity and returned without destroying it.", ent->get_name());
+        return false;
+    }
+
+    // Take the id back
+    ent_id_stack_.push(ent->get_id());
+
+    // Calling the destructor of the ent will automatically disconnect its signals so no
+    // need to do that here
+    ent->~Entity();
+
+    ilog("De-allocated {} bytes for entity {}", sizeof(Entity), ent->get_name());
+    ent_allocator->Free(ent);
+    return true;
 }
 } // namespace noble_steed
 
@@ -157,12 +179,5 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<World>("World")
-        .constructor<>()
-        .method("initialize", &World::initialize, registration::public_access)
-        .method("terminate", &World::terminate, registration::public_access)
-        .method("create", &World::create, registration::public_access)
-        .method("destroy", &World::destroy, registration::public_access);
-    // .method("log_internal", &System::log_internal, registration::public_access)
-    // .property("internal", &System::get_internal, &System::set_internal);
+    registration::class_<World>("World").constructor<>();
 }

@@ -6,14 +6,21 @@
 #include <noble_steed/scene/world.h>
 #include <noble_steed/core/resource_cache.h>
 
+// Defualt types to register
+#include <noble_steed/scene/transform.h>
+#include <noble_steed/scene/world_chunk.h>
+
 namespace noble_steed
 {
 Context * Context::s_this_ = nullptr;
+const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
+const String INIT_CWD_KEY = "cwd";
 
 Context::Context()
     : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
       comp_allocators_(),
       resource_allocators_(),
+      extension_resource_type_(),
       type_factories_(),
       ent_allocator_(nullptr),
       logger_(nullptr),
@@ -28,6 +35,26 @@ Context::~Context()
 
 void Context::initialize(const Variant_Map & init_params)
 {
+    auto fiter = init_params.find(INIT_CWD_KEY);
+    if (fiter != init_params.end())
+    {
+        if (fiter->second.is_type<String>())
+        {
+            String val = fiter->second.get_value<String>();
+            if (fs::exists(val))
+            {
+                fs::current_path(val);
+            }
+            else
+            {
+                wlog("Could not change cwd to {} as path does not exist", val);
+            }
+        }
+        else
+        {
+            wlog("Passed in recognized key {} but value type was {} instead of string", INIT_CWD_KEY, String(fiter->second.get_type().get_name()));
+        }
+    }
     // Create log directory
     fs::create_directory("logs");
 
@@ -44,6 +71,8 @@ void Context::initialize(const Variant_Map & init_params)
     // Do rest of initialization
     resource_cache_->initialize(init_params);
     world_->initialize(init_params);
+
+    register_default_types_();
 }
 
 void Context::terminate()
@@ -56,6 +85,7 @@ void Context::terminate()
     {
         comp_allocators_.begin()->second->Reset();
         free(comp_allocators_.begin()->second);
+        comp_allocators_.erase(comp_allocators_.begin());
     }
 
     // Free all entity memory
@@ -68,6 +98,7 @@ void Context::terminate()
     {
         resource_allocators_.begin()->second->Reset();
         free(resource_allocators_.begin()->second);
+        resource_allocators_.erase(resource_allocators_.begin());
     }
 
     free(world_);
@@ -108,12 +139,47 @@ void Context::raw_free(void * to_free)
     mem_free_list_.Free(to_free);
 }
 
+u64 Context::get_extension_resource_type(const String & extension)
+{
+    std::hash<String> hsh;
+    u64 ret = -1;
+    auto fiter = extension_resource_type_.find(hsh(extension));
+    if (fiter != extension_resource_type_.end())
+        ret = fiter->second;
+    return ret;
+}
+
 void * Context::malloc_(const rttr::type & type)
 {
     sizet type_size = type.get_sizeof();
     if (type_size < MIN_ALLOC_SIZE)
         type_size = MIN_ALLOC_SIZE;
     return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);
+}
+void Context::register_default_types_()
+{
+    // Components
+    register_component_type<Transform>();
+    
+    // Resources
+    register_resource_type<World_Chunk>(".bbworld");
+}
+
+void Context::set_resource_extension_(const rttr::type & resource_type, const String & extension)
+{
+    resource_type_extension_[resource_type.get_id()] = extension;
+    std::hash<String> hsh;
+    extension_resource_type_[hsh(extension)] = resource_type.get_id();
+    ilog("Setting extension for resource type {} and id {} to {}",resource_type.get_name().to_string(),resource_type.get_id(),extension);
+}
+
+String Context::get_resource_extension(const rttr::type & resource_type)
+{
+    String ret;
+    auto fiter = resource_type_extension_.find(resource_type.get_id());
+    if (fiter != resource_type_extension_.end())
+        ret = fiter->second;
+    return ret;
 }
 
 PoolAllocator * Context::create_entity_allocator_(const Variant_Map & init_params)

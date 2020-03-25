@@ -3,15 +3,19 @@
 #include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
 #include <noble_steed/container/hash_map.h>
+#include <noble_steed/serialization/json_archive.h>
 
 namespace noble_steed
 {
 class Component;
 class World;
-class Entity
+class Entity: public JSON_Packable
 {
+    SLOT_OBJECT
+    RTTR_ENABLE(JSON_Packable)
   public:
     Entity();
+
     ~Entity();
 
     // add component
@@ -33,6 +37,8 @@ class Entity
 
     Component * add(const Component & copy);
 
+    void clear();
+
     template<class CompType>
     CompType * get()
     {
@@ -53,21 +59,26 @@ class Entity
 
     bool remove(Component * component);
 
-    void initialize();
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 
     void set_name(const String & name);
 
-    String get_name();
+    const String & get_name();
 
     void set_id(u32 id);
 
     u32 get_id();
 
+    void pack_unpack(JSON_Archive & ar);
+
     Signal<Pair<u32>> id_change;
 
   private:
+    
+    void pack_unpack_components(JSON_Archive & ar);
+
     Component * allocate_comp_(const rttr::type & type);
     
     Component * allocate_comp_(const rttr::type & type, const Component & copy);

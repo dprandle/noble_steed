@@ -1,18 +1,21 @@
 #pragma once
 
 #include <noble_steed/core/common.h>
+#include <noble_steed/core/signal.h>
 
 namespace noble_steed
 {
 class Resource;
 
-extern const String PACKAGE_DIRS_KEY;
-extern const String CURRENT_PACAKGE_KEY;
+extern const String INIT_PACKAGE_DIRS_KEY;
+extern const String INIT_CURRENT_PACKAGE_KEY;
+
 extern const String CORE_PACKAGE_NAME;
 extern const String NONE_LOADED_PACKAGE_NAME;
 
 class Resource_Cache
 {
+    SLOT_OBJECT
   public:
     Resource_Cache();
 
@@ -30,12 +33,12 @@ class Resource_Cache
     ResType * add(const ResType & copy, const String & name, const String & package=String())
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(add(t, copy, name, package));
+        return static_cast<ResType *>(add_from(copy, name, package));
     }
 
     Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params);
 
-    Resource * add(const Resource & copy, const String & name, const String & package);
+    Resource * add_from(const Resource & copy, const String & name, const String & package);
 
     template<class ResType>
     ResType * get(u64 id)
@@ -70,6 +73,9 @@ class Resource_Cache
     void set_current_package(String package);
 
   private:
+
+    void on_resource_name_change_(u64 old_id, u64 new_id, bool * do_change);
+
     Resource * allocate_resource_(const rttr::type & type);
 
     Resource * allocate_resource_(const rttr::type & type, const Resource & copy);

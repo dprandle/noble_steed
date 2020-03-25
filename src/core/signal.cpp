@@ -2,7 +2,11 @@
 
 namespace noble_steed
 {
-Router::Router()
+Router::Router(): con_slots()
+{}
+
+// This will prevent copying!
+Router::Router(const Router & copy): con_slots()
 {}
 
 Router::~Router()

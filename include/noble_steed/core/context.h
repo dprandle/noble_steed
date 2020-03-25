@@ -10,7 +10,11 @@ namespace noble_steed
 
 // A Pool allocator must at least allocate a single chunk size of this size - ie even if a component is 5 bytes, each
 // component will still be allocated 8 bytes
-const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
+extern const uint8_t MIN_CHUNK_ALLOC_SIZE;
+
+// Set the CWD to this absolute path on startup - at least try to
+extern const String INIT_CWD_KEY;
+
 
 class Logger;
 class Resource_Cache;
@@ -88,7 +92,7 @@ class Context
     }
 
     template<class T>
-    void register_resource_type(const Variant_Map & init_params=Variant_Map())
+    void register_resource_type(const String & extension, const Variant_Map & init_params=Variant_Map())
     {
         Factory * fac = nullptr;
         rttr::type t = rttr::type::get<T>();
@@ -99,7 +103,27 @@ class Context
         PoolAllocator * alloc = create_resource_allocator_(t, init_params);
         fac = malloc<Resource_Factory_Type<T>>(alloc);
         type_factories_[t.get_id()] = fac;
+
+        set_resource_extension_(t,extension);
     }
+
+    template<class T>
+    void set_resource_extension(const String & extension)
+    {
+        rttr::type t = rttr::type::get<T>();
+        set_resource_extension_(t,extension);
+    }
+
+    template<class T>
+    String get_resource_extension()
+    {
+        rttr::type t = rttr::type::get<T>();
+        return get_resource_extension(t);
+    }
+
+    String get_resource_extension(const rttr::type & resource_type);
+
+    u64 get_extension_resource_type(const String & extension);
 
     Factory * get_base_factory(const rttr::type & obj_type);
 
@@ -120,6 +144,10 @@ class Context
   private:
     void * malloc_(const rttr::type & type);
 
+    void register_default_types_();
+
+    void set_resource_extension_(const rttr::type & resource_type, const String & extension);
+
     PoolAllocator * create_entity_allocator_(const Hash_Map<String, rttr::variant> & init_params);
 
     PoolAllocator * create_component_allocator_(const rttr::type & type, const Variant_Map & init_params);
@@ -131,6 +159,11 @@ class Context
     Hash_Map<u64, PoolAllocator *> comp_allocators_;
 
     Hash_Map<u64, PoolAllocator *> resource_allocators_;
+
+    // Key is hashed extension including the dot, and value is resource type id
+    Hash_Map<u64, u64> extension_resource_type_;
+
+    Hash_Map<u64, String> resource_type_extension_;
 
     Hash_Map<u64, Factory *> type_factories_;
 

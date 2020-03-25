@@ -6,9 +6,9 @@
 
 namespace noble_steed
 {
+const String INIT_PACKAGE_DIRS_KEY = "Package_Dirs";
+const String INIT_CURRENT_PACKAGE_KEY = "Current_Package";
 
-const String PACKAGE_DIRS_KEY = "Package_Dirs";
-const String CURRENT_PACAKGE_KEY = "Current_Package";
 const String CORE_PACKAGE_NAME = "data/core";
 const String NONE_LOADED_PACKAGE_NAME = "data/scooby";
 
@@ -29,7 +29,7 @@ Resource * Resource_Cache::add(const rttr::type & resource_type, const String & 
     return resource;
 }
 
-Resource * Resource_Cache::add(const Resource & copy, const String & name, const String & package)
+Resource * Resource_Cache::add_from(const Resource & copy, const String & name, const String & package)
 {
     rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
     Resource * resource = allocate_resource_(t, copy);
@@ -108,7 +108,7 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing resource cache");
 
-    auto iter = init_params.find(PACKAGE_DIRS_KEY);
+    auto iter = init_params.find(INIT_PACKAGE_DIRS_KEY);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<Vector<String>>())
@@ -122,7 +122,7 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
         }
     }
 
-    iter = init_params.find(CURRENT_PACAKGE_KEY);
+    iter = init_params.find(INIT_CURRENT_PACKAGE_KEY);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<String>())
@@ -137,9 +137,9 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
 
     if (loaded_packages_.empty())
     {
-        load_package("data/scooby", true);
+        load_package(NONE_LOADED_PACKAGE_NAME, true);
     }
-    load_package("data/core", false);
+    load_package(CORE_PACKAGE_NAME, false);
 }
 
 void Resource_Cache::terminate()
@@ -161,17 +161,54 @@ bool Resource_Cache::load_package(String package, bool make_current)
     auto inserted = loaded_packages_.emplace(package);
     if (inserted.second)
     {
-        
-        //fs::create_directory(fs::current_path() + package);
+        String path_str = package.substr(0, package.size() - 1);
+        if (fs::is_directory(path_str) || fs::create_directories(path_str))
+        {
+            ilog("Successfully loaded package {}", package);
+        }
+        else
+        {
+            wlog("Could not load package as package dir {} could not be created - is this a valid path?", package);
+            loaded_packages_.erase(package);
+            return false;
+        }
 
         // Load all resources recursively in this directory!
+        fs::path dir_path(path_str);
+        auto dir_and_file_iter = dir_path.begin();
 
         if (make_current)
             set_current_package(package);
 
         return true;
     }
+
+    wlog("Could not load package {} as it's already loaded", package);
     return false;
+}
+
+void Resource_Cache::on_resource_name_change_(u64 old_id, u64 new_id, bool * do_change)
+{
+    auto fiter = resources_.find(old_id);
+    if (fiter != resources_.end())
+    {
+        Resource * res = fiter->second;
+        auto success = resources_.emplace(new_id,res);
+        if (success.second)
+        {
+            resources_.erase(fiter);
+        }
+        else
+        {
+            *do_change = false;
+            dlog("Name change denied by manager because name matches existing resource");
+        }
+    }
+    else
+    {
+        elog("Couldn't find old id {} - this is a bug",old_id);
+    }
+    
 }
 
 void Resource_Cache::unload_package(String package)
@@ -186,6 +223,7 @@ void Resource_Cache::set_current_package(String package)
     if (fiter != loaded_packages_.end())
     {
         current_package_ = package;
+        ilog("Set current package to {}", current_package_);
     }
     else
     {
@@ -227,6 +265,7 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     auto fiter = resources_.emplace(res->get_id(), res);
     if (fiter.second)
     {
+        sig_connect(res->change_id,Resource_Cache::on_resource_name_change_);
         res->initialize(init_params);
     }
     else

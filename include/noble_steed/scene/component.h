@@ -3,16 +3,16 @@
 #include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
 #include <rttr/registration_friend>
+#include <noble_steed/serialization/json_archive.h>
 
 namespace noble_steed
 {
-class Component
+class Component: public JSON_Packable
 {
     RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE()
+    RTTR_ENABLE(JSON_Packable)
     SLOT_OBJECT
     friend class Entity;
-
   public:
     Component();
     virtual ~Component();

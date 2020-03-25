@@ -12,7 +12,13 @@ Entity::Entity() : id_(0), name_()
 Entity::~Entity()
 {}
 
-void Entity::initialize()
+void Entity::clear()
+{
+    while (comps_.begin() != comps_.end())
+        remove(comps_.begin()->second);
+}
+
+void Entity::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing entity with name {} and id {}", name_, id_);
 }
@@ -28,7 +34,7 @@ void Entity::set_name(const String & name)
     name_ = name;
 }
 
-String Entity::get_name()
+const String & Entity::get_name()
 {
     return name_;
 }
@@ -49,12 +55,47 @@ u32 Entity::get_id()
     return id_;
 }
 
+void Entity::pack_unpack(JSON_Archive & ar)
+{
+    JSON_Packable::pack_unpack(ar);
+    pack_unpack_components(ar);
+}
+
+void Entity::pack_unpack_components(JSON_Archive & ar)
+{
+    sizet cnt = comps_.size();
+    noble_steed::pack_unpack(ar, cnt);
+    if (ar.io_dir == Archive::DIR_IN)
+    {
+        for (sizet i = 0; i < cnt; ++i)
+        {
+            String type_str;
+            noble_steed::pack_unpack(ar, type_str);
+            rttr::type t = rttr::type::get_by_name(type_str);
+            Component * c = add(t);
+            c->pack_unpack(ar);
+        }
+    }
+    else
+    {
+        auto iter = comps_.begin();
+        while (iter != comps_.end())
+        {
+            rttr::type t = iter->second->get_type();
+            String type_str = t.get_name().to_string();
+            noble_steed::pack_unpack(ar, type_str);
+            iter->second->pack_unpack(ar);
+            ++iter;
+        }
+    }
+}
+
 Component * Entity::add(const rttr::type & comp_type, const Variant_Map & init_params)
 {
     Component * comp = allocate_comp_(comp_type);
-    if (!add_component_(comp,comp_type,init_params))
+    if (!add_component_(comp, comp_type, init_params))
     {
-        deallocate_comp_(comp,comp_type);
+        deallocate_comp_(comp, comp_type);
         return nullptr;
     }
     return comp;
@@ -64,10 +105,10 @@ Component * Entity::add(const Component & copy)
 {
     // Get derived info is non const likely because of the m_ptr returned with m_type
     rttr::type t = const_cast<Component &>(copy).get_derived_info().m_type;
-    Component * comp = allocate_comp_(t,copy);
-    if (!add_component_(comp,t,Variant_Map()))
+    Component * comp = allocate_comp_(t, copy);
+    if (!add_component_(comp, t, Variant_Map()))
     {
-        deallocate_comp_(comp,t);
+        deallocate_comp_(comp, t);
         return nullptr;
     }
     return comp;
@@ -104,18 +145,18 @@ Component * Entity::remove_component_(const rttr::type & type)
 Component * Entity::allocate_comp_(const rttr::type & type)
 {
     Component_Factory * fac = ns_ctxt.get_factory<Component_Factory>(type);
-    assert(fac!=nullptr);
+    assert(fac != nullptr);
     Component * comp = fac->create();
-    assert(comp!=nullptr);
+    assert(comp != nullptr);
     return comp;
 }
 
 Component * Entity::allocate_comp_(const rttr::type & type, const Component & copy)
 {
     Component_Factory * fac = ns_ctxt.get_factory<Component_Factory>(type);
-    assert(fac!=nullptr);
+    assert(fac != nullptr);
     Component * comp = fac->create(copy);
-    assert(comp!=nullptr);
+    assert(comp != nullptr);
     return comp;
 }
 
@@ -152,7 +193,7 @@ bool Entity::remove(const rttr::type & type)
     Component * comp = remove_component_(type);
     if (comp == nullptr)
         return false;
-    deallocate_comp_(comp,type);
+    deallocate_comp_(comp, type);
     return true;
 }
 
@@ -170,8 +211,6 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Entity>("Entity").constructor<>();
-    // .property("id_", &Component::initialize, registration::public_access)
-    // .property("terminate", &Component::terminate, registration::public_access)
-    // .property("owner_id", &Component::owner_id_, registration::private_access);
+    registration::class_<Entity>("Entity").constructor<>()
+    .property("name", &Entity::get_name,&Entity::set_name, registration::public_access);
 }

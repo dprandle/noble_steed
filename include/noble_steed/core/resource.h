@@ -3,6 +3,7 @@
 #include <noble_steed/core/common.h>
 #include <noble_steed/core/signal.h>
 #include <rttr/registration_friend>
+#include <noble_steed/serialization/json_archive.h>
 
 
 namespace noble_steed
@@ -10,20 +11,26 @@ namespace noble_steed
 
 struct JSON_Archive;
 
-class Resource
+class Resource : public JSON_Packable
 {
     RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE()
+    RTTR_ENABLE(JSON_Packable)
     SLOT_OBJECT
   public:
     Resource();
+    
     ~Resource();
 
-    virtual void save();
+    virtual bool save();
 
-    virtual void load();
+    // Save data to custom file path - no regards to naming, packages, or extensions.
+    virtual bool save(const String & custom_path);
 
-    virtual void pack_unpack(JSON_Archive & ar);
+    virtual bool load();
+
+    // Load data from custom_path - no regards to naming, packages, or extensions. Custom path must be valid
+    // file to succeed
+    virtual bool load(const String & custom_path);
 
     virtual void initialize(const Variant_Map & init_params);
 
@@ -45,7 +52,7 @@ class Resource
 
     u64 get_id();
 
-    Signal<u64, u64> change_id;
+    Signal<u64, u64, bool*> change_id;
 
   private:
     String package_;
