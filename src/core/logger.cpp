@@ -12,7 +12,7 @@ Logger::Logger()// : logger(nullptr)
 Logger::~Logger()
 {}
 
-void Logger::initialize()
+void Logger::initialize(const Variant_Map & init_params)
 {
     auto console_sink_deleter = [](spdlog::sinks::stdout_color_sink_mt * sink) { ns_ctxt.free(sink); };
     std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink(

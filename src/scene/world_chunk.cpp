@@ -19,12 +19,20 @@ void World_Chunk::initialize(const Variant_Map & init_params)
 
 void World_Chunk::terminate()
 {
+    clear();
     Resource::terminate();
+}
+
+void World_Chunk::clear()
+{
+    while (ents_.begin() != ents_.end())
+        remove(ents_.begin()->first,true);
+    ents_ptrs_.clear();
 }
 
 bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
 {
-    auto added = ents_.emplace(to_add->get_id(),to_add);
+    auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
     {
         to_add->add<Transform>(init_params);
@@ -36,14 +44,14 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
 Entity * World_Chunk::add(const Variant_Map & init_params)
 {
     Entity * ent = ns_ctxt.get_world()->create(nullptr, init_params);
-    if (add(ent,init_params))
+    if (add(ent, init_params))
         return ent;
     bool dest = ns_ctxt.get_world()->destroy(ent);
     assert(dest);
     return nullptr;
 }
 
-Entity * World_Chunk::get(u64 id)
+Entity * World_Chunk::get(u32 id)
 {
     auto fiter = ents_.find(id);
     if (fiter != ents_.end())
@@ -51,7 +59,7 @@ Entity * World_Chunk::get(u64 id)
     return nullptr;
 }
 
-bool World_Chunk::remove(u64 id, bool remove_from_world)
+bool World_Chunk::remove(u32 id, bool remove_from_world)
 {
     return remove(get(id));
 }
@@ -60,11 +68,11 @@ bool World_Chunk::remove(Entity * ent, bool remove_from_world)
 {
     if (ent == nullptr)
         return false;
-    
+
     sizet cnt = ents_.erase(ent->get_id());
     if (cnt != 1)
         return false;
-    
+
     ent->remove<Transform>();
 
     bool ret = true;
@@ -74,28 +82,50 @@ bool World_Chunk::remove(Entity * ent, bool remove_from_world)
     return ret;
 }
 
-void World_Chunk::pack_unpack(JSON_Archive & ar)
+void World_Chunk::pack_begin(JSON_Archive::Direction io_dir)
 {
-    Resource::pack_unpack(ar);
-    sizet cnt = ents_.size();
-    noble_steed::pack_unpack(ar,cnt);
-    if (ar.io_dir == Archive::DIR_IN)
-    {
-        for (sizet i = 0; i < cnt; ++i)
-        {
-            Entity * ent = add();
-            ent->pack_unpack(ar);
-        }
-    }
-    else
+    if (io_dir == JSON_Archive::DIR_OUT)
     {
         auto iter = ents_.begin();
         while (iter != ents_.end())
         {
-            iter->second->pack_unpack(ar);
+            ents_ptrs_.push_back(iter->second);
+            ++iter;
+        }
+    }
+    else
+    {
+        clear();
+    }
+}
+
+void World_Chunk::pack_end(JSON_Archive::Direction io_dir)
+{
+    if (io_dir == JSON_Archive::DIR_OUT)
+    {
+        ents_ptrs_.clear();
+    }
+    else
+    {
+        auto iter = ents_ptrs_.begin();
+        while (iter != ents_ptrs_.end())
+        {
+            ents_[(*iter)->get_id()] = *iter;
             ++iter;
         }
     }
 }
 
 } // namespace noble_steed
+
+#include <rttr/registration>
+
+RTTR_REGISTRATION
+{
+    using namespace rttr;
+    using namespace noble_steed;
+
+    registration::class_<World_Chunk>("noble_steed::World_Chunk")
+        .constructor<>()
+        .property("entities", &World_Chunk::ents_ptrs_, registration::public_access);
+}

@@ -1,6 +1,8 @@
 #include <noble_steed/serialization/json_archive.h>
 
 #include <noble_steed/core/logger.h>
+#include <noble_steed/core/context.h>
+
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -10,6 +12,13 @@
 #include <rapidjson/prettywriter.h> // for stringify JSON
 #include <rapidjson/document.h>     // rapidjson's DOM-style API
 #include <rttr/type>
+#include <rttr/method.h>
+
+#include <noble_steed/scene/transform.h>
+#include <noble_steed/core/resource.h>
+#include <noble_steed/scene/entity.h>
+#include <noble_steed/scene/component.h>
+#include <noble_steed/core/system.h>
 
 using namespace rapidjson;
 using namespace rttr;
@@ -18,7 +27,6 @@ using namespace noble_steed;
 namespace
 {
 // BEGINNING OF FROM JSON PART
-
 void fromjson_recursively(instance obj, Value & json_object);
 
 variant extract_basic_types(Value & json_value)
@@ -71,10 +79,41 @@ static void write_array_recursively(variant_sequential_view & view, Value & json
         }
         else if (json_index_value.IsObject())
         {
-            variant var_tmp = view.get_value(i);
-            variant wrapped_var = var_tmp.extract_wrapped_value();
-            fromjson_recursively(wrapped_var, json_index_value);
-            view.set_value(i, wrapped_var);
+            rttr::type t = view.get_value_type();
+            variant extracted_value;
+
+            Value::MemberIterator ret = json_index_value.FindMember("type_id");
+            if (ret != json_index_value.MemberEnd())
+            {
+                if (ret->value.IsUint())
+                {
+                    u32 type_id = ret->value.GetUint();
+                    auto fac = ns_ctxt.get_factory(type_id);
+                    Context_Obj * cobj = fac->create();
+                    rttr::type dt = cobj->get_derived_info().m_type;
+                    if (dt.is_derived_from<Resource>())
+                        extracted_value = static_cast<Resource *>(cobj);
+                    else if (dt.is_derived_from<Component>())
+                        extracted_value = static_cast<Component *>(cobj);
+                    else if (dt.is_derived_from<Entity>())
+                        extracted_value = static_cast<Entity *>(cobj);
+                    else if (dt.is_derived_from<System>())
+                        extracted_value = static_cast<System *>(cobj);
+                    else
+                        extracted_value = cobj;
+                }
+                else
+                {
+                    elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
+                }
+            }
+            else
+            {
+                variant var_tmp = view.get_value(i);
+                extracted_value = var_tmp.extract_wrapped_value();
+            }
+            fromjson_recursively(extracted_value, json_index_value);
+            view.set_value(i, extracted_value);
         }
         else
         {
@@ -89,19 +128,49 @@ static void write_array_recursively(variant_sequential_view & view, Value & json
 variant extract_value(Value::MemberIterator & itr, const type & t)
 {
     auto & json_value = itr->value;
+
     variant extracted_value = extract_basic_types(json_value);
     const bool could_convert = extracted_value.convert(t);
+    dlog("Extracting value for type {}", t.get_name().to_string());
     if (!could_convert)
     {
         if (json_value.IsObject())
         {
-            constructor ctor = t.get_constructor();
-            for (auto & item : t.get_constructors())
+            Value::MemberIterator ret = json_value.FindMember("type_id");
+            if (ret != json_value.MemberEnd())
             {
-                if (item.get_instantiated_type() == t)
-                    ctor = item;
+                if (ret->value.IsUint())
+                {
+                    u32 type_id = ret->value.GetUint();
+                    auto fac = ns_ctxt.get_factory(type_id);
+                    Context_Obj * cobj = fac->create();
+                    rttr::type dt = cobj->get_derived_info().m_type;
+                    if (dt.is_derived_from<Resource>())
+                        extracted_value = static_cast<Resource *>(cobj);
+                    else if (dt.is_derived_from<Component>())
+                        extracted_value = static_cast<Component *>(cobj);
+                    else if (dt.is_derived_from<Entity>())
+                        extracted_value = static_cast<Entity *>(cobj);
+                    else if (dt.is_derived_from<System>())
+                        extracted_value = static_cast<System *>(cobj);
+                    else
+                        extracted_value = cobj;
+                }
+                else
+                {
+                    elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
+                }
             }
-            extracted_value = ctor.invoke();
+            else
+            {
+                constructor ctor = t.get_constructor();
+                for (auto & item : t.get_constructors())
+                {
+                    if (item.get_instantiated_type() == t)
+                        ctor = item;
+                }
+                extracted_value = ctor.invoke();
+            }
             fromjson_recursively(extracted_value, json_value);
         }
     }
@@ -109,7 +178,7 @@ variant extract_value(Value::MemberIterator & itr, const type & t)
     return extracted_value;
 }
 
-static void write_associative_view_recursively(variant_associative_view & view, Value & json_array_value)
+static void write_associative_view_recursively(variant_associative_view & view, Value & json_array_value, bool update_key_on_load)
 {
     for (SizeType i = 0; i < json_array_value.Size(); ++i)
     {
@@ -123,9 +192,21 @@ static void write_associative_view_recursively(variant_associative_view & view, 
             {
                 auto key_var = extract_value(key_itr, view.get_key_type());
                 auto value_var = extract_value(value_itr, view.get_value_type());
+
                 if (key_var && value_var)
                 {
-                    view.insert(key_var, value_var);
+                    if (update_key_on_load)
+                    {
+                        rttr::type t = value_var.get_type();
+                        auto prop = t.get_property("id");
+                        key_var = prop.get_value(value_var);
+                    }
+
+                    auto ins = view.insert(key_var, value_var);
+                    if (!ins.second)
+                    {
+                        elog("Could not insert key {}", key_var.to_uint32());
+                    }
                 }
             }
         }
@@ -136,6 +217,79 @@ static void write_associative_view_recursively(variant_associative_view & view, 
                 view.insert(extracted_value);
         }
     }
+}
+
+void fromjson_recursively(instance obj2, Value & json_object)
+{
+    instance obj = obj2.get_type().get_raw_type().is_wrapper() ? obj2.get_wrapped_instance() : obj2;
+    rttr::type der_type = obj.get_derived_type();
+
+    auto func = der_type.get_method("pack_begin");
+    if (func.is_valid())
+        func.invoke(obj, JSON_Archive::DIR_IN);
+
+    const auto prop_list = der_type.get_properties();
+    for (auto prop : prop_list)
+    {
+        Value::MemberIterator ret = json_object.FindMember(prop.get_name().data());
+        if (ret == json_object.MemberEnd())
+            continue;
+        const type value_t = prop.get_type();
+
+        auto & json_value = ret->value;
+        dlog("Looking at property name {} with type {}", prop.get_name().to_string(), value_t.get_name().to_string());
+        switch (json_value.GetType())
+        {
+        case kArrayType: {
+            variant var;
+            if (value_t.is_sequential_container())
+            {
+                var = prop.get_value(obj);
+                auto view = var.create_sequential_view();
+                write_array_recursively(view, json_value);
+            }
+            else if (value_t.is_associative_container())
+            {
+                var = prop.get_value(obj);
+                bool update_key_on_load = prop.get_metadata("UPDATE_KEY_WITH_ID_ON_LOAD").is_valid();
+                auto associative_view = var.create_associative_view();
+                write_associative_view_recursively(associative_view, json_value, update_key_on_load);
+            }
+
+            prop.set_value(obj, var);
+            break;
+        }
+        case kObjectType: {
+            variant var = prop.get_value(obj);
+            fromjson_recursively(var, json_value);
+            dlog("Should be setting prop {} to {}", prop.get_name().to_string(), var.get_type().get_name().to_string());
+            prop.set_value(obj, var);
+            break;
+        }
+        default: {
+            variant extracted_value = extract_basic_types(json_value);
+            if (extracted_value.convert(value_t)) // REMARK: CONVERSION WORKS ONLY WITH "const type", check whether this is correct or not!
+                prop.set_value(obj, extracted_value);
+        }
+        }
+    }
+
+    func = der_type.get_method("pack_end");
+    if (func.is_valid())
+        func.invoke(obj, JSON_Archive::DIR_IN);
+}
+
+bool from_json(const String & json, rttr::instance obj)
+{
+    Document document; // Default template parameter uses UTF8 and MemoryPoolAllocator.
+
+    // "normal" parsing, decode strings to new buffers. Can use other input stream via ParseStream().
+    if (document.Parse(json.c_str()).HasParseError())
+        return 1;
+
+    fromjson_recursively(obj, document);
+
+    return true;
 }
 
 // END OF FROM JSON PART
@@ -306,62 +460,27 @@ bool write_variant(const variant & var, PrettyWriter<StringBuffer> & writer)
     return true;
 }
 
-// END OF TO JSON PART
-
-void fromjson_recursively(instance obj2, Value & json_object)
-{
-    instance obj = obj2.get_type().get_raw_type().is_wrapper() ? obj2.get_wrapped_instance() : obj2;
-    const auto prop_list = obj.get_derived_type().get_properties();
-
-    for (auto prop : prop_list)
-    {
-        Value::MemberIterator ret = json_object.FindMember(prop.get_name().data());
-        if (ret == json_object.MemberEnd())
-            continue;
-        const type value_t = prop.get_type();
-
-        auto & json_value = ret->value;
-        switch (json_value.GetType())
-        {
-        case kArrayType: {
-            variant var;
-            if (value_t.is_sequential_container())
-            {
-                var = prop.get_value(obj);
-                auto view = var.create_sequential_view();
-                write_array_recursively(view, json_value);
-            }
-            else if (value_t.is_associative_container())
-            {
-                var = prop.get_value(obj);
-                auto associative_view = var.create_associative_view();
-                write_associative_view_recursively(associative_view, json_value);
-            }
-
-            prop.set_value(obj, var);
-            break;
-        }
-        case kObjectType: {
-            variant var = prop.get_value(obj);
-            fromjson_recursively(var, json_value);
-            prop.set_value(obj, var);
-            break;
-        }
-        default: {
-            variant extracted_value = extract_basic_types(json_value);
-            if (extracted_value.convert(value_t)) // REMARK: CONVERSION WORKS ONLY WITH "const type", check whether this is correct or not!
-                prop.set_value(obj, extracted_value);
-        }
-        }
-    }
-}
-
 void to_json_recursively(const instance & obj2, PrettyWriter<StringBuffer> & writer)
 {
     writer.StartObject();
     instance obj = obj2.get_type().get_raw_type().is_wrapper() ? obj2.get_wrapped_instance() : obj2;
 
-    auto prop_list = obj.get_derived_type().get_properties();
+    rttr::type der_type = obj.get_derived_type();
+
+    // Write out type ids for any type that should be constructed with a factory!
+    if (der_type.is_derived_from<Context_Obj>())
+    {
+        String type_id_str = "type_id";
+        u32 type_id = type_hash(obj.get_derived_type());
+        writer.String(type_id_str.c_str(), type_id_str.size());
+        write_variant(Variant(type_id), writer);
+    }
+
+    auto func = der_type.get_method("pack_begin");
+    if (func.is_valid())
+        func.invoke(obj, JSON_Archive::DIR_OUT);
+
+    auto prop_list = der_type.get_properties();
     for (auto prop : prop_list)
     {
         if (prop.get_metadata("NO_SERIALIZE"))
@@ -375,24 +494,15 @@ void to_json_recursively(const instance & obj2, PrettyWriter<StringBuffer> & wri
         writer.String(name.data(), static_cast<rapidjson::SizeType>(name.length()), false);
         if (!write_variant(prop_value, writer))
         {
-            wlog("Cannot serialize property:{}",String(name));
+            wlog("Cannot serialize property:{}", String(name));
         }
     }
 
+    func = der_type.get_method("pack_end");
+    if (func.is_valid())
+        func.invoke(obj, JSON_Archive::DIR_OUT);
+
     writer.EndObject();
-}
-
-bool from_json(const String & json, rttr::instance obj)
-{
-    Document document; // Default template parameter uses UTF8 and MemoryPoolAllocator.
-
-    // "normal" parsing, decode strings to new buffers. Can use other input stream via ParseStream().
-    if (document.Parse(json.c_str()).HasParseError())
-        return 1;
-
-    fromjson_recursively(obj, document);
-
-    return true;
 }
 
 String to_json(rttr::instance obj)
@@ -407,6 +517,8 @@ String to_json(rttr::instance obj)
 
     return sb.GetString();
 }
+
+// END OF TO JSON PART
 
 } // namespace
 
@@ -423,4 +535,4 @@ void pack_unpack(JSON_Archive & ar, rttr::instance obj)
         ar.json_str = to_json(obj);
     }
 }
-}
+} // namespace noble_steed

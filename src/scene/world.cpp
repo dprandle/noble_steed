@@ -35,23 +35,24 @@ void World::terminate()
 
 System * World::add_system_(const rttr::type & sys_type, const Variant_Map & init_params)
 {
-    if (systems_.find(sys_type.get_id()) != systems_.end())
+    u32 id = type_hash(sys_type);
+    if (systems_.find(id) != systems_.end())
     {
         wlog("Cannot add system type {} as it already exits", String(sys_type.get_name()));
         return nullptr;
     }
-    System_Factory * fac = ns_ctxt.get_factory<System_Factory>(sys_type);
-    System * sys = fac->create();
+    auto fac = ns_ctxt.get_factory(sys_type);
+    System * sys = fac->create_and_cast<System>();
     assert(sys != nullptr);
     sys->initialize(init_params);
-    systems_[sys_type.get_id()] = sys;
+    systems_[id] = sys;
     ilog("Added system {} to world", String(sys_type.get_name()));
     return sys;
 }
 
 System * World::get_system_(const rttr::type & sys_type)
 {
-    auto fiter = systems_.find(sys_type.get_id());
+    auto fiter = systems_.find(type_hash(sys_type));
     if (fiter != systems_.end())
         return fiter->second;
     return nullptr;
@@ -59,11 +60,12 @@ System * World::get_system_(const rttr::type & sys_type)
 
 void World::remove_system_(const rttr::type & sys_type)
 {
-    remove_system_(sys_type.get_id());
+    remove_system_(type_hash(sys_type));
 }
 
-void World::remove_system_(u64 type_id)
+void World::remove_system_(u32 type_id)
 {
+    auto fac = ns_ctxt.get_factory(type_id);
     auto fiter = systems_.find(type_id);
     if (fiter != systems_.end())
     {
@@ -71,7 +73,7 @@ void World::remove_system_(u64 type_id)
         sys->terminate();
         systems_.erase(fiter);
         ilog("Removed {} system from world", String(sys->get_type().get_name()));
-        ns_ctxt.free(sys);
+        fac->destroy(sys);
     }
     else
     {
@@ -81,15 +83,15 @@ void World::remove_system_(u64 type_id)
 
 Entity * World::create(const Entity * copy, const Variant_Map & init_params)
 {
-    PoolAllocator * ent_allocator = ns_ctxt.get_entity_allocator();
-    sizet ent_size = sizeof(Entity);
-    ilog("Allocated {0} bytes for entity", ent_size);
-    Entity * ent = static_cast<Entity *>(ent_allocator->Allocate(ent_size));
+    Entity * ent = nullptr;
 
+    auto fac = ns_ctxt.get_factory<Entity>();
     if (copy != nullptr)
-        new (ent) Entity(*copy);
+        ent = fac->create_and_cast<Entity>(*copy);
     else
-        new (ent) Entity();
+        ent = fac->create_and_cast<Entity>();
+    
+    assert(ent!=nullptr);
 
     // Assign id to entity - if crashes here then ent is nullptr likely from insufficient memory block (up the size)
     if (!ent_id_stack_.empty())
@@ -113,7 +115,7 @@ Entity * World::create(const Entity * copy, const Variant_Map & init_params)
     return ent;
 }
 
-Entity * World::get(u64 id)
+Entity * World::get(u32 id)
 {
     auto fiter = entity_ids_.find(id);
     if (fiter != entity_ids_.end())
@@ -121,7 +123,7 @@ Entity * World::get(u64 id)
     return nullptr;
 }
 
-bool World::destroy(u64 id)
+bool World::destroy(u32 id)
 {
     return destroy(get(id));
 }
@@ -131,15 +133,14 @@ bool World::destroy(Entity * ent)
     if (ent == nullptr)
         return false;
     
-    PoolAllocator * ent_allocator = ns_ctxt.get_entity_allocator();
-
+    auto fac = ns_ctxt.get_factory<Entity>();
+    
     ent->terminate();
-
     sizet rem = entity_ids_.erase(ent->get_id());
-    bool removed_from_vec = false;
 
     // Find the pointer - copy the last element of the vector to overwrite the pointer's value
     // and decrease the vector size by one
+    bool removed_from_vec = false;
     for (sizet i = 0; i < ent_ptrs_.size(); ++i)
     {
         if (ent == ent_ptrs_[i])
@@ -163,12 +164,7 @@ bool World::destroy(Entity * ent)
     // Take the id back
     ent_id_stack_.push(ent->get_id());
 
-    // Calling the destructor of the ent will automatically disconnect its signals so no
-    // need to do that here
-    ent->~Entity();
-
-    ilog("De-allocated {} bytes for entity {}", sizeof(Entity), ent->get_name());
-    ent_allocator->Free(ent);
+    fac->destroy(ent);
     return true;
 }
 } // namespace noble_steed

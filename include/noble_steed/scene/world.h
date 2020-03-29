@@ -47,11 +47,11 @@ class World
 
     Entity * create(const Entity * copy = nullptr, const Variant_Map & init_params=Variant_Map());
 
-    Entity * get(u64 id);
+    Entity * get(u32 id);
 
     bool destroy(Entity * ent);
 
-    bool destroy(u64 id);
+    bool destroy(u32 id);
 
   private:
     System * add_system_(const rttr::type & sys_typ,const Variant_Map & init_params);
@@ -60,11 +60,11 @@ class World
 
     void remove_system_(const rttr::type & sys_type);
 
-    void remove_system_(u64 type_id);
+    void remove_system_(u32 type_id);
 
     Hash_Map<u64, System*> systems_;
 
-    Hash_Map<u64, Entity*> entity_ids_;
+    Hash_Map<u32, Entity*> entity_ids_;
 
     Vector<Entity*> ent_ptrs_;
 

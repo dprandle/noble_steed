@@ -4,13 +4,15 @@
 #include <noble_steed/core/common.h>
 #include <rttr/registration_friend>
 #include <noble_steed/serialization/json_archive.h>
+#include <noble_steed/core/context_obj.h>
 
 namespace noble_steed
 {
-class Component: public JSON_Packable
+class Component : public Context_Obj
 {
     RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(JSON_Packable)
+    RTTR_ENABLE(Context_Obj)
+    JSON_PACKABLE
     SLOT_OBJECT
     friend class Entity;
   public:

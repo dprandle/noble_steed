@@ -2,12 +2,13 @@
 
 #include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
+#include <noble_steed/core/context_obj.h>
 
 namespace noble_steed
 {
-class System
+class System : public Context_Obj
 {
-    RTTR_ENABLE()
+    RTTR_ENABLE(Context_Obj)
   public:
     System();
     virtual ~System();

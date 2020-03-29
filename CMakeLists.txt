@@ -76,6 +76,8 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/graphics/*.cpp
   ${NOBLE_STEED_SRC_DIR}/scene/*.cpp
   ${NOBLE_STEED_SRC_DIR}/serialization/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/math/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/hash/*.cpp
   )
 
 # Set project includes dir

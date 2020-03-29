@@ -51,12 +51,11 @@ Resource * Resource_Cache::get(const String & name, const String & package)
     {
         wlog("Cannot load resource {} - no package passed in and no current package set", name);
     }
-    std::hash<String> hash;
-    u64 id = hash(package + name);
+    u32 id = str_hash(package + name);
     return get(id);
 }
 
-Resource * Resource_Cache::get(u64 id)
+Resource * Resource_Cache::get(u32 id)
 {
     auto fiter = resources_.find(id);
     if (fiter != resources_.end())
@@ -64,7 +63,7 @@ Resource * Resource_Cache::get(u64 id)
     return nullptr;
 }
 
-bool Resource_Cache::remove(u64 id)
+bool Resource_Cache::remove(u32 id)
 {
     Resource * ret = nullptr;
     auto fiter = resources_.find(id);
@@ -93,9 +92,7 @@ bool Resource_Cache::remove(const String & name, const String & package)
     {
         wlog("Cannot load resource {} - no package passed in and no current package set", name);
     }
-
-    std::hash<String> hash;
-    u64 id = hash(package + name);
+    u32 id = str_hash(package + name);
     return remove(id);
 }
 
@@ -187,13 +184,19 @@ bool Resource_Cache::load_package(String package, bool make_current)
     return false;
 }
 
-void Resource_Cache::on_resource_name_change_(u64 old_id, u64 new_id, bool * do_change)
+void Resource_Cache::clear()
+{
+    while (resources_.begin() != resources_.end())
+        remove(resources_.begin()->first);
+}
+
+void Resource_Cache::on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change)
 {
     auto fiter = resources_.find(old_id);
     if (fiter != resources_.end())
     {
         Resource * res = fiter->second;
-        auto success = resources_.emplace(new_id,res);
+        auto success = resources_.emplace(new_id, res);
         if (success.second)
         {
             resources_.erase(fiter);
@@ -206,9 +209,8 @@ void Resource_Cache::on_resource_name_change_(u64 old_id, u64 new_id, bool * do_
     }
     else
     {
-        elog("Couldn't find old id {} - this is a bug",old_id);
+        elog("Couldn't find old id {} - this is a bug", old_id);
     }
-    
 }
 
 void Resource_Cache::unload_package(String package)
@@ -233,18 +235,18 @@ void Resource_Cache::set_current_package(String package)
 
 Resource * Resource_Cache::allocate_resource_(const rttr::type & type)
 {
-    Resource_Factory * fac = ns_ctxt.get_factory<Resource_Factory>(type);
+    auto fac = ns_ctxt.get_factory(type);
     assert(fac != nullptr);
-    Resource * res = fac->create();
+    Resource * res = fac->create_and_cast<Resource>();
     assert(res != nullptr);
     return res;
 }
 
 Resource * Resource_Cache::allocate_resource_(const rttr::type & type, const Resource & copy)
 {
-    Resource_Factory * fac = ns_ctxt.get_factory<Resource_Factory>(type);
+    auto fac = ns_ctxt.get_factory(type);
     assert(fac != nullptr);
-    Resource * res = fac->create(copy);
+    Resource * res = fac->create_and_cast<Resource>(copy);
     assert(res != nullptr);
     return res;
 }
@@ -265,7 +267,7 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     auto fiter = resources_.emplace(res->get_id(), res);
     if (fiter.second)
     {
-        sig_connect(res->change_id,Resource_Cache::on_resource_name_change_);
+        sig_connect(res->change_id, Resource_Cache::on_resource_name_change_);
         res->initialize(init_params);
     }
     else
@@ -282,9 +284,7 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
 void Resource_Cache::deallocate_resource_(Resource * res, const rttr::type & resource_type)
 {
     assert(res != nullptr);
-    res->~Resource();
-    PoolAllocator * alloc = ns_ctxt.get_resource_allocator(resource_type);
-    ilog("De-allocating {0} bytes for {1}", resource_type.get_sizeof(), String(resource_type.get_name()));
-    alloc->Free(res);
+    auto fac = ns_ctxt.get_factory(resource_type);
+    fac->destroy(res);
 }
 } // namespace noble_steed

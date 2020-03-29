@@ -9,6 +9,7 @@ class Entity;
 
 class World_Chunk : public Resource
 {
+    RTTR_REGISTRATION_FRIEND
     RTTR_ENABLE(Resource)
   public:
     World_Chunk();
@@ -19,9 +20,11 @@ class World_Chunk : public Resource
 
     Entity * add(const Variant_Map & init_params=Variant_Map());
 
-    Entity * get(u64 id);
+    void clear();
 
-    bool remove(u64 id, bool remove_from_world=true);
+    Entity * get(u32 id);
+
+    bool remove(u32 id, bool remove_from_world=true);
 
     bool remove(Entity * ent,bool remove_from_world=true);
 
@@ -29,10 +32,12 @@ class World_Chunk : public Resource
 
     void terminate();
 
-    void pack_unpack(JSON_Archive & ar);
+protected:
+    void pack_begin(JSON_Archive::Direction io_dir);
+    void pack_end(JSON_Archive::Direction io_dir);
 
   private:
-    
-    Hash_Map<u64,Entity*> ents_;
+    Vector<Entity*> ents_ptrs_;
+    Hash_Map<u32,Entity*> ents_;
 };
 } // namespace noble_steed

@@ -9,6 +9,7 @@
 // Defualt types to register
 #include <noble_steed/scene/transform.h>
 #include <noble_steed/scene/world_chunk.h>
+#include <noble_steed/hash/crc32.h>
 
 namespace noble_steed
 {
@@ -18,11 +19,9 @@ const String INIT_CWD_KEY = "cwd";
 
 Context::Context()
     : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
-      comp_allocators_(),
-      resource_allocators_(),
+      pool_allocators_(),
       extension_resource_type_(),
       type_factories_(),
-      ent_allocator_(nullptr),
       logger_(nullptr),
       world_(nullptr),
       resource_cache_(nullptr)
@@ -63,16 +62,17 @@ void Context::initialize(const Variant_Map & init_params)
 
     // Initialize logger before other stuff so logging works
     logger_ = malloc<Logger>();
-    logger_->initialize();
+    logger_->initialize(init_params);
     resource_cache_ = malloc<Resource_Cache>();
     world_ = malloc<World>();
-    create_entity_allocator_(init_params);
+
+    // Now create the default context types...
+    register_default_types_(init_params);
 
     // Do rest of initialization
     resource_cache_->initialize(init_params);
     world_->initialize(init_params);
 
-    register_default_types_();
 }
 
 void Context::terminate()
@@ -80,32 +80,25 @@ void Context::terminate()
     world_->terminate();
     resource_cache_->terminate();
 
-    // Free all component memory
-    while (comp_allocators_.begin() != comp_allocators_.end())
-    {
-        comp_allocators_.begin()->second->Reset();
-        free(comp_allocators_.begin()->second);
-        comp_allocators_.erase(comp_allocators_.begin());
-    }
-
-    // Free all entity memory
-    ent_allocator_->Reset();
-    free(ent_allocator_);
-    ent_allocator_ = nullptr;
-
-    // Free all resource memory
-    while (resource_allocators_.begin() != resource_allocators_.end())
-    {
-        resource_allocators_.begin()->second->Reset();
-        free(resource_allocators_.begin()->second);
-        resource_allocators_.erase(resource_allocators_.begin());
-    }
-
     free(world_);
     world_ = nullptr;
 
     free(resource_cache_);
     resource_cache_ = nullptr;
+
+    // Free all pool allocators
+    while (pool_allocators_.begin() != pool_allocators_.end())
+    {
+        free(pool_allocators_.begin()->second);
+        pool_allocators_.erase(pool_allocators_.begin());
+    }
+
+    // Free all factories
+    while (type_factories_.begin() != type_factories_.end())
+    {
+        free(type_factories_.begin()->second);
+        type_factories_.erase(type_factories_.begin());
+    }
 
     // Kill logger last so that we can log stuff when needed
     logger_->terminate();
@@ -139,11 +132,11 @@ void Context::raw_free(void * to_free)
     mem_free_list_.Free(to_free);
 }
 
-u64 Context::get_extension_resource_type(const String & extension)
+u32 Context::get_extension_resource_type(const String & extension)
 {
-    std::hash<String> hsh;
-    u64 ret = -1;
-    auto fiter = extension_resource_type_.find(hsh(extension));
+    u32 ret = -1;
+    u32 hash_id = str_hash(extension);
+    auto fiter = extension_resource_type_.find(hash_id);
     if (fiter != extension_resource_type_.end())
         ret = fiter->second;
     return ret;
@@ -156,56 +149,43 @@ void * Context::malloc_(const rttr::type & type)
         type_size = MIN_ALLOC_SIZE;
     return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);
 }
-void Context::register_default_types_()
+void Context::register_default_types_(const Variant_Map & init_params)
 {
-    // Components
-    register_component_type<Transform>();
-    
     // Resources
-    register_resource_type<World_Chunk>(".bbworld");
+    register_resource_type<World_Chunk>(".bbworld",init_params);
+
+    // Entity
+    register_pool_factory<Entity>(init_params, DEFAULT_ENTITY_ALLOC);
+
+    // Components
+    register_component_type<Transform>(init_params);
 }
 
 void Context::set_resource_extension_(const rttr::type & resource_type, const String & extension)
 {
-    resource_type_extension_[resource_type.get_id()] = extension;
-    std::hash<String> hsh;
-    extension_resource_type_[hsh(extension)] = resource_type.get_id();
-    ilog("Setting extension for resource type {} and id {} to {}",resource_type.get_name().to_string(),resource_type.get_id(),extension);
+    u32 type_id = type_hash(resource_type);
+    u32 ext_hash = str_hash(extension);
+    resource_type_extension_[type_id] = extension;
+    extension_resource_type_[ext_hash] = type_id;
+    ilog("Setting extension for resource type {} and id {} to {}", resource_type.get_name().to_string(), type_id, extension);
 }
 
 String Context::get_resource_extension(const rttr::type & resource_type)
 {
     String ret;
-    auto fiter = resource_type_extension_.find(resource_type.get_id());
+    u32 type_id = type_hash(resource_type);
+    auto fiter = resource_type_extension_.find(type_id);
     if (fiter != resource_type_extension_.end())
         ret = fiter->second;
     return ret;
 }
 
-PoolAllocator * Context::create_entity_allocator_(const Variant_Map & init_params)
+u32 Context::hash_str(const String & str)
 {
-    sizet ent_byte_size = sizeof(Entity);
-    if (ent_byte_size < MIN_CHUNK_ALLOC_SIZE)
-        ent_byte_size = MIN_CHUNK_ALLOC_SIZE;
-
-    // Create the entity allocator based on settings
-    u16 ent_alloc = DEFAULT_ENTITY_ALLOC;
-    auto fiter = init_params.find(ENTITY_ALLOC_KEY);
-    if (fiter != init_params.end())
-    {
-        if (fiter->second.is_type<u16>())
-            ent_alloc = fiter->second.get_value<u16>();
-        else
-            wlog("Passed in value for key {} but value was of incorrect type", ENTITY_ALLOC_KEY);
-    }
-
-    ilog("Creating {} byte pool allocator for entities - enough for {} instances", ent_alloc * ent_byte_size, ent_alloc);
-    ent_allocator_ = ns_ctxt.malloc<PoolAllocator>(ent_alloc * ent_byte_size, ent_byte_size);
-    ent_allocator_->Init();
-    return ent_allocator_;
+    return crc32(str.c_str(), str.size());
 }
 
-PoolAllocator * Context::create_component_allocator_(const rttr::type & type, const Variant_Map & init_params)
+PoolAllocator * Context::create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Map & init_params)
 {
     sizet type_size = type.get_sizeof();
 
@@ -213,7 +193,7 @@ PoolAllocator * Context::create_component_allocator_(const rttr::type & type, co
         type_size = MIN_CHUNK_ALLOC_SIZE;
 
     // Grab the overriding alloc amount if its there
-    u16 alloc_amount = DEFAULT_COMP_ALLOC;
+    u16 alloc_amount = alloc_amount_for_type;
     String type_str(type.get_name());
     type_str += "_Alloc";
     auto fiter = init_params.find(type_str);
@@ -225,71 +205,65 @@ PoolAllocator * Context::create_component_allocator_(const rttr::type & type, co
             wlog("Passed in value for key {} but value was of incorrect type", type_str);
     }
 
-    PoolAllocator * comp_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * type_size, type_size);
+    PoolAllocator * pool_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * type_size, type_size);
 
-    comp_alloc->Init();
-    comp_allocators_.emplace(type.get_id(), comp_alloc);
+    pool_alloc->Init();
+    u32 type_id = type_hash(type);
+    pool_allocators_.emplace(type_id, pool_alloc);
     String str(type.get_name());
-    ilog("Creating {0} byte pool allocator for component type {1} - enough for {2} instances", alloc_amount * type_size, str, alloc_amount);
-    return comp_alloc;
+    ilog("Creating {0} byte pool allocator for type {1} - enough for {2} instances", alloc_amount * type_size, str, alloc_amount);
+    return pool_alloc;
 }
 
-PoolAllocator * Context::create_resource_allocator_(const rttr::type & type, const Variant_Map & init_params)
+bool Context::destroy_comp_allocator_(const rttr::type & type)
 {
-    sizet type_size = type.get_sizeof();
-
-    if (type_size < MIN_CHUNK_ALLOC_SIZE)
-        type_size = MIN_CHUNK_ALLOC_SIZE;
-
-    // Grab the overriding alloc amount if its there
-    u16 alloc_amount = DEFAULT_RES_ALLOC;
-    String type_str(type.get_name());
-    type_str += "_Alloc";
-    auto fiter = init_params.find(type_str);
-    if (fiter != init_params.end())
+    u32 type_id = type_hash(type);
+    auto fiter = pool_allocators_.find(type_id);
+    if (fiter != pool_allocators_.end())
     {
-        if (fiter->second.is_type<u16>())
-            alloc_amount = fiter->second.get_value<u16>();
-        else
-            wlog("Passed in value for key {} but value was of incorrect type", type_str);
+        free(fiter->second);
+        pool_allocators_.erase(fiter);
+        return true;
     }
-
-    PoolAllocator * res_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * type_size, type_size);
-
-    res_alloc->Init();
-    resource_allocators_.emplace(type.get_id(), res_alloc);
-    String str(type.get_name());
-    ilog("Creating {0} byte pool allocator for resource type {1} - enough for {2} instances", alloc_amount * type_size, str, alloc_amount);
-    return res_alloc;
+    return false;
 }
 
-PoolAllocator * Context::get_comp_allocator(const rttr::type & type)
+PoolAllocator * Context::get_pool_allocator(const rttr::type & type)
 {
-    auto fiter = comp_allocators_.find(type.get_id());
-    if (fiter != comp_allocators_.end())
+    u32 type_id = type_hash(type);
+    return get_pool_allocator(type_id);    
+}
+
+PoolAllocator * Context::get_pool_allocator(u32 type_id)
+{
+    auto fiter = pool_allocators_.find(type_id);
+    if (fiter != pool_allocators_.end())
         return fiter->second;
     return nullptr;
 }
 
-PoolAllocator * Context::get_resource_allocator(const rttr::type & type)
+Factory * Context::get_factory(const rttr::type & obj_type)
 {
-    auto fiter = resource_allocators_.find(type.get_id());
-    if (fiter != resource_allocators_.end())
-        return fiter->second;
-    return nullptr;
+    u32 type_id = type_hash(obj_type);
+    return get_factory(type_id);
 }
 
-PoolAllocator * Context::get_entity_allocator()
+Factory * Context::get_factory(u32 fac_id)
 {
-    return ent_allocator_;
-}
-
-Factory * Context::get_base_factory(const rttr::type & obj_type)
-{
-    auto fiter = type_factories_.find(obj_type.get_id());
+    auto fiter = type_factories_.find(fac_id);
     if (fiter != type_factories_.end())
         return fiter->second;
     return nullptr;
+}
+
+bool Context::contains_factory(u32 fac_id)
+{
+    return (get_factory(fac_id) != nullptr);
+}
+
+bool Context::contains_factory(const rttr::type & obj_type)
+{
+    return (get_factory(obj_type) != nullptr);
 }
 
 } // namespace noble_steed

@@ -4,15 +4,19 @@
 #include <noble_steed/core/common.h>
 #include <noble_steed/container/hash_map.h>
 #include <noble_steed/serialization/json_archive.h>
+#include <noble_steed/core/context_obj.h>
+#include <rttr/registration_friend>
 
 namespace noble_steed
 {
 class Component;
 class World;
-class Entity: public JSON_Packable
+class Entity : public Context_Obj
 {
+    RTTR_REGISTRATION_FRIEND
     SLOT_OBJECT
-    RTTR_ENABLE(JSON_Packable)
+    JSON_PACKABLE
+    RTTR_ENABLE(Context_Obj)
   public:
     Entity();
 
@@ -71,14 +75,13 @@ class Entity: public JSON_Packable
 
     u32 get_id();
 
-    void pack_unpack(JSON_Archive & ar);
-
     Signal<Pair<u32>> id_change;
+
+protected:
+    void pack_end(JSON_Archive::Direction io_dir);
 
   private:
     
-    void pack_unpack_components(JSON_Archive & ar);
-
     Component * allocate_comp_(const rttr::type & type);
     
     Component * allocate_comp_(const rttr::type & type, const Component & copy);
@@ -93,6 +96,6 @@ class Entity: public JSON_Packable
     
     String name_;
     
-    Hash_Map<u64, Component *> comps_;
+    Hash_Map<u32, Component *> comps_;
 };
 } // namespace noble_steed

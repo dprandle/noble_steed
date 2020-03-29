@@ -11,29 +11,29 @@ using namespace noble_steed;
 struct silly_system : public System
 {
     RTTR_ENABLE(System)
-    public:
+  public:
     SLOT_OBJECT
     int poop;
     int bla;
 
     void received_id_change(u64 old_id, u64 new_id)
     {
-        dlog("Received id change from {} tp {}",old_id,new_id);
+        dlog("Received id change from {} tp {}", old_id, new_id);
     }
 };
 
 class silly_resource : public Resource
 {
     RTTR_ENABLE(Resource)
-    public:
+  public:
     int scooby;
     int dooby;
 
-    virtual void pack_unpack(JSON_Archive & ar)
-    {
-        dlog("Calling in derived");
-        Resource::pack_unpack(ar);
-    }
+    // virtual void pack_unpack(JSON_Archive & ar)
+    // {
+    //     dlog("Calling in derived");
+    //     Resource::pack_unpack(ar);
+    // }
 };
 
 #include <rttr/registration>
@@ -55,38 +55,27 @@ int main()
     Variant_Map vm;
 
     Variant v;
-    Hash_Map<int,int> hm;
+    Hash_Map<int, int> hm;
     v = hm;
-    
+
     ctxt.initialize(vm);
     ctxt.register_system_type<silly_system>(vm);
-    ctxt.register_resource_type<silly_resource>(".silly",vm);
+    ctxt.register_resource_type<silly_resource>(".silly", vm);
 
     World * world = ctxt.get_world();
+    World_Chunk * wc = ctxt.get_resource_cache()->add<World_Chunk>("maps/basic");
+
     Entity * ent = world->create();
-    ent->set_name("BlaBla");
-    
-    world->add_system<silly_system>();
-
-    silly_resource * res = ctxt.get_resource_cache()->add<silly_resource>("Scooby.mdl");
-
-    res->set_display_name("Poopity poo");
-    res->scooby = 1;
-    res->save();
-
-    silly_resource * cpy = ctxt.get_resource_cache()->add<silly_resource>(*res,"Copy");
-    cpy->save();
-
-    silly_resource * finally = ctxt.get_resource_cache()->add<silly_resource>("Finally/There");
-    finally->set_name("Scooby.mdl");
-    finally->save();
-
-    World_Chunk * wc = ctxt.get_resource_cache()->add<World_Chunk>("funky_town/my_blue_panet");
+    ent->set_name("Test");
     wc->add(ent);
 
-    Entity * ent2 = wc->add();
+    // Entity * ent2 = wc->add();
 
-    wc->save();
+    //wc->save();
+
+    wc->load();
+
+    wc->save("poppy_seed.bbworld");
 
     ctxt.terminate();
     return 0;

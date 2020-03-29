@@ -41,7 +41,7 @@ class Resource_Cache
     Resource * add_from(const Resource & copy, const String & name, const String & package);
 
     template<class ResType>
-    ResType * get(u64 id)
+    ResType * get(u32 id)
     {
         return static_cast<ResType *>(get(id));
     }
@@ -54,9 +54,9 @@ class Resource_Cache
 
     Resource * get(const String & name, const String & package);
 
-    Resource * get(u64 id);
+    Resource * get(u32 id);
 
-    bool remove(u64 id);
+    bool remove(u32 id);
 
     bool remove(const String & name, const String & package=String());
 
@@ -66,6 +66,8 @@ class Resource_Cache
 
     void terminate();
 
+    void clear();
+
     bool load_package(String package, bool make_current);
 
     void unload_package(String package);
@@ -74,7 +76,7 @@ class Resource_Cache
 
   private:
 
-    void on_resource_name_change_(u64 old_id, u64 new_id, bool * do_change);
+    void on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change);
 
     Resource * allocate_resource_(const rttr::type & type);
 
@@ -86,7 +88,7 @@ class Resource_Cache
 
     void make_valid_package_name_(String & str);
 
-    Hash_Map<u64, Resource *> resources_;
+    Hash_Map<u32, Resource *> resources_;
 
     Hash_Set<String> loaded_packages_;
 

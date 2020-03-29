@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
+#include <noble_steed/core/common.h>
 
 #define tlog SPDLOG_TRACE
 #define dlog SPDLOG_DEBUG
@@ -22,7 +23,7 @@ class Logger
     Logger();
     ~Logger();
 
-    void initialize();
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 

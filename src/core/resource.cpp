@@ -1,4 +1,5 @@
 #include <functional>
+
 #include <noble_steed/core/resource.h>
 #include <noble_steed/core/logger.h>
 #include <noble_steed/serialization/json_archive.h>
@@ -53,11 +54,11 @@ bool Resource::save(const String & custom_path)
 bool Resource::load(const String & custom_path)
 {
     std::ifstream file(custom_path);
-    String str;
+    std::stringstream buffer;
     if (file)
     {
-        file >> str;
-        from_json(str);
+        buffer << file.rdbuf();
+        from_json(buffer.str());
         ilog("Loaded {} in package {} from {}", name_, package_, custom_path);
         return true;
     }
@@ -99,7 +100,7 @@ const String & Resource::get_package()
     return package_;
 }
 
-u64 Resource::get_id()
+u32 Resource::get_id()
 {
     return id_;
 }
@@ -111,9 +112,9 @@ const String & Resource::get_display_name()
 
 void Resource::set_name(const String & name)
 {
-    std::hash<String> hasher;
     String total_path = package_ + name;
-    u64 hashed_id = hasher(total_path);
+    u32 hashed_id = str_hash(total_path);
+
     if (id_ != -1 && hashed_id != id_)
     {
         String type_str(get_derived_info().m_type.get_name());
@@ -161,12 +162,12 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Resource>("Resource")
+    registration::class_<Resource>("noble_steed::Resource")
         .constructor<>()
-        .method("save_json", select_overload<bool(void)>(&Resource::save), registration::public_access)
-        .method("load_json", select_overload<bool(void)>(&Resource::load), registration::public_access)
-        .method("save_json", select_overload<bool(const String &)>(&Resource::save), registration::public_access)
-        .method("load_json", select_overload<bool(const String &)>(&Resource::load), registration::public_access)
+        .method("save", select_overload<bool(void)>(&Resource::save), registration::public_access)
+        .method("load", select_overload<bool(void)>(&Resource::load), registration::public_access)
+        .method("save", select_overload<bool(const String &)>(&Resource::save), registration::public_access)
+        .method("load", select_overload<bool(const String &)>(&Resource::load), registration::public_access)
         .method("pack_unpack", &Resource::pack_unpack, registration::public_access)
         .method("initialize", &Resource::initialize, registration::public_access)
         .method("terminate", &Resource::terminate, registration::public_access)

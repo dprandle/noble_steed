@@ -4,18 +4,19 @@
 #include <noble_steed/core/signal.h>
 #include <rttr/registration_friend>
 #include <noble_steed/serialization/json_archive.h>
-
+#include <noble_steed/core/context_obj.h>
 
 namespace noble_steed
 {
 
 struct JSON_Archive;
 
-class Resource : public JSON_Packable
+class Resource : public Context_Obj
 {
     RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(JSON_Packable)
+    RTTR_ENABLE(Context_Obj)
     SLOT_OBJECT
+    JSON_PACKABLE
   public:
     Resource();
     
@@ -50,14 +51,14 @@ class Resource : public JSON_Packable
 
     String get_relative_path();
 
-    u64 get_id();
+    u32 get_id();
 
-    Signal<u64, u64, bool*> change_id;
+    Signal<u32, u32, bool*> change_id;
 
   private:
     String package_;
     String name_;
     String display_name_;
-    u64 id_;
+    u32 id_;
 };
 } // namespace noble_steed
