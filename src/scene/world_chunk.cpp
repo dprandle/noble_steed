@@ -6,11 +6,37 @@
 
 namespace noble_steed
 {
-World_Chunk::World_Chunk()
+World_Chunk::World_Chunk() : Resource()
 {}
 
+World_Chunk::World_Chunk(const World_Chunk & copy) : Resource(copy), ents_ptrs_(), ents_()
+{
+    auto iter = copy.ents_.begin();
+    while (iter != copy.ents_.end())
+    {
+        add(*(iter->second));
+        ++iter;
+    }
+}
+
+World_Chunk & World_Chunk::operator=(World_Chunk rhs)
+{
+    swap(rhs);
+    return *this;
+}
+
+void World_Chunk::swap(World_Chunk & rhs)
+{
+    Resource::swap(rhs);
+    std::swap(ents_ptrs_, rhs.ents_ptrs_);
+    std::swap(ents_, rhs.ents_);
+    clear();
+}
+
 World_Chunk::~World_Chunk()
-{}
+{
+    clear();
+}
 
 void World_Chunk::initialize(const Variant_Map & init_params)
 {
@@ -26,12 +52,18 @@ void World_Chunk::terminate()
 void World_Chunk::clear()
 {
     while (ents_.begin() != ents_.end())
-        remove(ents_.begin()->first,true);
+        remove(ents_.begin()->first, true);
     ents_ptrs_.clear();
 }
 
 bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
 {
+    if (!to_add->is_owned_by_context())
+    {
+        wlog("Cannot add entity {} to world_chunk {} ({}) as it is not owned by context memory",to_add->get_name(), get_name(),get_display_name());
+        return false;
+    }
+
     auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
     {
@@ -41,9 +73,19 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
     return false;
 }
 
+Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
+{
+    Entity * ent = ns_ctxt.get_world()->create(copy, init_params);
+    if (add(ent, init_params))
+        return ent;
+    bool dest = ns_ctxt.get_world()->destroy(ent);
+    assert(dest);
+    return nullptr;
+}
+
 Entity * World_Chunk::add(const Variant_Map & init_params)
 {
-    Entity * ent = ns_ctxt.get_world()->create(nullptr, init_params);
+    Entity * ent = ns_ctxt.get_world()->create(init_params);
     if (add(ent, init_params))
         return ent;
     bool dest = ns_ctxt.get_world()->destroy(ent);
@@ -126,6 +168,5 @@ RTTR_REGISTRATION
     using namespace noble_steed;
 
     registration::class_<World_Chunk>("noble_steed::World_Chunk")
-        .constructor<>()
-        .property("entities", &World_Chunk::ents_ptrs_, registration::public_access);
+        .property("entities", &World_Chunk::ents_ptrs_);
 }

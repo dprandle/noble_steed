@@ -8,19 +8,17 @@
 
 namespace noble_steed
 {
-
 struct JSON_Archive;
 
 class Resource : public Context_Obj
 {
-    RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(Context_Obj)
-    SLOT_OBJECT
-    JSON_PACKABLE
+    friend class Resource_Cache;
   public:
     Resource();
-    
-    ~Resource();
+
+    Resource(const Resource & copy);
+
+    virtual ~Resource();
 
     virtual bool save();
 
@@ -53,12 +51,22 @@ class Resource : public Context_Obj
 
     u32 get_id();
 
-    Signal<u32, u32, bool*> change_id;
+    Signal<u32, u32, bool *> change_id;
+
+    Resource & operator=(Resource rhs);
+
+  protected:
+    virtual void swap(Resource & rhs);
 
   private:
     String package_;
     String name_;
     String display_name_;
     u32 id_;
+
+    RTTR_REGISTRATION_FRIEND
+    RTTR_ENABLE(Context_Obj)
+    SLOT_OBJECT
+    JSON_PACKABLE
 };
 } // namespace noble_steed

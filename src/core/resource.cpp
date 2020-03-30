@@ -9,8 +9,28 @@
 
 namespace noble_steed
 {
-Resource::Resource()
+Resource::Resource():Context_Obj(),package_(),name_(),display_name_(),id_(0)
 {}
+
+Resource::Resource(const Resource & copy):Context_Obj(copy),package_(copy.package_),display_name_(copy.display_name_),id_(0)
+{
+    set_name(copy.name_ + " (copy)");
+}
+
+Resource & Resource::operator=(Resource rhs)
+{
+    swap(rhs);
+    return *this;
+}
+
+void Resource::swap(Resource & rhs)
+{
+    Context_Obj::swap(rhs);
+    std::swap(package_,rhs.package_);
+    std::swap(name_,rhs.name_);
+    std::swap(display_name_,rhs.display_name_);
+    std::swap(id_,rhs.id_);
+}
 
 Resource::~Resource()
 {}
@@ -163,17 +183,7 @@ RTTR_REGISTRATION
     using namespace noble_steed;
 
     registration::class_<Resource>("noble_steed::Resource")
-        .constructor<>()
-        .method("save", select_overload<bool(void)>(&Resource::save), registration::public_access)
-        .method("load", select_overload<bool(void)>(&Resource::load), registration::public_access)
-        .method("save", select_overload<bool(const String &)>(&Resource::save), registration::public_access)
-        .method("load", select_overload<bool(const String &)>(&Resource::load), registration::public_access)
-        .method("pack_unpack", &Resource::pack_unpack, registration::public_access)
-        .method("initialize", &Resource::initialize, registration::public_access)
-        .method("terminate", &Resource::terminate, registration::public_access)
-        .method("get_relative_path", &Resource::get_relative_path, registration::public_access)
-        .method("get_id", &Resource::get_id, registration::public_access)
-        .property("name", &Resource::get_name, &Resource::set_name, registration::public_access)
-        .property("package", &Resource::get_package, &Resource::set_package, registration::public_access)
-        .property("display_name", &Resource::get_display_name, &Resource::set_display_name, registration::public_access);
+        .property("name", &Resource::get_name, &Resource::set_name)
+        .property("package", &Resource::get_package, &Resource::set_package)
+        .property("display_name", &Resource::get_display_name, &Resource::set_display_name);
 }

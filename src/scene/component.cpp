@@ -5,8 +5,23 @@
 
 namespace noble_steed
 {
-Component::Component() : owner_id_(0)
+Component::Component() : Context_Obj(), owner_id_(0)
 {}
+
+Component::Component(const Component & copy): Context_Obj(copy), owner_id_(0)
+{}
+
+Component & Component::operator=(Component rhs)
+{
+    swap(rhs);
+    return *this;
+}
+
+void Component::swap(Component & rhs)
+{
+    Context_Obj::swap(rhs);
+    std::swap(owner_id_,rhs.owner_id_);
+}
 
 Component::~Component()
 {}
@@ -30,8 +45,5 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<Component>("noble_steed::Component")
-        .method("initialize", &Component::initialize, registration::public_access)
-        .method("terminate", &Component::terminate, registration::public_access)
-        .property("owner_id",&Component::owner_id_,registration::public_access);
+    registration::class_<Component>("noble_steed::Component").property("owner_id", &Component::owner_id_, registration::public_access);
 }

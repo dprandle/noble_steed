@@ -29,7 +29,7 @@ Resource * Resource_Cache::add(const rttr::type & resource_type, const String & 
     return resource;
 }
 
-Resource * Resource_Cache::add_from(const Resource & copy, const String & name, const String & package)
+Resource * Resource_Cache::add_from_(const Resource & copy, const String & name, const String & package)
 {
     rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
     Resource * resource = allocate_resource_(t, copy);
@@ -269,6 +269,7 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     {
         sig_connect(res->change_id, Resource_Cache::on_resource_name_change_);
         res->initialize(init_params);
+        res->owned = true;
     }
     else
     {

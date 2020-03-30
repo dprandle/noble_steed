@@ -14,12 +14,8 @@ class System;
 
 class World
 {
-    RTTR_ENABLE()
+    friend class Context;
   public:
-    World();
-
-    ~World();
-
     void initialize(const Variant_Map & init_params = Variant_Map());
 
     void terminate();
@@ -45,7 +41,13 @@ class World
         remove_system_(t);
     }
 
-    Entity * create(const Entity * copy = nullptr, const Variant_Map & init_params=Variant_Map());
+    void clear_systems();
+
+    void clear_entities();
+
+    Entity * create(const Variant_Map & init_params=Variant_Map());
+
+    Entity * create(const Entity & copy, const Variant_Map & init_params=Variant_Map());
 
     Entity * get(u32 id);
 
@@ -54,6 +56,16 @@ class World
     bool destroy(u32 id);
 
   private:
+    World();
+
+    World(const World &) = delete;
+
+    World & operator=(const World &) = delete;
+
+    ~World();
+    
+    void add_entity_(Entity * to_add, const Variant_Map & init_params);
+    
     System * add_system_(const rttr::type & sys_typ,const Variant_Map & init_params);
 
     System * get_system_(const rttr::type & sys_type);

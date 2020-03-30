@@ -10,20 +10,30 @@ namespace noble_steed
 {
 class Component : public Context_Obj
 {
-    RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(Context_Obj)
-    JSON_PACKABLE
-    SLOT_OBJECT
     friend class Entity;
+
   public:
     Component();
+
+    Component(const Component & copy);
+
     virtual ~Component();
 
     virtual void initialize(const Variant_Map & init_params);
 
     virtual void terminate();
 
+    Component & operator=(Component rhs);
+
+  protected:
+    virtual void swap(Component & rhs);
+
   private:
     u32 owner_id_;
+
+    RTTR_REGISTRATION_FRIEND
+    RTTR_ENABLE(Context_Obj)
+    JSON_PACKABLE
+    SLOT_OBJECT
 };
 } // namespace noble_steed

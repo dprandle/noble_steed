@@ -23,22 +23,20 @@ class Resource_Cache
 
     // add resource
     template<class ResType>
-    ResType * add(const String & name, const String & package=String(), const Variant_Map & init_params = Variant_Map())
+    ResType * add(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
         rttr::type t = rttr::type::get<ResType>();
         return static_cast<ResType *>(add(t, name, package, init_params));
     }
 
     template<class ResType>
-    ResType * add(const ResType & copy, const String & name, const String & package=String())
+    ResType * add(const ResType & copy, const String & name, const String & package = String())
     {
         rttr::type t = rttr::type::get<ResType>();
         return static_cast<ResType *>(add_from(copy, name, package));
     }
 
     Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params);
-
-    Resource * add_from(const Resource & copy, const String & name, const String & package);
 
     template<class ResType>
     ResType * get(u32 id)
@@ -47,9 +45,9 @@ class Resource_Cache
     }
 
     template<class ResType>
-    ResType * get(const String & name, const String & package=String())
+    ResType * get(const String & name, const String & package = String())
     {
-        return static_cast<ResType *>(get(name,package));
+        return static_cast<ResType *>(get(name, package));
     }
 
     Resource * get(const String & name, const String & package);
@@ -58,7 +56,7 @@ class Resource_Cache
 
     bool remove(u32 id);
 
-    bool remove(const String & name, const String & package=String());
+    bool remove(const String & name, const String & package = String());
 
     bool remove(Resource * resource);
 
@@ -75,6 +73,7 @@ class Resource_Cache
     void set_current_package(String package);
 
   private:
+    Resource * add_from_(const Resource & copy, const String & name, const String & package);
 
     void on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change);
 

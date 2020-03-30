@@ -20,6 +20,7 @@ const String INIT_CWD_KEY = "cwd";
 Context::Context()
     : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
       pool_allocators_(),
+      array_alloc_sizes(),
       extension_resource_type_(),
       type_factories_(),
       logger_(nullptr),
@@ -142,9 +143,9 @@ u32 Context::get_extension_resource_type(const String & extension)
     return ret;
 }
 
-void * Context::malloc_(const rttr::type & type)
+void * Context::malloc_(const rttr::type & type, u32 elements)
 {
-    sizet type_size = type.get_sizeof();
+    sizet type_size = type.get_sizeof() * elements;
     if (type_size < MIN_ALLOC_SIZE)
         type_size = MIN_ALLOC_SIZE;
     return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);

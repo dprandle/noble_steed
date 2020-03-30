@@ -43,10 +43,10 @@ class Context
     Resource_Cache * get_resource_cache();
 
     template<class T>
-    T * raw_malloc()
+    T * raw_malloc(u32 element_count = 1)
     {
         rttr::type type = rttr::type::get<T>();
-        T * mem_ptr = static_cast<T *>(malloc_(type));
+        T * mem_ptr = static_cast<T *>(malloc_(type,element_count));
         return mem_ptr;
     }
 
@@ -55,9 +55,18 @@ class Context
     template<class T, class... Args>
     T * malloc(const Args &... args)
     {
-        rttr::type type = rttr::type::get<T>();
-        T * mem_ptr = static_cast<T *>(malloc_(type));
+        T * mem_ptr = raw_malloc<T>(1);
         new (mem_ptr) T(args...);
+        return mem_ptr;
+    }
+
+    template<class T, class... Args>
+    T * malloc_array(u32 array_size, const Args &... each_element_constructor_args)
+    {
+        T * mem_ptr = raw_malloc<T>(array_size);
+        array_alloc_sizes[static_cast<void*>(mem_ptr)] = array_size;
+        for (u32 i = 0; i < array_size; ++i)
+            new (mem_ptr+i) T(each_element_constructor_args...);
         return mem_ptr;
     }
 
@@ -65,6 +74,18 @@ class Context
     void free(T * to_free)
     {
         to_free->~T();
+        raw_free(to_free);
+    }
+
+    template<class T>
+    void free_array(T * to_free)
+    {
+        auto fiter = array_alloc_sizes.find(static_cast<void*>(to_free));
+        if (fiter != array_alloc_sizes.end())
+        {
+            for (int i = 0; i < fiter->second; ++i)
+                (to_free+i)->~T();
+        }
         raw_free(to_free);
     }
 
@@ -168,7 +189,7 @@ class Context
     PoolAllocator * get_pool_allocator(u32 type_id);
 
   private:
-    void * malloc_(const rttr::type & type);
+    void * malloc_(const rttr::type & type, u32 elements);
 
     void register_default_types_(const Variant_Map & init_params);
 
@@ -181,6 +202,8 @@ class Context
     FreeListAllocator mem_free_list_;
 
     Hash_Map<u32, PoolAllocator *> pool_allocators_;
+
+    Hash_Map<void*, u32> array_alloc_sizes;
 
     // Key is hashed extension including the dot, and value is resource type id
     Hash_Map<u32, u32> extension_resource_type_;

@@ -6,11 +6,37 @@
 
 namespace noble_steed
 {
-Entity::Entity() : id_(0), name_()
+Entity::Entity() : Context_Obj(), id_(0), name_(), comps_()
 {}
 
+Entity::Entity(const Entity & copy):Context_Obj(copy), id_(0), name_(copy.name_)
+{
+    auto iter = copy.comps_.begin();
+    while (iter != copy.comps_.end())
+    {
+        add(*iter->second);
+        ++iter;
+    }
+}
+
+Entity & Entity::operator=(Entity rhs)
+{
+    swap(rhs);
+    return *this;
+}
+
+void Entity::swap(Entity & rhs)
+{
+    Context_Obj::swap(rhs);
+    std::swap(id_,rhs.id_);
+    std::swap(name_,rhs.name_);
+    std::swap(comps_,rhs.comps_);
+}
+
 Entity::~Entity()
-{}
+{
+    clear();
+}
 
 void Entity::clear()
 {
@@ -26,6 +52,7 @@ void Entity::initialize(const Variant_Map & init_params)
 void Entity::terminate()
 {
     ilog("Terminating entity with name {} and id {}", name_, id_);
+    clear();
 }
 
 void Entity::set_name(const String & name)
@@ -189,9 +216,6 @@ RTTR_REGISTRATION
 
     registration::class_<Entity>("noble_steed::Entity")
         .property("name", &Entity::get_name, &Entity::set_name, registration::public_access)
-        .property("id", &Entity::get_id, &Entity::set_id, registration::public_access)
-        (
-            metadata("NO_SERIALIZE",true)
-        )
+        .property("id", &Entity::get_id, &Entity::set_id, registration::public_access)(metadata("NO_SERIALIZE", true))
         .property("components", &Entity::comps_, registration::public_access);
 }
