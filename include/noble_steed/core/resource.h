@@ -58,15 +58,16 @@ class Resource : public Context_Obj
   protected:
     virtual void swap(Resource & rhs);
 
-  private:
     String package_;
     String name_;
     String display_name_;
     u32 id_;
 
+    SLOT_OBJECT
+
+  private:
     RTTR_REGISTRATION_FRIEND
     RTTR_ENABLE(Context_Obj)
-    SLOT_OBJECT
     JSON_PACKABLE
 };
 } // namespace noble_steed

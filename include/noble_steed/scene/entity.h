@@ -54,6 +54,15 @@ class Entity : public Context_Obj
     Component * get(const rttr::type & component_type);
 
     template<class CompType>
+    bool has()
+    {
+        rttr::type t = rttr::type::get<CompType>();
+        return has(t);
+    }
+
+    bool has(const rttr::type & comp_type);
+
+    template<class CompType>
     bool remove()
     {
         rttr::type t = rttr::type::get<CompType>();
@@ -76,7 +85,7 @@ class Entity : public Context_Obj
 
     u32 get_id();
 
-    Signal<Pair<u32>> id_change;
+    Signal<Pair<u32>, bool *> id_change;
 
     Entity & operator=(Entity rhs);
 

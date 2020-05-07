@@ -15,6 +15,9 @@ class System;
 class World
 {
     friend class Context;
+    friend Variant construct_factory_type(u32 type_id);
+
+
   public:
     void initialize(const Variant_Map & init_params = Variant_Map());
 
@@ -49,11 +52,18 @@ class World
 
     Entity * create(const Entity & copy, const Variant_Map & init_params=Variant_Map());
 
+    bool contains(u32 id);
+
     Entity * get(u32 id);
 
     bool destroy(Entity * ent);
 
     bool destroy(u32 id);
+
+    // Signals
+    Signal<u32> entity_destroyed;
+
+    Signal<Pair<u32>> entity_id_change;
 
   private:
     World();
@@ -63,6 +73,8 @@ class World
     World & operator=(const World &) = delete;
 
     ~World();
+
+    void rebuild_available_id_stack_();
     
     void add_entity_(Entity * to_add, const Variant_Map & init_params);
     
@@ -83,5 +95,7 @@ class World
     Stack<u32> ent_id_stack_;
 
     u32 ent_current_id_;
+
+    SLOT_OBJECT
 };
 } // namespace noble_steed

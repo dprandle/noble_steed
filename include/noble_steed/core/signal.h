@@ -2,6 +2,7 @@
 
 #include <noble_steed/container/vector.h>
 #include <noble_steed/core/common.h>
+#include <functional>
 
 namespace noble_steed
 {
@@ -25,6 +26,20 @@ struct Slot : public Slot_Base
 
     virtual void call(Args...) = 0;
     Signal<Args...> * connected_signal;
+};
+
+template<class... Args>
+struct Slot_Concrete_Lambda : public Slot<Args...>
+{
+    Slot_Concrete_Lambda(const std::function<void(Args...)> & func) : func_(func)
+    {}
+
+    void call(Args... args)
+    {
+        func_(args...);
+    }
+
+    std::function<void(Args...)> func_;
 };
 
 template<class T, class... Args>
@@ -88,8 +103,9 @@ Slot<Args...>::~Slot()
 }
 
 #define SLOT_OBJECT Router router_;
-#define sig_connect(signal, slot) router_.connect(this, &slot, signal)
-#define sig_disconnect(signal) router_.disconnect(signal)
+#define sig_connect router_.connect
+#define sig_disconnect router_.disconnect
+#define emit_sig
 
 void assist_delete(Slot_Base * del);
 
@@ -105,9 +121,20 @@ class Router
     void disconnect_all();
 
     template<class T, class... Args>
-    void connect(T * inst, void (T::*mf)(Args...), Signal<Args...> & sig)
+    void connect(Signal<Args...> & sig, T * inst, void (T::*mf)(Args...))
     {
         Slot_Concrete<T, Args...> * slot_ptr = new Slot_Concrete<T, Args...>(inst, mf);
+        slot_ptr->connected_signal = &sig;
+        slot_ptr->router = this;
+        sig.con_slots.push_back(slot_ptr);
+        con_slots.push_back(slot_ptr);
+    }
+
+    template<class LambdaType, class... Args>
+    void connect(Signal<Args...> & sig, const LambdaType & func)
+    {
+        std::function<void(Args...)> f = func;
+        Slot_Concrete_Lambda<Args...> * slot_ptr = new Slot_Concrete_Lambda<Args...>(f);
         slot_ptr->connected_signal = &sig;
         slot_ptr->router = this;
         sig.con_slots.push_back(slot_ptr);

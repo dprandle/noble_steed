@@ -12,6 +12,8 @@ namespace noble_steed
 
 #define type_hash(arg) str_hash(arg.get_name().to_string())
 
+extern const u32 INVALID_ID;
+
 // A Pool allocator must at least allocate a single chunk size of this size - ie even if a component is 5 bytes, each
 // component will still be allocated 8 bytes
 extern const uint8_t MIN_CHUNK_ALLOC_SIZE;
@@ -104,11 +106,7 @@ class Context
             return nullptr;
         
         Pool_Factory<Derived> * fac = malloc<Pool_Factory<Derived>>(alloc);
-        type_factories_[type_id] = fac;
-        
-        // Register converter func
-
-
+        type_factories_[type_id] = fac;        
         return fac;
     }
 
@@ -141,17 +139,19 @@ class Context
     Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Map & init_params)
     {
         rttr::type t = rttr::type::get<T>();
+        if (!set_resource_extension_(t,extension))
+            return nullptr;
         auto ret = register_pool_factory<T>(init_params, DEFAULT_RES_ALLOC);
-        if (ret != nullptr)
-            set_resource_extension_(t, extension);
+        if (ret == nullptr)
+            remove_resource_extension(t);
         return ret;
     }
 
     template<class T>
-    void set_resource_extension(const String & extension)
+    bool set_resource_extension(const String & extension)
     {
         rttr::type t = rttr::type::get<T>();
-        set_resource_extension_(t, extension);
+        return set_resource_extension_(t, extension);
     }
 
     template<class T>
@@ -193,7 +193,9 @@ class Context
 
     void register_default_types_(const Variant_Map & init_params);
 
-    void set_resource_extension_(const rttr::type & resource_type, const String & extension);
+    bool set_resource_extension_(const rttr::type & resource_type, const String & extension);
+
+    bool remove_resource_extension(const rttr::type & resource_type);
 
     PoolAllocator * create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Map & init_params);
 

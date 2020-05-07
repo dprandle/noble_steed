@@ -7,10 +7,15 @@
 namespace noble_steed
 {
 World_Chunk::World_Chunk() : Resource()
-{}
+{
+    sig_connect(ns_ctxt.get_world()->entity_id_change, this, &World_Chunk::on_ent_id_change);
+    sig_connect(ns_ctxt.get_world()->entity_destroyed, this, &World_Chunk::on_ent_destroyed);
+}
 
 World_Chunk::World_Chunk(const World_Chunk & copy) : Resource(copy), ents_ptrs_(), ents_()
 {
+    sig_connect(ns_ctxt.get_world()->entity_id_change, this, &World_Chunk::on_ent_id_change);
+    sig_connect(ns_ctxt.get_world()->entity_destroyed, this, &World_Chunk::on_ent_destroyed);
     auto iter = copy.ents_.begin();
     while (iter != copy.ents_.end())
     {
@@ -30,12 +35,11 @@ void World_Chunk::swap(World_Chunk & rhs)
     Resource::swap(rhs);
     std::swap(ents_ptrs_, rhs.ents_ptrs_);
     std::swap(ents_, rhs.ents_);
-    clear();
 }
 
 World_Chunk::~World_Chunk()
 {
-    clear();
+    clear(true);
 }
 
 void World_Chunk::initialize(const Variant_Map & init_params)
@@ -45,14 +49,14 @@ void World_Chunk::initialize(const Variant_Map & init_params)
 
 void World_Chunk::terminate()
 {
-    clear();
     Resource::terminate();
+    clear(true);
 }
 
-void World_Chunk::clear()
+void World_Chunk::clear(bool remove_entities_from_world)
 {
     while (ents_.begin() != ents_.end())
-        remove(ents_.begin()->first, true);
+        remove(ents_.begin()->first, remove_entities_from_world);
     ents_ptrs_.clear();
 }
 
@@ -60,14 +64,16 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
 {
     if (!to_add->is_owned_by_context())
     {
-        wlog("Cannot add entity {} to world_chunk {} ({}) as it is not owned by context memory",to_add->get_name(), get_name(),get_display_name());
+        wlog("Cannot add entity {} to world_chunk {} ({}) as it is not owned by context memory", to_add->get_name(), get_name(), get_display_name());
         return false;
     }
 
     auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
     {
-        to_add->add<Transform>(init_params);
+        if (!to_add->has<Transform>())
+            to_add->add<Transform>(init_params);
+
         return true;
     }
     return false;
@@ -103,7 +109,7 @@ Entity * World_Chunk::get(u32 id)
 
 bool World_Chunk::remove(u32 id, bool remove_from_world)
 {
-    return remove(get(id));
+    return remove(get(id), remove_from_world);
 }
 
 bool World_Chunk::remove(Entity * ent, bool remove_from_world)
@@ -111,16 +117,19 @@ bool World_Chunk::remove(Entity * ent, bool remove_from_world)
     if (ent == nullptr)
         return false;
 
-    sizet cnt = ents_.erase(ent->get_id());
-    if (cnt != 1)
-        return false;
-
     ent->remove<Transform>();
-
     bool ret = true;
 
     if (remove_from_world)
+    {
+        // When removing from world, will be auto removed from world chunk via on_ent_destroyed slot
         ret = ns_ctxt.get_world()->destroy(ent);
+    }
+    else
+    {
+        sizet cnt = ents_.erase(ent->get_id());
+        ret = (cnt == 1);
+    }
     return ret;
 }
 
@@ -137,8 +146,24 @@ void World_Chunk::pack_begin(JSON_Archive::Direction io_dir)
     }
     else
     {
-        clear();
+        clear(true);
     }
+}
+
+void World_Chunk::on_ent_id_change(Pair<u32> ids)
+{
+    Entity * old_ent = get(ids.x);
+    if (old_ent != nullptr)
+    {
+        ents_.erase(old_ent->get_id());
+        auto ins = ents_.emplace(ids.y, old_ent);
+        assert(ins.second);
+    }
+}
+
+void World_Chunk::on_ent_destroyed(u32 id)
+{
+    ents_.erase(id);
 }
 
 void World_Chunk::pack_end(JSON_Archive::Direction io_dir)
@@ -155,6 +180,7 @@ void World_Chunk::pack_end(JSON_Archive::Direction io_dir)
             ents_[(*iter)->get_id()] = *iter;
             ++iter;
         }
+        ents_ptrs_.clear();
     }
 }
 
@@ -167,6 +193,5 @@ RTTR_REGISTRATION
     using namespace rttr;
     using namespace noble_steed;
 
-    registration::class_<World_Chunk>("noble_steed::World_Chunk")
-        .property("entities", &World_Chunk::ents_ptrs_);
+    registration::class_<World_Chunk>("noble_steed::World_Chunk").property("entities", &World_Chunk::ents_ptrs_);
 }

@@ -19,12 +19,13 @@
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/scene/component.h>
 #include <noble_steed/core/system.h>
+#include <noble_steed/scene/world.h>
 
 using namespace rapidjson;
 using namespace rttr;
 using namespace noble_steed;
 
-namespace
+namespace noble_steed
 {
 // BEGINNING OF FROM JSON PART
 void fromjson_recursively(instance obj, Value & json_object);
@@ -66,6 +67,29 @@ variant extract_basic_types(Value & json_value)
     return variant();
 }
 
+Variant construct_factory_type(u32 type_id)
+{
+    Variant extracted_value;
+    auto fac = ns_ctxt.get_factory(type_id);
+    Context_Obj * cobj = fac->create();
+    rttr::type dt = cobj->get_derived_info().m_type;
+    if (dt.is_derived_from<Resource>())
+        extracted_value = static_cast<Resource *>(cobj);
+    else if (dt.is_derived_from<Component>())
+        extracted_value = static_cast<Component *>(cobj);
+    else if (dt.is_derived_from<Entity>())
+    {
+        Entity * casted = static_cast<Entity *>(cobj);
+        ns_ctxt.get_world()->add_entity_(casted,Variant_Map());
+        extracted_value = casted;
+    }
+    else if (dt.is_derived_from<System>())
+        extracted_value = static_cast<System *>(cobj);
+    else
+        extracted_value = cobj;
+    return extracted_value;
+}
+
 static void write_array_recursively(variant_sequential_view & view, Value & json_array_value)
 {
     view.set_size(json_array_value.Size());
@@ -88,19 +112,7 @@ static void write_array_recursively(variant_sequential_view & view, Value & json
                 if (ret->value.IsUint())
                 {
                     u32 type_id = ret->value.GetUint();
-                    auto fac = ns_ctxt.get_factory(type_id);
-                    Context_Obj * cobj = fac->create();
-                    rttr::type dt = cobj->get_derived_info().m_type;
-                    if (dt.is_derived_from<Resource>())
-                        extracted_value = static_cast<Resource *>(cobj);
-                    else if (dt.is_derived_from<Component>())
-                        extracted_value = static_cast<Component *>(cobj);
-                    else if (dt.is_derived_from<Entity>())
-                        extracted_value = static_cast<Entity *>(cobj);
-                    else if (dt.is_derived_from<System>())
-                        extracted_value = static_cast<System *>(cobj);
-                    else
-                        extracted_value = cobj;
+                    extracted_value = construct_factory_type(type_id);
                 }
                 else
                 {
@@ -131,7 +143,7 @@ variant extract_value(Value::MemberIterator & itr, const type & t)
 
     variant extracted_value = extract_basic_types(json_value);
     const bool could_convert = extracted_value.convert(t);
-    dlog("Extracting value for type {}", t.get_name().to_string());
+    //dlog("Extracting value for type {}", t.get_name().to_string());
     if (!could_convert)
     {
         if (json_value.IsObject())
@@ -142,23 +154,11 @@ variant extract_value(Value::MemberIterator & itr, const type & t)
                 if (ret->value.IsUint())
                 {
                     u32 type_id = ret->value.GetUint();
-                    auto fac = ns_ctxt.get_factory(type_id);
-                    Context_Obj * cobj = fac->create();
-                    rttr::type dt = cobj->get_derived_info().m_type;
-                    if (dt.is_derived_from<Resource>())
-                        extracted_value = static_cast<Resource *>(cobj);
-                    else if (dt.is_derived_from<Component>())
-                        extracted_value = static_cast<Component *>(cobj);
-                    else if (dt.is_derived_from<Entity>())
-                        extracted_value = static_cast<Entity *>(cobj);
-                    else if (dt.is_derived_from<System>())
-                        extracted_value = static_cast<System *>(cobj);
-                    else
-                        extracted_value = cobj;
+                    extracted_value = construct_factory_type(type_id);
                 }
                 else
                 {
-                    elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
+                    //elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
                 }
             }
             else
@@ -237,7 +237,7 @@ void fromjson_recursively(instance obj2, Value & json_object)
         const type value_t = prop.get_type();
 
         auto & json_value = ret->value;
-        dlog("Looking at property name {} with type {}", prop.get_name().to_string(), value_t.get_name().to_string());
+        //dlog("Looking at property name {} with type {}", prop.get_name().to_string(), value_t.get_name().to_string());
         switch (json_value.GetType())
         {
         case kArrayType: {
@@ -262,7 +262,7 @@ void fromjson_recursively(instance obj2, Value & json_object)
         case kObjectType: {
             variant var = prop.get_value(obj);
             fromjson_recursively(var, json_value);
-            dlog("Should be setting prop {} to {}", prop.get_name().to_string(), var.get_type().get_name().to_string());
+            //dlog("Should be setting prop {} to {}", prop.get_name().to_string(), var.get_type().get_name().to_string());
             prop.set_value(obj, var);
             break;
         }
@@ -519,11 +519,6 @@ String to_json(rttr::instance obj)
 }
 
 // END OF TO JSON PART
-
-} // namespace
-
-namespace noble_steed
-{
 void pack_unpack(JSON_Archive & ar, rttr::instance obj)
 {
     if (ar.io_dir == Archive::DIR_IN)

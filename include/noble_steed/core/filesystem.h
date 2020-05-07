@@ -5,17 +5,9 @@
 #include <fstream>
 #include <sstream>
 
-namespace std
+namespace noble_steed
 {
-namespace __fs
-{
-namespace filesystem
-{
-
 noble_steed::String executable_name();
+}
 
-} // namespace filesystem
-} // namespace __fs
-} // namespace std
-
-namespace fs = std::__fs::filesystem;
+namespace fs = std::filesystem;

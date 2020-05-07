@@ -68,12 +68,26 @@ const String & Entity::get_name()
 
 void Entity::set_id(u32 id)
 {
-    u32 old_id = id_;
-    id_ = id;
-    if (old_id && (old_id != id_))
+    if (id != id_)
     {
-        dlog("Re-assigning entity id from {} to {}", old_id, id_);
-        id_change(Pair<u32>(old_id, id_));
+        dlog("Trying to re-assign entity id from {} to {}", id_, id);
+        bool success = true;
+        emit_sig id_change(Pair<u32>(id_, id),&success);
+
+        if (success)
+        {
+            id_ = id;
+            auto iter = comps_.begin();
+            while (iter != comps_.end())
+            {
+                iter->second->owner_id_ = id_;
+                ++iter;
+            }
+        }
+        else
+        {
+            dlog("Id change from {} to {} for entity {} was blocked - likely the new id already exists in the world and the entity is owned by the world",id_,id,name_);
+        }
     }
 }
 
@@ -112,6 +126,11 @@ Component * Entity::get(const rttr::type & type)
     if (fiter != comps_.end())
         return fiter->second;
     return nullptr;
+}
+
+bool Entity::has(const rttr::type & comp_type)
+{
+    return get(comp_type) != nullptr;
 }
 
 Component * Entity::remove_component_(const rttr::type & type)

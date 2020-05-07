@@ -10,7 +10,10 @@ World::World() : systems_(), ent_ptrs_(), ent_id_stack_(), ent_current_id_(0)
 {}
 
 World::~World()
-{}
+{
+    clear_entities();
+    clear_systems();
+}
 
 void World::initialize(const Variant_Map & init_params)
 {
@@ -40,6 +43,7 @@ void World::clear_entities()
 {
     while (!ent_ptrs_.empty())
         destroy(ent_ptrs_.back());
+    rebuild_available_id_stack_();
 }
 
 System * World::add_system_(const rttr::type & sys_type, const Variant_Map & init_params)
@@ -110,6 +114,28 @@ Entity * World::create(const Entity & copy, const Variant_Map & init_params)
     return ent;
 }
 
+void World::rebuild_available_id_stack_()
+{
+    u32 largest_id = 0;
+    auto iter = entity_ids_.begin();
+    while (iter != entity_ids_.end())
+    {
+        if (iter->first > largest_id)
+            largest_id = iter->first;
+        ++iter;
+    }
+
+    ent_current_id_ = largest_id;
+    while (ent_id_stack_.size() > 0)
+        ent_id_stack_.pop();
+
+    for (u32 i = 0; i < ent_current_id_; ++i)
+    {
+        if (!contains(i))
+            ent_id_stack_.emplace(i);
+    }
+}
+
 void World::add_entity_(Entity * to_add, const Variant_Map & init_params)
 {
     // Assign id to entity - if crashes here then ent is nullptr likely from insufficient memory block (up the size)
@@ -129,8 +155,30 @@ void World::add_entity_(Entity * to_add, const Variant_Map & init_params)
 
     // Should always be true - if an entity isn't given a unique id there is something waaay wacko
     assert(ret.second);
+
+    // Connect to the id change signal - block the id change if that id is not available
+    auto func = [&](Pair<u32> ids, bool * allow) {
+        *allow = (entity_ids_.find(ids.y) == entity_ids_.end());
+        if (*allow)
+        {
+            Entity * ent = get(ids.x);
+            auto cnt = entity_ids_.erase(ids.x);
+            assert(cnt == 1);
+            entity_ids_.emplace(ids.y, ent);
+            rebuild_available_id_stack_();
+            emit_sig entity_id_change(ids);
+        }
+    };
+
+    sig_connect(to_add->id_change, func);
+
     to_add->owned = true;
     to_add->initialize(init_params);
+}
+
+bool World::contains(u32 id)
+{
+    return (get(id) != nullptr);
 }
 
 Entity * World::get(u32 id)
@@ -181,7 +229,9 @@ bool World::destroy(Entity * ent)
     }
 
     // Take the id back
-    ent_id_stack_.push(ent->get_id());
+    ent_id_stack_.emplace(ent->get_id());
+
+    emit_sig entity_destroyed(ent->get_id());
 
     fac->destroy(ent);
     return true;

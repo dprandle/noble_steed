@@ -2,24 +2,26 @@
 
 #include <noble_steed/core/common.h>
 #include <noble_steed/core/signal.h>
+#include <rttr/rttr_cast.h>
+#include <noble_steed/core/logger.h>
+#include <noble_steed/core/resource.h>
 
 namespace noble_steed
 {
-class Resource;
-
-extern const String INIT_PACKAGE_DIRS_KEY;
-extern const String INIT_CURRENT_PACKAGE_KEY;
+extern const String IP_PACKAGE_DIRS_KEY;
+extern const String IP_CURRENT_PACKAGE_KEY;
 
 extern const String CORE_PACKAGE_NAME;
 extern const String NONE_LOADED_PACKAGE_NAME;
 
 class Resource_Cache
 {
-    SLOT_OBJECT
-  public:
-    Resource_Cache();
+    friend class Context;
 
-    ~Resource_Cache();
+  public:
+    void initialize(const Variant_Map & init_params);
+
+    void terminate();
 
     // add resource
     template<class ResType>
@@ -30,29 +32,99 @@ class Resource_Cache
     }
 
     template<class ResType>
-    ResType * add(const ResType & copy, const String & name, const String & package = String())
+    ResType * add(const ResType & copy)
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(add_from(copy, name, package));
+        return static_cast<ResType *>(add_from_(copy));
     }
 
     Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params);
 
+    Resource * add(u32 type_id, const String & name, const String & package, const Variant_Map & init_params);
+
     template<class ResType>
     ResType * get(u32 id)
     {
-        return static_cast<ResType *>(get(id));
+        return rttr::rttr_cast<ResType *>(get(id));
     }
 
     template<class ResType>
-    ResType * get(const String & name, const String & package = String())
+    ResType * get(const String & name, const String & package = String()) const
     {
-        return static_cast<ResType *>(get(name, package));
+        return rttr::rttr_cast<ResType *>(get(name, package));
     }
 
-    Resource * get(const String & name, const String & package);
+    Resource * get(const String & name, const String & package) const;
 
-    Resource * get(u32 id);
+    Resource * get(u32 id) const;
+
+    template<class ResType>
+    Vector<ResType *> get_all() const
+    {
+        Vector<ResType *> ret;
+        ret.reserve(resources_.size());
+        auto iter = resources_.begin();
+        while (iter != resources_.end())
+        {
+            ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
+            if (cast != nullptr)
+                ret.push_back(cast);
+            ++iter;
+        }
+        return ret;
+    }
+
+    template<class ResType>
+    Vector<ResType *> get_all(String package) const
+    {
+        make_valid_package_name_(package);
+
+        Vector<ResType *> ret;
+        ret.reserve(resources_.size());
+        auto iter = resources_.begin();
+        while (iter != resources_.end())
+        {
+            if (iter->second->get_package() == package)
+            {
+                ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
+                if (cast != nullptr)
+                    ret.push_back(cast);
+            }
+            ++iter;
+        }
+        return ret;
+    }
+
+    Vector<Resource *> get_all() const;
+
+    Vector<Resource *> get_all(String package) const;
+
+    template<class ResType>
+    ResType * load(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
+    {
+        rttr::type t = rttr::type::get<ResType>();
+        return static_cast<ResType *>(load(t, name, package, init_params));
+    }
+
+    template<class ResType>
+    ResType *
+    load(const String & custom_path, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
+    {
+        rttr::type t = rttr::type::get<ResType>();
+        return static_cast<ResType *>(load(t, name, package, custom_path, init_params));
+    }
+
+    Resource *
+    load(const rttr::type & resource_type, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
+
+    Resource *
+    load(u32 type_id, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
+
+    Resource * load(const rttr::type & resource_type,
+                    const String & custom_path,
+                    const String & name,
+                    const String & package = String(),
+                    const Variant_Map & init_params = Variant_Map());
 
     bool remove(u32 id);
 
@@ -60,9 +132,49 @@ class Resource_Cache
 
     bool remove(Resource * resource);
 
-    void initialize(const Variant_Map & init_params);
+    bool save(const String & custom_path, u32 resource_id) const;
 
-    void terminate();
+    bool save(const String & custom_path, const String & res_name, const String & res_package) const;
+
+    bool save(u32 resource_id) const;
+
+    bool save(const String & res_name, const String & res_package) const;
+
+    template<class ResType>
+    void save_all() const
+    {
+        ilog("Saving all {} resources!",rttr::type::get<ResType>().get_name().to_string());
+        auto iter = resources_.begin();
+        while (iter != resources_.end())
+        {
+            ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
+            if (cast != nullptr)
+                iter->second->save();
+            ++iter;
+        }
+    }
+
+    template<class ResType>
+    void save_all(String package) const
+    {
+        make_valid_package_name_(package);
+        ilog("Saving all {} resources in package {}!",rttr::type::get<ResType>().get_name().to_string(),package);
+        auto iter = resources_.begin();
+        while (iter != resources_.end())
+        {
+            if (iter->second->get_package() == package)
+            {
+                ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
+                if (cast != nullptr)
+                    iter->second->save();
+            }
+            ++iter;
+        }
+    }
+
+    void save_all() const;
+
+    void save_all(String package) const;
 
     void clear();
 
@@ -73,25 +185,35 @@ class Resource_Cache
     void set_current_package(String package);
 
   private:
-    Resource * add_from_(const Resource & copy, const String & name, const String & package);
+    Resource_Cache();
+
+    Resource_Cache(const Resource_Cache &) = delete;
+
+    Resource_Cache & operator=(const Resource_Cache &) = delete;
+
+    ~Resource_Cache();
+
+    Resource * add_from_(const Resource & copy);
 
     void on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change);
 
-    Resource * allocate_resource_(const rttr::type & type);
+    Resource * allocate_resource_(u32 type_id);
 
-    Resource * allocate_resource_(const rttr::type & type, const Resource & copy);
+    Resource * allocate_resource_(u32 type_id, const Resource & copy);
 
     bool add_resource_(Resource * res, const String & name, const String & package, const Variant_Map & init_params);
 
-    void deallocate_resource_(Resource * res, const rttr::type & resource_type);
+    void deallocate_resource_(Resource * res, u32 type_id);
 
-    void make_valid_package_name_(String & str);
+    void make_valid_package_name_(String & str) const;
 
     Hash_Map<u32, Resource *> resources_;
 
     Hash_Set<String> loaded_packages_;
 
     String current_package_;
+
+    SLOT_OBJECT
 };
 
 } // namespace noble_steed

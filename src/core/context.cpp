@@ -16,6 +16,7 @@ namespace noble_steed
 Context * Context::s_this_ = nullptr;
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 const String INIT_CWD_KEY = "cwd";
+const u32 INVALID_ID = static_cast<u32>(-1);
 
 Context::Context()
     : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
@@ -28,10 +29,14 @@ Context::Context()
       resource_cache_(nullptr)
 {
     s_this_ = this;
+    // Allocate memories
+    mem_free_list_.Init();
 }
 
 Context::~Context()
-{}
+{
+    mem_free_list_.Reset();
+}
 
 void Context::initialize(const Variant_Map & init_params)
 {
@@ -58,9 +63,6 @@ void Context::initialize(const Variant_Map & init_params)
     // Create log directory
     fs::create_directory("logs");
 
-    // Allocate memories
-    mem_free_list_.Init();
-
     // Initialize logger before other stuff so logging works
     logger_ = malloc<Logger>();
     logger_->initialize(init_params);
@@ -73,7 +75,6 @@ void Context::initialize(const Variant_Map & init_params)
     // Do rest of initialization
     resource_cache_->initialize(init_params);
     world_->initialize(init_params);
-
 }
 
 void Context::terminate()
@@ -87,13 +88,6 @@ void Context::terminate()
     free(resource_cache_);
     resource_cache_ = nullptr;
 
-    // Free all pool allocators
-    while (pool_allocators_.begin() != pool_allocators_.end())
-    {
-        free(pool_allocators_.begin()->second);
-        pool_allocators_.erase(pool_allocators_.begin());
-    }
-
     // Free all factories
     while (type_factories_.begin() != type_factories_.end())
     {
@@ -105,6 +99,14 @@ void Context::terminate()
     logger_->terminate();
     free(logger_);
     logger_ = nullptr;
+
+    // Free all pool allocators
+    while (pool_allocators_.begin() != pool_allocators_.end())
+    {
+        free(pool_allocators_.begin()->second);
+        pool_allocators_.erase(pool_allocators_.begin());
+    }
+
     mem_free_list_.Reset();
 }
 
@@ -135,12 +137,11 @@ void Context::raw_free(void * to_free)
 
 u32 Context::get_extension_resource_type(const String & extension)
 {
-    u32 ret = -1;
     u32 hash_id = str_hash(extension);
     auto fiter = extension_resource_type_.find(hash_id);
     if (fiter != extension_resource_type_.end())
-        ret = fiter->second;
-    return ret;
+        return fiter->second;
+    return INVALID_ID;
 }
 
 void * Context::malloc_(const rttr::type & type, u32 elements)
@@ -153,7 +154,7 @@ void * Context::malloc_(const rttr::type & type, u32 elements)
 void Context::register_default_types_(const Variant_Map & init_params)
 {
     // Resources
-    register_resource_type<World_Chunk>(".bbworld",init_params);
+    register_resource_type<World_Chunk>(".bbworld", init_params);
 
     // Entity
     register_pool_factory<Entity>(init_params, DEFAULT_ENTITY_ALLOC);
@@ -162,13 +163,42 @@ void Context::register_default_types_(const Variant_Map & init_params)
     register_component_type<Transform>(init_params);
 }
 
-void Context::set_resource_extension_(const rttr::type & resource_type, const String & extension)
+bool Context::set_resource_extension_(const rttr::type & resource_type, const String & extension)
 {
+    if (extension.empty() || extension.find_first_of('/') != String::npos || extension.find_first_of('\\') != String::npos)
+    {
+        wlog("Cannot register resource type because extension {} is invalid", extension);
+        return false;
+    }
+
+    String actual_extension(extension);
+    if (actual_extension[0] != '.')
+        actual_extension = "." + actual_extension;
+
+    u32 type_id = type_hash(resource_type);
+    u32 ext_hash = str_hash(actual_extension);
+    resource_type_extension_[type_id] = actual_extension;
+    extension_resource_type_[ext_hash] = type_id;
+    ilog("Setting extension for resource type {} and id {} to {} ({})", resource_type.get_name().to_string(), type_id, actual_extension,ext_hash);
+    return true;
+}
+
+bool Context::remove_resource_extension(const rttr::type & resource_type)
+{
+    String extension = get_resource_extension(resource_type);
+    if (extension.empty())
+    {
+        wlog("Could not remove extension for resource type {} as no extension entry was found",resource_type.get_name().to_string());
+        return false;
+    }
+    
     u32 type_id = type_hash(resource_type);
     u32 ext_hash = str_hash(extension);
-    resource_type_extension_[type_id] = extension;
-    extension_resource_type_[ext_hash] = type_id;
-    ilog("Setting extension for resource type {} and id {} to {}", resource_type.get_name().to_string(), type_id, extension);
+    u32 cnt = resource_type_extension_.erase(type_id);
+    u32 cnt2 = extension_resource_type_.erase(ext_hash);
+    assert(cnt == cnt2 && cnt == 1);
+    ilog("Successfully removed resource extension entry {} for type {}",extension,resource_type.get_name().to_string());
+    return true;
 }
 
 String Context::get_resource_extension(const rttr::type & resource_type)
@@ -232,7 +262,7 @@ bool Context::destroy_comp_allocator_(const rttr::type & type)
 PoolAllocator * Context::get_pool_allocator(const rttr::type & type)
 {
     u32 type_id = type_hash(type);
-    return get_pool_allocator(type_id);    
+    return get_pool_allocator(type_id);
 }
 
 PoolAllocator * Context::get_pool_allocator(u32 type_id)

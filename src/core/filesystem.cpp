@@ -9,13 +9,8 @@ const noble_steed::u32 MAX_PATH = 200;
 #include <mach-o/dyld.h>
 #endif
 
-namespace std
+namespace noble_steed
 {
-namespace __fs
-{
-namespace filesystem
-{
-using namespace noble_steed;
 String executable_name()
 {
     String ret;
@@ -42,6 +37,4 @@ String executable_name()
     return ret;
 }
 
-} // namespace filesystem
-} // namespace __fs
-} // namespace std
+}

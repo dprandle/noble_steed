@@ -6,8 +6,8 @@
 
 namespace noble_steed
 {
-const String INIT_PACKAGE_DIRS_KEY = "Package_Dirs";
-const String INIT_CURRENT_PACKAGE_KEY = "Current_Package";
+const String IP_PACKAGE_DIRS_KEY = "Package_Dirs";
+const String IP_CURRENT_PACKAGE_KEY = "Current_Package";
 
 const String CORE_PACKAGE_NAME = "data/core";
 const String NONE_LOADED_PACKAGE_NAME = "data/scooby";
@@ -16,96 +16,15 @@ Resource_Cache::Resource_Cache()
 {}
 
 Resource_Cache::~Resource_Cache()
-{}
-
-Resource * Resource_Cache::add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
 {
-    Resource * resource = allocate_resource_(resource_type);
-    if (!add_resource_(resource, name, package, init_params))
-    {
-        deallocate_resource_(resource, resource_type);
-        return nullptr;
-    }
-    return resource;
-}
-
-Resource * Resource_Cache::add_from_(const Resource & copy, const String & name, const String & package)
-{
-    rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
-    Resource * resource = allocate_resource_(t, copy);
-    if (!add_resource_(resource, name, package, Variant_Map()))
-    {
-        deallocate_resource_(resource, t);
-        return nullptr;
-    }
-    return resource;
-}
-
-Resource * Resource_Cache::get(const String & name, const String & package)
-{
-    String actual_package(package);
-    if (actual_package.empty())
-        actual_package = current_package_;
-
-    if (actual_package.empty())
-    {
-        wlog("Cannot load resource {} - no package passed in and no current package set", name);
-    }
-    u32 id = str_hash(package + name);
-    return get(id);
-}
-
-Resource * Resource_Cache::get(u32 id)
-{
-    auto fiter = resources_.find(id);
-    if (fiter != resources_.end())
-        return fiter->second;
-    return nullptr;
-}
-
-bool Resource_Cache::remove(u32 id)
-{
-    Resource * ret = nullptr;
-    auto fiter = resources_.find(id);
-    if (fiter != resources_.end())
-    {
-        ret = fiter->second;
-        ret->terminate();
-        fiter = resources_.erase(fiter);
-        deallocate_resource_(ret, ret->get_derived_info().m_type);
-        return true;
-    }
-    else
-    {
-        wlog("Could not remove resource with id {} from Resource Cache as the id wasn't found", id);
-        return false;
-    }
-}
-
-bool Resource_Cache::remove(const String & name, const String & package)
-{
-    String actual_package(package);
-    if (actual_package.empty())
-        actual_package = current_package_;
-
-    if (actual_package.empty())
-    {
-        wlog("Cannot load resource {} - no package passed in and no current package set", name);
-    }
-    u32 id = str_hash(package + name);
-    return remove(id);
-}
-
-bool Resource_Cache::remove(Resource * resource)
-{
-    return remove(resource->get_id());
+    clear();
 }
 
 void Resource_Cache::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing resource cache");
 
-    auto iter = init_params.find(INIT_PACKAGE_DIRS_KEY);
+    auto iter = init_params.find(IP_PACKAGE_DIRS_KEY);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<Vector<String>>())
@@ -114,12 +33,13 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
             for (int i = 0; i < view.get_size(); ++i)
                 load_package(view.get_value(i).to_string(), false);
         }
+        else
         {
             wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
         }
     }
 
-    iter = init_params.find(INIT_CURRENT_PACKAGE_KEY);
+    iter = init_params.find(IP_CURRENT_PACKAGE_KEY);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<String>())
@@ -142,9 +62,198 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
 void Resource_Cache::terminate()
 {
     ilog("Terminating resource cache");
+    clear();
 }
 
-void Resource_Cache::make_valid_package_name_(String & str)
+Resource * Resource_Cache::add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
+{
+    return add(type_hash(resource_type), name, package, init_params);
+}
+
+Resource * Resource_Cache::add(u32 type_id, const String & name, const String & package, const Variant_Map & init_params)
+{
+    Resource * resource = allocate_resource_(type_id);
+    if (!add_resource_(resource, name, package, init_params))
+    {
+        deallocate_resource_(resource, type_id);
+        return nullptr;
+    }
+    return resource;
+}
+
+Resource * Resource_Cache::load(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
+{
+    return load(type_hash(resource_type),name,package,init_params);
+}
+
+Resource * Resource_Cache::load(u32 type_id, const String & name, const String & package, const Variant_Map & init_params)
+{
+    Resource * res = add(type_id, name, package, init_params);
+    if (res != nullptr && !res->load())
+    {
+        remove(res);
+        res = nullptr;
+    }
+    return res;
+}
+
+Resource * Resource_Cache::load(const rttr::type & resource_type,
+                                const String & name,
+                                const String & package,
+                                const String & custom_path,
+                                const Variant_Map & init_params)
+{
+    Resource * res = add(resource_type, name, package, init_params);
+    if (res != nullptr && !res->load(custom_path))
+    {
+        remove(res);
+        res = nullptr;
+    }
+    return res;
+}
+
+bool Resource_Cache::save(const String & custom_path, u32 resource_id) const
+{
+    Resource * res = get(resource_id);
+    if (res != nullptr)
+        return res->save(custom_path);
+    return false;
+}
+
+bool Resource_Cache::save(const String & custom_path, const String & res_name, const String & res_package) const
+{
+    Resource * res = get(res_name, res_package);
+    if (res != nullptr)
+        return res->save(custom_path);
+    return false;
+}
+
+bool Resource_Cache::save(u32 resource_id) const
+{
+    Resource * res = get(resource_id);
+    if (res != nullptr)
+        return res->save();
+    return false;
+}
+
+bool Resource_Cache::save(const String & res_name, const String & res_package) const
+{
+    Resource * res = get(res_name, res_package);
+    if (res != nullptr)
+        return res->save();
+    return false;
+}
+
+Resource * Resource_Cache::add_from_(const Resource & copy)
+{
+    rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
+    u32 type_id = type_hash(t);
+    Resource * resource = allocate_resource_(type_id, copy);
+    if (!add_resource_(resource, resource->get_name(), resource->get_package(), Variant_Map()))
+    {
+        deallocate_resource_(resource, type_id);
+        return nullptr;
+    }
+    return resource;
+}
+
+Resource * Resource_Cache::get(const String & name, const String & package) const
+{
+    String actual_package(package);
+    if (actual_package.empty())
+        actual_package = current_package_;
+    else
+        make_valid_package_name_(actual_package);
+
+    if (actual_package.empty())
+    {
+        wlog("Cannot load resource {} - no package passed in and no current package set", name);
+    }
+    u32 id = str_hash(package + name);
+    return get(id);
+}
+
+Resource * Resource_Cache::get(u32 id) const
+{
+    auto fiter = resources_.find(id);
+    if (fiter != resources_.end())
+        return fiter->second;
+    return nullptr;
+}
+
+Vector<Resource *> Resource_Cache::get_all() const
+{
+    Vector<Resource *> ret;
+    ret.resize(resources_.size());
+
+    sizet ind = 0;
+    auto iter = resources_.begin();
+    while (iter != resources_.end())
+    {
+        ret[ind] = iter->second;
+        ++ind;
+        ++iter;
+    }
+    return ret;
+}
+
+Vector<Resource *> Resource_Cache::get_all(String package) const
+{
+    make_valid_package_name_(package);
+
+    Vector<Resource *> ret;
+    ret.reserve(resources_.size());
+    auto iter = resources_.begin();
+    while (iter != resources_.end())
+    {
+        if (iter->second->get_package() == package)
+            ret.push_back(iter->second);
+        ++iter;
+    }
+    return ret;
+}
+
+bool Resource_Cache::remove(u32 id)
+{
+    Resource * ret = nullptr;
+    auto fiter = resources_.find(id);
+    if (fiter != resources_.end())
+    {
+        ret = fiter->second;
+        ret->terminate();
+        fiter = resources_.erase(fiter);
+        deallocate_resource_(ret, type_hash(ret->get_derived_info().m_type));
+        return true;
+    }
+    else
+    {
+        wlog("Could not remove resource with id {} from Resource Cache as the id wasn't found", id);
+        return false;
+    }
+}
+
+bool Resource_Cache::remove(const String & name, const String & package)
+{
+    String actual_package(package);
+    if (actual_package.empty())
+        actual_package = current_package_;
+    else
+        make_valid_package_name_(actual_package);
+
+    if (actual_package.empty())
+    {
+        wlog("Cannot load resource {} - no package passed in and no current package set", name);
+    }
+    u32 id = str_hash(package + name);
+    return remove(id);
+}
+
+bool Resource_Cache::remove(Resource * resource)
+{
+    return remove(resource->get_id());
+}
+
+void Resource_Cache::make_valid_package_name_(String & str) const
 {
     if (str.find_last_of('/') != str.size() - 1)
     {
@@ -155,13 +264,15 @@ void Resource_Cache::make_valid_package_name_(String & str)
 bool Resource_Cache::load_package(String package, bool make_current)
 {
     make_valid_package_name_(package);
+    ilog("Trying to load package {}", package);
     auto inserted = loaded_packages_.emplace(package);
     if (inserted.second)
     {
+        // Remove the final "/"
         String path_str = package.substr(0, package.size() - 1);
         if (fs::is_directory(path_str) || fs::create_directories(path_str))
         {
-            ilog("Successfully loaded package {}", package);
+            ilog("Successfully created or found package dir {}", package);
         }
         else
         {
@@ -171,8 +282,39 @@ bool Resource_Cache::load_package(String package, bool make_current)
         }
 
         // Load all resources recursively in this directory!
-        fs::path dir_path(path_str);
-        auto dir_and_file_iter = dir_path.begin();
+        ilog("Trying to load all resources in {}", package);
+
+        fs::recursive_directory_iterator dir_path_iter(path_str);
+        while (dir_path_iter != fs::recursive_directory_iterator())
+        {
+            fs::path rel_path = dir_path_iter->path().relative_path();
+            fs::path fname = rel_path.filename();
+            
+            // Skip hidden files and non regular files
+            if (fname.empty() || fname.string()[0] == '.' || !dir_path_iter->is_regular_file())
+            {
+                ++dir_path_iter;
+                continue;
+            }
+
+            String obj_name = rel_path.string();
+            String ext = rel_path.extension().string();
+
+            // Remove the extension from the file name, and the package prefix from the file name
+            // This results in the obj name being what is left
+            size_t np = obj_name.find(package);
+            obj_name.erase(np,package.size());
+            np = obj_name.find(ext);
+            obj_name.erase(np,ext.size());
+            u32 type_id = ns_ctxt.get_extension_resource_type(ext);
+
+            dlog("Loading obj name: {}", obj_name);
+            dlog("Loading extension: {}", ext);
+            dlog("Loading type id: {}", type_id);
+
+            load(ns_ctxt.get_extension_resource_type(ext),obj_name,package);
+            ++dir_path_iter;
+        }
 
         if (make_current)
             set_current_package(package);
@@ -182,6 +324,30 @@ bool Resource_Cache::load_package(String package, bool make_current)
 
     wlog("Could not load package {} as it's already loaded", package);
     return false;
+}
+
+void Resource_Cache::save_all(String package) const
+{
+    make_valid_package_name_(package);
+    ilog("Saving all resources in package {}!", package);
+    auto iter = resources_.begin();
+    while (iter != resources_.end())
+    {
+        if (iter->second->get_package() == package)
+            iter->second->save();
+        ++iter;
+    }
+}
+
+void Resource_Cache::save_all() const
+{
+    ilog("Saving all resources!");
+    auto iter = resources_.begin();
+    while (iter != resources_.end())
+    {
+        iter->second->save();
+        ++iter;
+    }
 }
 
 void Resource_Cache::clear()
@@ -233,18 +399,18 @@ void Resource_Cache::set_current_package(String package)
     }
 }
 
-Resource * Resource_Cache::allocate_resource_(const rttr::type & type)
+Resource * Resource_Cache::allocate_resource_(u32 type_id)
 {
-    auto fac = ns_ctxt.get_factory(type);
+    auto fac = ns_ctxt.get_factory(type_id);
     assert(fac != nullptr);
     Resource * res = fac->create_and_cast<Resource>();
     assert(res != nullptr);
     return res;
 }
 
-Resource * Resource_Cache::allocate_resource_(const rttr::type & type, const Resource & copy)
+Resource * Resource_Cache::allocate_resource_(u32 type_id, const Resource & copy)
 {
-    auto fac = ns_ctxt.get_factory(type);
+    auto fac = ns_ctxt.get_factory(type_id);
     assert(fac != nullptr);
     Resource * res = fac->create_and_cast<Resource>(copy);
     assert(res != nullptr);
@@ -256,6 +422,8 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     String actual_package(package);
     if (actual_package.empty())
         actual_package = current_package_;
+    else
+        make_valid_package_name_(actual_package);
 
     if (actual_package.empty())
     {
@@ -267,7 +435,7 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     auto fiter = resources_.emplace(res->get_id(), res);
     if (fiter.second)
     {
-        sig_connect(res->change_id, Resource_Cache::on_resource_name_change_);
+        sig_connect(res->change_id, this, &Resource_Cache::on_resource_name_change_);
         res->initialize(init_params);
         res->owned = true;
     }
@@ -277,15 +445,15 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
              "already exists",
              String(res->get_derived_info().m_type.get_name()),
              name,
-             package);
+             actual_package);
     }
     return fiter.second;
 }
 
-void Resource_Cache::deallocate_resource_(Resource * res, const rttr::type & resource_type)
+void Resource_Cache::deallocate_resource_(Resource * res, u32 type_id)
 {
     assert(res != nullptr);
-    auto fac = ns_ctxt.get_factory(resource_type);
+    auto fac = ns_ctxt.get_factory(type_id);
     fac->destroy(res);
 }
 } // namespace noble_steed

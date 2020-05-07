@@ -11,6 +11,11 @@ class System : public Context_Obj
     RTTR_ENABLE(Context_Obj)
   public:
     System();
+
+    System(const System & copy);
+
+    System & operator=(System rhs);
+
     virtual ~System();
 
     virtual void initialize(const Variant_Map & init_params);
@@ -18,6 +23,8 @@ class System : public Context_Obj
     virtual void terminate();
 
   protected:
+    void swap(const System & rhs);
+
     SLOT_OBJECT
 };
 

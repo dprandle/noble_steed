@@ -54,7 +54,6 @@ bool Context_Obj::is_owned_by_context()
 {
     return owned;
 }
-
 } // namespace noble_steed
 
 #include <rttr/registration>
