@@ -1,6 +1,5 @@
 #pragma once
 
-#include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
 #include <rttr/registration_friend>
 #include <noble_steed/serialization/json_archive.h>
@@ -34,6 +33,5 @@ class Component : public Context_Obj
     RTTR_REGISTRATION_FRIEND
     RTTR_ENABLE(Context_Obj)
     JSON_PACKABLE
-    SLOT_OBJECT
 };
 } // namespace noble_steed

@@ -17,7 +17,6 @@ class World
     friend class Context;
     friend Variant construct_factory_type(u32 type_id);
 
-
   public:
     void initialize(const Variant_Map & init_params = Variant_Map());
 

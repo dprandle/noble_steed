@@ -188,6 +188,8 @@ class Context
 
     PoolAllocator * get_pool_allocator(u32 type_id);
 
+    void subscribe_to_event(Context_Obj * obj, const String & event);
+
   private:
     void * malloc_(const rttr::type & type, u32 elements);
 

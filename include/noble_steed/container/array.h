@@ -4,6 +4,6 @@
 
 namespace noble_steed
 {
-template<class T>
-using Array = std::array<T>;
+template<class T, std::size_t N>
+using Array = std::array<T,N>;
 }

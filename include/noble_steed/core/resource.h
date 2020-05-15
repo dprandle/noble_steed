@@ -1,7 +1,6 @@
 #pragma once
 
 #include <noble_steed/core/common.h>
-#include <noble_steed/core/signal.h>
 #include <rttr/registration_friend>
 #include <noble_steed/serialization/json_archive.h>
 #include <noble_steed/core/context_obj.h>
@@ -62,8 +61,6 @@ class Resource : public Context_Obj
     String name_;
     String display_name_;
     u32 id_;
-
-    SLOT_OBJECT
 
   private:
     RTTR_REGISTRATION_FRIEND

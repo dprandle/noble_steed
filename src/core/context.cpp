@@ -5,6 +5,7 @@
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/scene/world.h>
 #include <noble_steed/core/resource_cache.h>
+#include <noble_steed/core/engine.h>
 
 // Defualt types to register
 #include <noble_steed/scene/transform.h>
@@ -153,6 +154,9 @@ void * Context::malloc_(const rttr::type & type, u32 elements)
 }
 void Context::register_default_types_(const Variant_Map & init_params)
 {
+    // Systems
+    register_system_type<Engine>(init_params);
+    
     // Resources
     register_resource_type<World_Chunk>(".bbworld", init_params);
 

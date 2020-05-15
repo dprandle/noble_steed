@@ -1,6 +1,5 @@
 #pragma once
 
-#include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
 #include <noble_steed/core/context_obj.h>
 
@@ -24,8 +23,6 @@ class System : public Context_Obj
 
   protected:
     void swap(const System & rhs);
-
-    SLOT_OBJECT
 };
 
 } // namespace noble_steed

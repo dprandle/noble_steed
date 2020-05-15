@@ -1,6 +1,5 @@
 #pragma once
 
-#include <noble_steed/core/signal.h>
 #include <noble_steed/core/common.h>
 #include <noble_steed/container/hash_map.h>
 #include <noble_steed/serialization/json_archive.h>
@@ -112,7 +111,6 @@ class Entity : public Context_Obj
     Hash_Map<u32, Component *> comps_;
 
     RTTR_REGISTRATION_FRIEND
-    SLOT_OBJECT
     JSON_PACKABLE
     RTTR_ENABLE(Context_Obj)
 };

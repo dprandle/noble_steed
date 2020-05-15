@@ -1,12 +1,43 @@
 #include <noble_steed/core/context_obj.h>
 #include <noble_steed/core/logger.h>
+#include <noble_steed/core/context.h>
 
 namespace noble_steed
 {
-Context_Obj::Context_Obj() : owned(false)
+Event::Event() : id(INVALID_ID), data()
 {}
 
-Context_Obj::Context_Obj(const Context_Obj & copy) : owned(false)
+Event::Event(const String & name) : id(str_hash(name)), data()
+{}
+
+void Event_Buffer::push(const Event & event)
+{
+    frame_events[cur_ind] = event;
+    ++cur_ind;
+    if (cur_ind == frame_events.size())
+        cur_ind = 0;
+}
+
+bool Event_Buffer::available()
+{
+    return (processed_ind != cur_ind);
+}
+
+Event & Event_Buffer::process()
+{
+    return frame_events[processed_ind];
+    ++processed_ind;
+    if (processed_ind == frame_events.size())
+        processed_ind = 0;
+}
+
+Event_Buffer::Event_Buffer() : frame_events(), cur_ind(0), processed_ind(0)
+{}
+
+Context_Obj::Context_Obj() : events_(), event_mutex_(), owned(false)
+{}
+
+Context_Obj::Context_Obj(const Context_Obj & copy) : events_(), event_mutex_(), owned(false)
 {}
 
 Context_Obj & Context_Obj::operator=(Context_Obj rhs)
@@ -19,7 +50,24 @@ void Context_Obj::swap(Context_Obj & rhs)
 {}
 
 Context_Obj::~Context_Obj()
-{}
+{
+    emit_sig destroyed(this);
+}
+
+void Context_Obj::process_events()
+{
+    event_mutex_.lock();
+    while (events_.available())
+        emit_sig process_event(events_.process());
+    event_mutex_.unlock();
+}
+
+void Context_Obj::push_event(const Event & event)
+{
+    event_mutex_.lock();
+    events_.push(event);
+    event_mutex_.unlock();
+}
 
 void Context_Obj::pack_unpack(JSON_Archive & ar)
 {
