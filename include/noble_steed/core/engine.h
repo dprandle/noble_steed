@@ -5,6 +5,8 @@
 
 extern const std::chrono::nanoseconds TIMESTEP;
 
+#define ns_eng ns_ctxt.get_world()->get_system<Engine>()
+
 namespace noble_steed
 {
 class Engine : public System
@@ -25,10 +27,12 @@ class Engine : public System
 
     virtual void terminate();
 
+    Signal<> frame_start;
     Signal<> update;
     Signal<> post_update;
     Signal<> render;
     Signal<> post_render;
+    Signal<> frame_finish;
 
   protected:
     void swap(const Engine & rhs);

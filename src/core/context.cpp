@@ -1,11 +1,12 @@
 #include <noble_steed/core/context.h>
-#include <noble_steed/core/logger.h>
-#include <noble_steed/core/filesystem.h>
+#include <noble_steed/io/logger.h>
+#include <noble_steed/io/filesystem.h>
 #include <noble_steed/core/system.h>
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/scene/world.h>
 #include <noble_steed/core/resource_cache.h>
 #include <noble_steed/core/engine.h>
+#include <noble_steed/io/input_translator.h>
 
 // Defualt types to register
 #include <noble_steed/scene/transform.h>
@@ -156,7 +157,8 @@ void Context::register_default_types_(const Variant_Map & init_params)
 {
     // Systems
     register_system_type<Engine>(init_params);
-    
+    register_system_type<Input_Translator>(init_params);
+
     // Resources
     register_resource_type<World_Chunk>(".bbworld", init_params);
 
@@ -183,7 +185,7 @@ bool Context::set_resource_extension_(const rttr::type & resource_type, const St
     u32 ext_hash = str_hash(actual_extension);
     resource_type_extension_[type_id] = actual_extension;
     extension_resource_type_[ext_hash] = type_id;
-    ilog("Setting extension for resource type {} and id {} to {} ({})", resource_type.get_name().to_string(), type_id, actual_extension,ext_hash);
+    ilog("Setting extension for resource type {} and id {} to {} ({})", resource_type.get_name().to_string(), type_id, actual_extension, ext_hash);
     return true;
 }
 
@@ -192,17 +194,80 @@ bool Context::remove_resource_extension(const rttr::type & resource_type)
     String extension = get_resource_extension(resource_type);
     if (extension.empty())
     {
-        wlog("Could not remove extension for resource type {} as no extension entry was found",resource_type.get_name().to_string());
+        wlog("Could not remove extension for resource type {} as no extension entry was found", resource_type.get_name().to_string());
         return false;
     }
-    
+
     u32 type_id = type_hash(resource_type);
     u32 ext_hash = str_hash(extension);
     u32 cnt = resource_type_extension_.erase(type_id);
     u32 cnt2 = extension_resource_type_.erase(ext_hash);
     assert(cnt == cnt2 && cnt == 1);
-    ilog("Successfully removed resource extension entry {} for type {}",extension,resource_type.get_name().to_string());
+    ilog("Successfully removed resource extension entry {} for type {}", extension, resource_type.get_name().to_string());
     return true;
+}
+
+void Context::subscribe_to_event(Context_Obj * obj, const String & event)
+{
+    subscribe_to_event(obj, hash_str(event));
+}
+
+void Context::subscribe_to_event(Context_Obj * obj, u32 event_id)
+{
+    event_subscribers_[event_id].insert(obj);
+    sig_connect(obj->destroyed, this, &Context::unsubscribe_from_all);
+    ilog("Subscribed {} to event id {}", obj->get_derived_info().m_type.get_name().to_string(), event_id);
+}
+
+void Context::unsubscribe_from_all(Context_Obj * obj)
+{
+    auto iter = event_subscribers_.begin();
+    while (iter != event_subscribers_.end())
+    {
+        size_t cnt = iter->second.erase(obj);
+        if (cnt)
+        {
+            ilog("Unsubscribed {} from event id {}", obj->get_derived_info().m_type.get_name().to_string(), iter->first);
+        }
+        ++iter;
+    }
+}
+
+void Context::unsubscribe_from_event(Context_Obj * obj, const String & event)
+{
+    unsubscribe_from_event(obj, hash_str(event));
+}
+
+void Context::unsubscribe_from_event(Context_Obj * obj, u32 event_id)
+{
+    auto fiter = event_subscribers_.find(event_id);
+    if (fiter != event_subscribers_.end())
+    {
+        size_t cnt = fiter->second.erase(obj);
+        if (cnt)
+        {
+            ilog("Unsubscribed {} from event id {}", obj->get_derived_info().m_type.get_name().to_string(), event_id);
+        }
+    }
+}
+
+void Context::post_event_to_queues(const Event & event)
+{
+    auto iter = event_subscribers_.find(event.id);
+    if (iter != event_subscribers_.end())
+    {
+        auto subs_iter = iter->second.begin();
+        while (subs_iter != iter->second.end())
+        {
+            (*subs_iter)->push_event(event);
+            ++subs_iter;
+        }
+    }
+}
+
+void Context::post_event_to_queues(const String & event_name, const Variant_Map & data)
+{
+    post_event_to_queues(Event(event_name,data));
 }
 
 String Context::get_resource_extension(const rttr::type & resource_type)

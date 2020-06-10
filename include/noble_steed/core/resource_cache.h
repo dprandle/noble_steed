@@ -3,7 +3,7 @@
 #include <noble_steed/core/common.h>
 #include <noble_steed/core/signal.h>
 #include <rttr/rttr_cast.h>
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <noble_steed/core/resource.h>
 
 namespace noble_steed

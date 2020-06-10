@@ -62,7 +62,7 @@ class World
     // Signals
     Signal<u32> entity_destroyed;
 
-    Signal<Pair<u32>> entity_id_change;
+    Signal<Tuple2<u32>> entity_id_change;
 
   private:
     World();
@@ -72,6 +72,8 @@ class World
     World & operator=(const World &) = delete;
 
     ~World();
+
+    void add_default_systems(const Variant_Map & init_params);
 
     void rebuild_available_id_stack_();
     

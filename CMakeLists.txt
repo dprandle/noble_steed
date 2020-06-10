@@ -75,7 +75,7 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/core/*.cpp
   ${NOBLE_STEED_SRC_DIR}/graphics/*.cpp
   ${NOBLE_STEED_SRC_DIR}/scene/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/serialization/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/io/*.cpp
   ${NOBLE_STEED_SRC_DIR}/math/*.cpp
   ${NOBLE_STEED_SRC_DIR}/hash/*.cpp
   )
@@ -107,7 +107,11 @@ add_subdirectory(${MEMORY_ALLOCATORS_DIR})
 
 if (WIN32)
 # Windows stuff here
+    add_definitions(-DPLATFORM_WINDOWS)
+    add_definitions(-DGLFW_EXPOSE_NATIVE_WIN32)
 elseif(APPLE)
+    add_definitions(-DPLATFORM_OSX)
+    add_definitions(-DGLFW_EXPOSE_NATIVE_COCOA)
     set(CMAKE_MACOSX_RPATH 1)
     link_directories(/usr/local/lib)
     include_directories(/usr/local/include)
@@ -133,33 +137,35 @@ elseif(APPLE)
         spdlog
         )
 else()
-add_library(${TARGET_NAME} SHARED ${SRC_FILES})
-target_link_libraries(${TARGET_NAME} PRIVATE
-  ${BGFX_LIB_PATH}
-  #pybind11::pybind11
-  pybind11::embed
-  glfw
-  RTTR::Core
-  assimp
-  Bullet2FileLoader
-  Bullet3Dynamics
-  Bullet3OpenCL_clew
-  Bullet3Collision
-  BulletInverseDynamics
-  Bullet3Geometry
-  BulletSoftBody
-  BulletCollision
-  Bullet3Common
-  BulletDynamics
-  LinearMath
-  memory_allocators
-  ${PYTHON_LIBRARIES}
-  spdlog
-  X11
-  GL
-  stdc++fs
-  pthread
-)
+    add_definitions(-DPLATFORM_LINUX)
+    add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
+    add_library(${TARGET_NAME} SHARED ${SRC_FILES})
+    target_link_libraries(${TARGET_NAME} PRIVATE
+    ${BGFX_LIB_PATH}
+    #pybind11::pybind11
+    pybind11::embed
+    glfw
+    RTTR::Core
+    assimp
+    Bullet2FileLoader
+    Bullet3Dynamics
+    Bullet3OpenCL_clew
+    Bullet3Collision
+    BulletInverseDynamics
+    Bullet3Geometry
+    BulletSoftBody
+    BulletCollision
+    Bullet3Common
+    BulletDynamics
+    LinearMath
+    memory_allocators
+    ${PYTHON_LIBRARIES}
+    spdlog
+    X11
+    GL
+    stdc++fs
+    pthread
+    )
 endif()
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)

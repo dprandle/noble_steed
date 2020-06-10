@@ -2,7 +2,7 @@
 
 #include <noble_steed/core/common.h>
 #include <noble_steed/container/hash_map.h>
-#include <noble_steed/serialization/json_archive.h>
+#include <noble_steed/io/json_archive.h>
 #include <noble_steed/core/context_obj.h>
 #include <rttr/registration_friend>
 
@@ -84,7 +84,7 @@ class Entity : public Context_Obj
 
     u32 get_id();
 
-    Signal<Pair<u32>, bool *> id_change;
+    Signal<Tuple2<u32>, bool *> id_change;
 
     Entity & operator=(Entity rhs);
 

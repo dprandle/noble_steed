@@ -12,6 +12,8 @@ namespace noble_steed
 
 #define type_hash(arg) str_hash(arg.get_name().to_string())
 
+#define post_event(...) ns_ctxt.post_event_to_queues(__VA_ARGS__)
+
 extern const u32 INVALID_ID;
 
 // A Pool allocator must at least allocate a single chunk size of this size - ie even if a component is 5 bytes, each
@@ -29,7 +31,6 @@ class World;
 class System;
 class Context
 {
-    SLOT_OBJECT
   public:
     Context();
     ~Context();
@@ -116,7 +117,9 @@ class Context
         rttr::type t = rttr::type::get<Derived>();
         u32 type_id = type_hash(t);
         if (contains_factory(type_id))
+        {
             return nullptr;
+        }
 
         Free_List_Factory<Derived> * fac = malloc<Free_List_Factory<Derived>>(alloc);
         type_factories_[type_id] = fac;
@@ -190,6 +193,18 @@ class Context
 
     void subscribe_to_event(Context_Obj * obj, const String & event);
 
+    void subscribe_to_event(Context_Obj * obj, u32 event_id);
+
+    void unsubscribe_from_all(Context_Obj * obj);
+
+    void unsubscribe_from_event(Context_Obj * obj, const String & event);
+
+    void unsubscribe_from_event(Context_Obj * obj, u32 event_id);
+
+    void post_event_to_queues(const Event & event);
+
+    void post_event_to_queues(const String & event_name, const Variant_Map & data=Variant_Map());
+
   private:
     void * malloc_(const rttr::type & type, u32 elements);
 
@@ -220,8 +235,12 @@ class Context
 
     World * world_;
 
+    Hash_Map<u32, Hash_Set<Context_Obj*>> event_subscribers_;
+
     Resource_Cache * resource_cache_;
 
     static Context * s_this_;
+
+    SLOT_OBJECT
 };
 } // namespace noble_steed

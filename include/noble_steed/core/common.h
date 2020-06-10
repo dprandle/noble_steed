@@ -46,11 +46,15 @@ const u16 DEFAULT_ENTITY_ALLOC = 1000;
 // Init params key to override the default entity allocation amount
 const String ENTITY_ALLOC_KEY = "Entity_Alloc";
 
+template<class T, class S>
+using Pair = std::pair<T,S>;
 
 template<class T>
-struct Pair
+struct Tuple2
 {
-    Pair(T first_=0, T second_=0):first(first_),second(second_){}
+    Tuple2(T first_=0, T second_=0):first(first_),second(second_){}
+    Tuple2(const std::pair<T,T> & pr):first(pr.first),second(pr.second){}
+
 	union
 	{
 		T data[2];

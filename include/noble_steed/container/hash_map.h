@@ -8,6 +8,6 @@ template<class T, class S>
 using Hash_Map = std::unordered_map<T,S>;
 
 template<class T, class S>
-using Hash_Multimap = std::unordered_map<T,S>;
+using Hash_Multimap = std::unordered_multimap<T,S>;
 
 }

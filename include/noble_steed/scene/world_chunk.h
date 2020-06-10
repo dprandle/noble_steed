@@ -46,7 +46,7 @@ class World_Chunk : public Resource
     virtual void pack_end(JSON_Archive::Direction io_dir);
 
   private:
-    void on_ent_id_change(Pair<u32> ids);
+    void on_ent_id_change(Tuple2<u32> ids);
 
     void on_ent_destroyed(u32 id);
 

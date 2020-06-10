@@ -1,6 +1,6 @@
 #pragma once
 
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <FreeListAllocator.h>
 #include <PoolAllocator.h>
 #include <noble_steed/core/common.h>

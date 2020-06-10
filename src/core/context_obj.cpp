@@ -1,5 +1,5 @@
 #include <noble_steed/core/context_obj.h>
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <noble_steed/core/context.h>
 
 namespace noble_steed
@@ -7,7 +7,7 @@ namespace noble_steed
 Event::Event() : id(INVALID_ID), data()
 {}
 
-Event::Event(const String & name) : id(str_hash(name)), data()
+Event::Event(const String & name, const Variant_Map & data_) : id(str_hash(name)), data(data_)
 {}
 
 void Event_Buffer::push(const Event & event)
@@ -25,10 +25,11 @@ bool Event_Buffer::available()
 
 Event & Event_Buffer::process()
 {
-    return frame_events[processed_ind];
+    Event & ev = frame_events[processed_ind];
     ++processed_ind;
     if (processed_ind == frame_events.size())
         processed_ind = 0;
+    return ev;
 }
 
 Event_Buffer::Event_Buffer() : frame_events(), cur_ind(0), processed_ind(0)

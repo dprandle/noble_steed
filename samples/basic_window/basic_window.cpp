@@ -1,7 +1,9 @@
-#include <noble_steed/graphics/video_device.h>
+#include <noble_steed/core/application.h>
 
 int main()
 {
-    GLFW_func();
+    noble_steed::Application applic;
+    applic.initialize();
+    applic.exec();
     return 0;
 }

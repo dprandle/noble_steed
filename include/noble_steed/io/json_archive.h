@@ -1,6 +1,6 @@
 #pragma once
 
-#include <noble_steed/serialization/archive.h>
+#include <noble_steed/io/archive.h>
 #include <rttr/type>
 
 namespace noble_steed

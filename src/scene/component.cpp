@@ -1,6 +1,6 @@
 #include <noble_steed/scene/component.h>
 #include <noble_steed/container/string.h>
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <noble_steed/core/context.h>
 
 namespace noble_steed

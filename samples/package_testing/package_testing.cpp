@@ -5,6 +5,7 @@
 #include <noble_steed/core/resource.h>
 #include <noble_steed/core/resource_cache.h>
 #include <noble_steed/scene/world_chunk.h>
+#include <noble_steed/core/engine.h>
 
 using namespace noble_steed;
 
@@ -80,8 +81,7 @@ int main()
     // sr3->channel_80 = 10;
 
     // rc->save_all();
-
-
+    ns_eng->run_frame();
 
     ctxt.terminate();
     return 0;

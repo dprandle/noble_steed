@@ -1,5 +1,5 @@
 #include <noble_steed/scene/entity.h>
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <noble_steed/core/context.h>
 #include <noble_steed/scene/world.h>
 #include <noble_steed/scene/component.h>
@@ -72,7 +72,7 @@ void Entity::set_id(u32 id)
     {
         dlog("Trying to re-assign entity id from {} to {}", id_, id);
         bool success = true;
-        emit_sig id_change(Pair<u32>(id_, id),&success);
+        emit_sig id_change(Tuple2<u32>(id_, id),&success);
 
         if (success)
         {

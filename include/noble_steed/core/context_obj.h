@@ -2,7 +2,7 @@
 
 #include <rttr/type>
 #include <rttr/registration_friend>
-#include <noble_steed/serialization/json_archive.h>
+#include <noble_steed/io/json_archive.h>
 #include <noble_steed/core/signal.h>
 #include <noble_steed/container/array.h>
 #include <mutex>
@@ -13,7 +13,7 @@ namespace noble_steed
 struct Event
 {
     Event();
-    Event(const String & name);
+    Event(const String & name, const Variant_Map & data_=Variant_Map());
     u32 id;
     Variant_Map data;
 };
@@ -29,6 +29,12 @@ struct Event_Buffer
     size_t cur_ind;
     size_t processed_ind;
 };
+
+#define subscribe_event_handler(event_id, ...) ns_ctxt.subscribe_to_event(this,event_id); \
+    sig_connect(process_event, __VA_ARGS__);
+
+#define unsubscribe_event_handler(event_id, ...) ns_ctxt.unsubscribe_to_event(this,event_id); \
+    sig_disconnect(process_event, __VA_ARGS__);
 
 class Context_Obj
 {    

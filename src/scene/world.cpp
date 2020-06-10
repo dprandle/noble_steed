@@ -1,8 +1,10 @@
 #include <noble_steed/scene/world.h>
-#include <noble_steed/core/logger.h>
+#include <noble_steed/io/logger.h>
 #include <noble_steed/core/context.h>
 #include <noble_steed/scene/entity.h>
 #include <noble_steed/scene/component.h>
+#include <noble_steed/core/engine.h>
+#include <noble_steed/io/input_translator.h>
 
 namespace noble_steed
 {
@@ -24,6 +26,8 @@ void World::initialize(const Variant_Map & init_params)
         alloc_amount = fiter->second.get_value<u16>();
 
     ent_ptrs_.reserve(alloc_amount);
+
+    add_default_systems(init_params);
 }
 
 void World::terminate()
@@ -31,6 +35,12 @@ void World::terminate()
     ilog("Terminating world");
     clear_systems();
     clear_entities();
+}
+
+void World::add_default_systems(const Variant_Map & init_params)
+{
+    add_system<Engine>(init_params);
+    add_system<Input_Translator>(init_params);
 }
 
 void World::clear_systems()
@@ -157,7 +167,7 @@ void World::add_entity_(Entity * to_add, const Variant_Map & init_params)
     assert(ret.second);
 
     // Connect to the id change signal - block the id change if that id is not available
-    auto func = [&](Pair<u32> ids, bool * allow) {
+    auto func = [&](Tuple2<u32> ids, bool * allow) {
         *allow = (entity_ids_.find(ids.y) == entity_ids_.end());
         if (*allow)
         {

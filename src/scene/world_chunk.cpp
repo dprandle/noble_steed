@@ -150,7 +150,7 @@ void World_Chunk::pack_begin(JSON_Archive::Direction io_dir)
     }
 }
 
-void World_Chunk::on_ent_id_change(Pair<u32> ids)
+void World_Chunk::on_ent_id_change(Tuple2<u32> ids)
 {
     Entity * old_ent = get(ids.x);
     if (old_ent != nullptr)
