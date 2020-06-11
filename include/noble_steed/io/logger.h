@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <noble_steed/core/common.h>
+#include <spdlog/fmt/ostr.h>
 
 #define tlog SPDLOG_TRACE
 #define dlog SPDLOG_DEBUG

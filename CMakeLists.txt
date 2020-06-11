@@ -6,7 +6,7 @@ set(TARGET_NAME noble_steed)
 set(PYTHON_MODULE_NAME Noble_Steed)
 
 # Some basica CMAKE values
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -50,7 +50,7 @@ set(RTTR_VERSION_INCLUDE_DIR ${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/src)
 set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 
 # Debug and release specific settings
@@ -63,6 +63,7 @@ else()
   add_definitions(-DRELEASE_VERSION)
   add_definitions(-DNDEBUG)
 endif()
+add_definitions(-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM)
 
 # Set the src files for the project
 file(GLOB SRC_FILES 

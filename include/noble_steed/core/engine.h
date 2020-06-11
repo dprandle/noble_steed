@@ -27,6 +27,9 @@ class Engine : public System
 
     virtual void terminate();
 
+    bool is_running();
+    void set_running(bool running);
+
     Signal<> frame_start;
     Signal<> update;
     Signal<> post_update;
@@ -36,6 +39,7 @@ class Engine : public System
 
   protected:
     void swap(const Engine & rhs);
+    bool running_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_;
     std::chrono::time_point<std::chrono::high_resolution_clock> cur_time_;

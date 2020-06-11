@@ -232,7 +232,6 @@ RTTR_REGISTRATION
 {
     using namespace rttr;
     using namespace noble_steed;
-
     registration::class_<Entity>("noble_steed::Entity")
         .property("name", &Entity::get_name, &Entity::set_name, registration::public_access)
         .property("id", &Entity::get_id, &Entity::set_id, registration::public_access)(metadata("NO_SERIALIZE", true))

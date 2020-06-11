@@ -31,8 +31,6 @@ class Application
 
     static Application * this_global_ptr;
 
-    bool running;
-
     static void glfw_error_callback(i32 error, const char * description);
 };
 

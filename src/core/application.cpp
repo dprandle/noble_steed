@@ -27,7 +27,7 @@ namespace noble_steed
 {
 Application * Application::this_global_ptr = nullptr;
 
-Application::Application() : window_(nullptr), ctxt_(nullptr), running(false)
+Application::Application() : window_(nullptr), ctxt_(nullptr)
 {
     this_global_ptr = this;
 }
@@ -65,7 +65,6 @@ void Application::initialize(const Variant_Map & init_params)
 
     ctxt_ = new Context;
     ctxt_->initialize(init_params);
-    running = true;
 }
 
 Application & Application::inst()
@@ -80,8 +79,9 @@ int Application::exec()
     // pybind11::object obj = pybind11::cast(&Context::inst());
     // m.attr("context") = obj;
     // dlog("Scooby");
-    Engine * eng = ctxt_->get_world()->get_system<Engine>();
-    while (running && !window_->closed())
+    Engine * eng = ns_eng;
+    eng->set_running(true);
+    while (eng->is_running())
     {
         glfwPollEvents();
         eng->run_frame();
@@ -120,7 +120,7 @@ Context * Application::get_context()
 
 void Application::terminate()
 {
-    running = false;
+    ns_eng->set_running(false);
 }
 
 void Application::glfw_error_callback(i32 error, const char * description)
