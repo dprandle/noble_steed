@@ -80,30 +80,24 @@ int Application::exec()
     // pybind11::object obj = pybind11::cast(&Context::inst());
     // m.attr("context") = obj;
     // dlog("Scooby");
-
-    while (running)
+    Engine * eng = ctxt_->get_world()->get_system<Engine>();
+    while (running && !window_->closed())
     {
         glfwPollEvents();
-
-        ctxt_->get_world()->get_system<Engine>()->run_frame();
-
-        // Send window close event to the API thread.
-        if (window_->closed())
-            terminate();
-
+        eng->run_frame();
         bgfx::frame();
         bgfx::touch(0);
     }
-
-    window_->terminate();
-    delete window_;
-
-    glfwTerminate();
 
     ctxt_->terminate();
     delete ctxt_;
 
     bgfx::shutdown();
+
+    window_->terminate();
+    delete window_;
+
+    glfwTerminate();
     return 0;
 
     // pybind11::exec(R"(

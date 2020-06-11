@@ -1,6 +1,6 @@
 #include <noble_steed/io/input_map.h>
 #include <noble_steed/core/context.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 namespace noble_steed
 {

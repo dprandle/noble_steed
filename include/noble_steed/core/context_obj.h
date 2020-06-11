@@ -30,11 +30,14 @@ struct Event_Buffer
     size_t processed_ind;
 };
 
+
+/// Subscribe a handler functioin - params are event_id, 
 #define subscribe_event_handler(event_id, ...) ns_ctxt.subscribe_to_event(this,event_id); \
-    sig_connect(process_event, __VA_ARGS__);
+    sig_connect(process_event_map[event_id], __VA_ARGS__);
 
 #define unsubscribe_event_handler(event_id, ...) ns_ctxt.unsubscribe_to_event(this,event_id); \
-    sig_disconnect(process_event, __VA_ARGS__);
+    sig_disconnect(process_event_map[event_id], __VA_ARGS__); \
+    process_event_map.erase(event_id);
 
 class Context_Obj
 {    
@@ -62,7 +65,7 @@ class Context_Obj
 
     void process_events();
 
-    Signal<Event&> process_event;
+    Hash_Map<u32, Signal<Event&>> process_event_map;
     Signal<Context_Obj*> destroyed;
     
   protected:

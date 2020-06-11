@@ -31,7 +31,7 @@ bool Window::initialize(const Variant_Map & init_params)
     }
     glfwSetWindowSizeCallback(window_, glfw_resize_window_callback);
     glfwSetWindowCloseCallback(window_, glfw_close_window_callback);
-    glfwSetWindowMaximizeCallback(window_,glfw_maximize_window_callback);
+    glfwSetWindowMaximizeCallback(window_, glfw_maximize_window_callback);
     return true;
 }
 
@@ -50,10 +50,35 @@ bool Window::closed()
     return close_window_;
 }
 
+itup2 Window::get_size()
+{
+    itup2 ret;
+    glfwGetWindowSize(window_, &ret.w, &ret.h);
+    return ret;
+}
+
+dtup2 Window::get_normalized_cursor_pos()
+{
+    dtup2 ret = get_cursor_pos();
+    itup2 scrn = get_size();
+    ret.w /= scrn.w;
+    ret.h /= scrn.h;
+    return ret;
+}
+
+dtup2 Window::get_cursor_pos()
+{
+    dtup2 ret;
+    glfwGetCursorPos(window_,&ret.w,&ret.h);
+    return ret;
+}
+
 void * Window::get_native_window()
 {
 #ifdef PLATFORM_OSX
     return glfwGetCocoaWindow(window_);
+#elif PLATFORM_LINUX
+    return reinterpret_cast<void *>(glfwGetX11Window(window_));
 #endif
     return nullptr;
 }
@@ -84,4 +109,4 @@ void Window::glfw_maximize_window_callback(GLFWwindow * window, int max_or_resto
 
 void Window::glfw_window_position_callback(GLFWwindow * window, int x_pos, int y_pos)
 {}
-}
+} // namespace noble_steed

@@ -4,3 +4,4 @@ compile_commands.json
 *.core
 logs/
 *.DS_Store
+logsBasic_Window Most Recent.log

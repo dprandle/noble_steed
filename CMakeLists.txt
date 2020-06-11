@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.10.0)
 
 project(noble_steed)
 
@@ -52,11 +52,6 @@ set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
-# Set dependency library paths
-set(BGFX_LIB_NAME libbgfx-shared-libRelease.dylib)
-set(RTTR_LIB_NAME librttr_core_d.dylib)
-set(BGFX_LIB_PATH "${BGFX_DIR}/.build/osx64_clang/bin/${BGFX_LIB_NAME}")
-set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
 
 # Debug and release specific settings
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
@@ -113,6 +108,13 @@ elseif(APPLE)
     add_definitions(-DPLATFORM_OSX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_COCOA)
     set(CMAKE_MACOSX_RPATH 1)
+    
+    # Set dependency library paths
+    set(BGFX_LIB_NAME libbgfx-shared-libRelease.dylib)
+    set(RTTR_LIB_NAME librttr_core_d.dylib)
+    set(BGFX_LIB_PATH "${BGFX_DIR}/.build/osx64_clang/bin/${BGFX_LIB_NAME}")
+    set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
+    
     link_directories(/usr/local/lib)
     include_directories(/usr/local/include)
     add_library(${TARGET_NAME} ${SRC_FILES})
@@ -139,13 +141,23 @@ elseif(APPLE)
 else()
     add_definitions(-DPLATFORM_LINUX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
-    add_library(${TARGET_NAME} SHARED ${SRC_FILES})
-    target_link_libraries(${TARGET_NAME} PRIVATE
+    add_library(${TARGET_NAME} ${SRC_FILES})
+    # Set dependency library paths
+    set(BGFX_LIB_NAME libbgfx-shared-libRelease.so)
+    if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+      set(RTTR_LIB_NAME librttr_core_d.so)
+    else()
+      set(RTTR_LIB_NAME librttr_core.so)
+    endif()
+    set(BGFX_LIB_PATH "${BGFX_DIR}/.build/linux64_gcc/bin/${BGFX_LIB_NAME}")
+    set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
+  
+    target_link_libraries(${TARGET_NAME}
     ${BGFX_LIB_PATH}
     #pybind11::pybind11
     pybind11::embed
     glfw
-    RTTR::Core
+    ${RTTR_LIB_PATH}
     assimp
     Bullet2FileLoader
     Bullet3Dynamics
@@ -158,7 +170,7 @@ else()
     Bullet3Common
     BulletDynamics
     LinearMath
-    memory_allocators
+    memory-allocators
     ${PYTHON_LIBRARIES}
     spdlog
     X11

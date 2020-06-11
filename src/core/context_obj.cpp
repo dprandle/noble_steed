@@ -59,7 +59,18 @@ void Context_Obj::process_events()
 {
     event_mutex_.lock();
     while (events_.available())
-        emit_sig process_event(events_.process());
+    {
+        Event & e = events_.process();
+        auto fiter = process_event_map.find(e.id);
+        if (fiter != process_event_map.end())
+        {
+            emit_sig fiter->second(e);
+        }
+        else
+        {
+            wlog("Event was routed to {} but was ignored because there was no valid handler",this->get_derived_info().m_type.get_name().to_string());
+        }        
+    }
     event_mutex_.unlock();
 }
 

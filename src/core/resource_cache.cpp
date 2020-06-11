@@ -289,9 +289,8 @@ bool Resource_Cache::load_package(String package, bool make_current)
         {
             fs::path rel_path = dir_path_iter->path().relative_path();
             fs::path fname = rel_path.filename();
-            
             // Skip hidden files and non regular files
-            if (fname.empty() || fname.string()[0] == '.' || !dir_path_iter->is_regular_file())
+            if (fname.empty() || fname.string()[0] == '.' || !fs::is_regular_file(*dir_path_iter))
             {
                 ++dir_path_iter;
                 continue;

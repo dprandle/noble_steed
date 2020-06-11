@@ -11,6 +11,34 @@ namespace noble_steed
 struct Input_Context;
 struct Input_Action_Trigger;
 
+namespace Events
+{
+namespace Key_Press
+{
+extern const int id;
+extern const String key;      // i32
+extern const String scancode; // i32
+extern const String action;   // i32
+extern const String mods;     // i32
+} // namespace Key_Press
+
+namespace Mouse_Press
+{
+extern const int id;
+extern const String button; // i32
+extern const String action; // i32
+extern const String mods;   // i32
+} // namespace Mouse_Press
+
+namespace Scroll
+{
+extern const int id;
+extern const String x_offset; // double
+extern const String y_offset; // double
+} // namespace Scroll
+
+} // namespace Events
+
 // Keep track of current modifier state etc?
 class Input_Translator : public System
 {
@@ -25,13 +53,20 @@ class Input_Translator : public System
     void push_context(Input_Context * ctxt);
     void pop_context();
 
+    void update();
+
   private:
     bool _trigger_already_active(Input_Action_Trigger * trig);
 
-    static void glfw_key_press_callback(GLFWwindow * window_, i32 pKey, i32 scancode_, i32 action_, i32 mods_);
-    static void glfw_mouse_button_callback(GLFWwindow * window_, i32 pButton, i32 action_, i32 mods_);
-    static void glfw_scroll_callback(GLFWwindow * window_, double x_offset, double y_offset);
+    void handle_key_press(Event & ev);
 
+    void handle_mouse_press(Event & ev);
+
+    void handle_scroll(Event & ev);
+
+    static void glfw_key_press_callback(GLFWwindow * window, i32 key, i32 scancode, i32 action, i32 mods);
+    static void glfw_mouse_button_callback(GLFWwindow * window, i32 button, i32 action, i32 mods);
+    static void glfw_scroll_callback(GLFWwindow * window, double x_offset, double y_offset);
 
     Vector<Input_Context *> context_stack_;
     Vector<Input_Action_Trigger *> active_triggers_;

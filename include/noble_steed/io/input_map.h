@@ -7,8 +7,8 @@ namespace noble_steed
 {
 enum Trigger_State
 {
-    T_BEGIN = 1,
-    T_END = 2
+    T_PRESS = 1,
+    T_RELEASE = 2
 };
 
 union Trigger_Condition
@@ -29,6 +29,7 @@ union Trigger_Condition
 struct Input_Action_Trigger
 {
     u32 name_hash;
+    u32 system;
     i8 trigger_state;
     Trigger_Condition condition; // Here for convenience
     bool operator==(const Input_Action_Trigger & rhs);

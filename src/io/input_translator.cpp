@@ -3,11 +3,42 @@
 #include <noble_steed/core/application.h>
 #include <noble_steed/graphics/window.h>
 #include <noble_steed/io/logger.h>
+#include <noble_steed/io/input_map.h>
+#include <noble_steed/core/engine.h>
+#include <noble_steed/scene/world.h>
 
 #include <GLFW/glfw3.h>
 
 namespace noble_steed
 {
+namespace Events
+{
+namespace Key_Press
+{
+const int id = str_hash("Key_Press");
+const String key = "key";           // i32
+const String scancode = "scancode"; // i32
+const String action = "action";     // i32
+const String mods = "mods";         // i32
+} // namespace Key_Press
+
+namespace Mouse_Press
+{
+const int id = str_hash("Mouse_Press");
+const String button = "button"; // i32
+const String action = "action"; // i32
+const String mods = "mods"; // i32
+}
+
+namespace Scroll
+{
+const int id = str_hash("Scroll");
+const String x_offset = "x_offset"; // double
+const String y_offset = "y_offset"; // double
+}
+
+} // namespace Events
+
 Input_Translator::Input_Translator()
 {}
 
@@ -17,14 +48,40 @@ Input_Translator::~Input_Translator()
 void Input_Translator::initialize(const Variant_Map & init_params)
 {
     System::initialize(init_params);
-    glfwSetKeyCallback(app.get_window()->get_glfw_window(),glfw_key_press_callback);
-    glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(),glfw_mouse_button_callback);
-    glfwSetScrollCallback(app.get_window()->get_glfw_window(),glfw_scroll_callback);
+    glfwSetKeyCallback(app.get_window()->get_glfw_window(), glfw_key_press_callback);
+    glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(), glfw_mouse_button_callback);
+    glfwSetScrollCallback(app.get_window()->get_glfw_window(), glfw_scroll_callback);
+
+    subscribe_event_handler(Events::Key_Press::id, this, &Input_Translator::handle_key_press);
+    subscribe_event_handler(Events::Mouse_Press::id, this, &Input_Translator::handle_mouse_press);
+    subscribe_event_handler(Events::Scroll::id, this, &Input_Translator::handle_scroll);
+
+    sig_connect(ns_eng->update,this,&Input_Translator::update);
+}
+
+void Input_Translator::handle_key_press(Event & ev)
+{
+    dlog("Received key press event id {}!", ev.id);
+}
+
+void Input_Translator::handle_mouse_press(Event & ev)
+{
+    dlog("Received mouse press event id {}!", ev.id);
+}
+
+void Input_Translator::handle_scroll(Event & ev)
+{
+    dlog("Received scroll event id {}!", ev.id);
 }
 
 void Input_Translator::terminate()
 {
     System::terminate();
+}
+
+void Input_Translator::update()
+{
+    process_events();
 }
 
 bool Input_Translator::_trigger_already_active(Input_Action_Trigger * trig)
@@ -42,19 +99,37 @@ void Input_Translator::pop_context()
     context_stack_.pop_back();
 }
 
-void Input_Translator::glfw_key_press_callback(GLFWwindow * window_, i32 pKey, i32 scancode_, i32 action_, i32 mods_)
+void Input_Translator::glfw_key_press_callback(GLFWwindow * window, i32 key, i32 scancode, i32 action, i32 mods)
 {
-    dlog("Key pressed!");
+    using namespace Events;
+    Event ev;
+    ev.id = Key_Press::id;
+    ev.data[Key_Press::key] = key;
+    ev.data[Key_Press::scancode] = scancode;
+    ev.data[Key_Press::action] = action;
+    ev.data[Key_Press::mods] = mods;
+    post_event(ev);
 }
 
-void Input_Translator::glfw_mouse_button_callback(GLFWwindow * window_, i32 pButton, i32 action_, i32 mods_)
+void Input_Translator::glfw_mouse_button_callback(GLFWwindow * window, i32 button, i32 action, i32 mods)
 {
-    dlog("Mouse Button Pressed!");
+    using namespace Events;
+    Event ev;
+    ev.id = Mouse_Press::id;
+    ev.data[Mouse_Press::button] = button;
+    ev.data[Mouse_Press::action] = action;
+    ev.data[Mouse_Press::mods] = mods;
+    post_event(ev);
 }
 
-void Input_Translator::glfw_scroll_callback(GLFWwindow * window_, double x_offset, double y_offset)
+void Input_Translator::glfw_scroll_callback(GLFWwindow * window, double x_offset, double y_offset)
 {
-    dlog("Mouse scrolled!");
+    using namespace Events;
+    Event ev;
+    ev.id = Scroll::id;
+    ev.data[Scroll::x_offset] = x_offset;
+    ev.data[Scroll::y_offset] = y_offset;
+    post_event(ev);
 }
 
 /* The unknown key */

@@ -171,4 +171,43 @@ struct Tuple4
 	};
 };
 
+using dtup2 = Tuple2<double>;
+using ftup2 = Tuple2<float>;
+using i8tup2 = Tuple2<i8>;
+using i16tup2 = Tuple2<i16>;
+using itup2 = Tuple2<i32>;
+using i64tup2 = Tuple2<i64>;
+using u8tup2 = Tuple2<u8>;
+using u16tup2 = Tuple2<u16>;
+using utup2 = Tuple2<u32>;
+using u64tup2 = Tuple2<u64>;
+using str_tup2 = Tuple2<String>;
+using xtup2 = Tuple2<Variant>;
+
+using dtup3 = Tuple3<double>;
+using ftup3 = Tuple3<float>;
+using i8tup3 = Tuple3<i8>;
+using i16tup3 = Tuple3<i16>;
+using itup3 = Tuple3<i32>;
+using i64tup3 = Tuple3<i64>;
+using u8tup3 = Tuple3<u8>;
+using u16tup3 = Tuple3<u16>;
+using utup3 = Tuple3<u32>;
+using u64tup3 = Tuple3<u64>;
+using str_tup3 = Tuple3<String>;
+using xtup3 = Tuple3<Variant>;
+
+using dtup4 = Tuple4<double>;
+using ftup4 = Tuple4<float>;
+using i8tup4 = Tuple4<i8>;
+using i16tup4 = Tuple4<i16>;
+using itup4 = Tuple4<i32>;
+using i64tup4 = Tuple4<i64>;
+using u8tup4 = Tuple4<u8>;
+using u16tup4 = Tuple4<u16>;
+using utup4 = Tuple4<u32>;
+using u64tup4 = Tuple4<u64>;
+using str_tup4 = Tuple4<String>;
+using xtup4 = Tuple4<Variant>;
+
 } // namespace noble_steed

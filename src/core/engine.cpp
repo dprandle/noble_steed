@@ -47,7 +47,7 @@ void Engine::initialize(const Variant_Map & init_params)
     start_ = std::chrono::high_resolution_clock::now();
     cur_time_ = start_;
     lag_ = std::chrono::nanoseconds::zero();
-    subscribe_event_handler("Bla", [=](Event & ev) { dlog("Poopity poop!"); });
+    subscribe_event_handler(str_hash("Bla"), [=](Event & ev) { dlog("Poopity poop!"); });
 }
 
 void Engine::terminate()
