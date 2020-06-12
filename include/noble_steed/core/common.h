@@ -192,23 +192,17 @@ struct Tuple4
     };
 };
 
-// template<class T>
-// std::ostream & operator<<(std::ostream & lhs, const Tuple2<T> & rhs)
-// {
-//     return lhs << "[" << rhs.first << " " << rhs.second << "]";
-// }
-
-// template<class T>
-// std::ostream & operator<<(std::ostream & lhs, const Tuple3<T> & rhs)
-// {
-//     return lhs << "[" << rhs.first << " " << rhs.second << " " << rhs.third << "]";
-// }
-
-// template<class T>
-// std::ostream & operator<<(std::ostream & lhs, const Tuple4<T> & rhs)
-// {
-//     return lhs << "[" << rhs.first << " " << rhs.second << " " << rhs.third << " " << rhs.fourth << "]";
-// }
+template<class T>
+bool grab_param(const Variant_Map & items, const String & name, T & to_fill)
+{
+    auto fiter = items.find(name);
+    if (fiter != items.end() && fiter->second.is_type<T>())
+    {
+        to_fill = fiter->second.get_value<T>();
+        return true;
+    }
+    return false;
+}
 
 using dtup2 = Tuple2<double>;
 using ftup2 = Tuple2<float>;

@@ -51,17 +51,19 @@ void Application::initialize(const Variant_Map & init_params)
     if (!window_->initialize(init_params))
         return;
 
+    itup2 sz = window_->get_size();
+
     // This will be moved to the renderer eventually
     bgfx::Init bgfx_init;
     bgfx_init.platformData.nwh = window_->get_native_window();
     bgfx_init.type = bgfx::RendererType::Count; // Automatically choose a renderer.
-    bgfx_init.resolution.width = 1024;
-    bgfx_init.resolution.height = 768;
+    bgfx_init.resolution.width = sz.w;
+    bgfx_init.resolution.height = sz.h;
     bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
     bgfx::renderFrame();
     bgfx::init(bgfx_init);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-    bgfx::setViewRect(0, 0, 0, 1024, 768);
+    bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
 
     ctxt_ = new Context;
     ctxt_->initialize(init_params);

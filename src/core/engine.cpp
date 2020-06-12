@@ -64,21 +64,6 @@ void Engine::initialize(const Variant_Map & init_params)
 
     using namespace Events;
     subscribe_event_handler(Window_Closed::id, [=](Event & ev) { set_running(false); });
-
-    subscribe_event_handler(Window_Focus_Change::id, [=](Event & ev) {
-        dlog("Window is now {}!", (ev.data[Window_Focus_Change::focused].get_value<u32>()) ? "focused" : "unfocused");
-    });
-    subscribe_event_handler(Window_Iconified::id, [=](Event & ev) {
-        dlog("Window is now {}!", (ev.data[Window_Iconified::iconified].get_value<u32>()) ? "iconified" : "restored");
-    });
-    subscribe_event_handler(Window_Maximized::id, [=](Event & ev) {
-        dlog("Window is now {}!", (ev.data[Window_Maximized::maximized].get_value<u32>()) ? "maximized" : "restored");
-    });
-    subscribe_event_handler(Window_Resized::id,
-                            [=](Event & ev) { dlog("Window resized to {}", ev.data[Window_Resized::new_size]); });
-    subscribe_event_handler(Window_Moved::id, [=](Event & ev) { dlog("Window moved to {}", ev.data[Window_Moved::new_pos]); });
-    subscribe_event_handler(Framebuffer_Resized::id,
-                            [=](Event & ev) { dlog("Framebuffer resized to {}", ev.data[Framebuffer_Resized::new_size]); });
 }
 
 void Engine::terminate()
