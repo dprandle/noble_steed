@@ -66,6 +66,10 @@ const String ENTITY_ALLOC_KEY = "Entity_Alloc";
 template<class T, class S>
 using Pair = std::pair<T, S>;
 
+#define check_bit(flag,bit) ((flag & bit) == bit)
+#define unset_bit(flag,bit) flag &= ~bit
+#define set_bit(flag,bit) flag |= bit
+
 template<class T>
 struct Tuple2
 {

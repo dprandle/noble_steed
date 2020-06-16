@@ -86,13 +86,13 @@ namespace Events
 {
 namespace Window_Closed
 {
-extern const int id;
+extern const u32 id;
 } // namespace Window_Closed
 
 /// This event is posted whenever the cursor is moved with the window having focus.
 namespace Cursor_Moved
 {
-extern const int id;
+extern const u32 id;
 /// dtup2 - new cursor position in screen coordinates
 extern const String new_pos;
 } // namespace Cursor_Moved
@@ -100,7 +100,7 @@ extern const String new_pos;
 /// This event is posted whenever the window is resized
 namespace Window_Resized
 {
-extern const int id;
+extern const u32 id;
 /// itup2 - new screen size in screen coordinates
 extern const String new_size;
 } // namespace Window_Resized
@@ -108,7 +108,7 @@ extern const String new_size;
 /// This event is posted whenever the focus is gained or lost on the main window
 namespace Window_Focus_Change
 {
-extern const int id;
+extern const u32 id;
 /// i32 - 1 for window focused and 0 for not
 extern const String focused;
 } // namespace Window_Focus_Change
@@ -116,7 +116,7 @@ extern const String focused;
 /// This event is posted whenever the window is iconified or restored from iconified. Iconified basically means minimized.
 namespace Window_Iconified
 {
-extern const int id;
+extern const u32 id;
 /// i32 - 1 for window iconified and 0 for not
 extern const String iconified;
 } // namespace Window_Iconified
@@ -124,7 +124,7 @@ extern const String iconified;
 /// This event is posted whenever the window is maximized or restored from maximized
 namespace Window_Maximized
 {
-extern const int id;
+extern const u32 id;
 /// i32 - 1 for window maximized and 0 for not
 extern const String maximized;
 } // namespace Window_Maximized
@@ -132,7 +132,7 @@ extern const String maximized;
 /// This event is posted whenever the window is moved - this event is never posted in full screen mode
 namespace Window_Moved
 {
-extern const int id;
+extern const u32 id;
 /// itup2 - new window position - upper left corner in screen coordinates
 extern const String new_pos;
 } // namespace Window_Moved
@@ -140,7 +140,7 @@ extern const String new_pos;
 /// This event is posted whenever the framebuffer is resized (the main window default framebuffer)
 namespace Framebuffer_Resized
 {
-extern const int id;
+extern const u32 id;
 /// itup2 - new framebuffer size in pixels
 extern const String new_size;
 } // namespace Framebuffer_Resized

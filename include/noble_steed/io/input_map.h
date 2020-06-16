@@ -15,9 +15,12 @@ union Trigger_Condition
 {
     struct
     {
-        i16 input_code;    // Mouse button or key code
-        i16 modifier_mask; // Modifiers required
+        // Mouse button or key code
+        i16 input_code;
+        // Modifiers required
+        i16 modifier_mask;
     };
+    // Union of input_code and modifier mask - use this as the key for Input_Context lookups
     i32 lookup_key;
 
     bool operator==(const Trigger_Condition & rhs)
@@ -28,8 +31,8 @@ union Trigger_Condition
 
 struct Input_Action_Trigger
 {
+    //
     u32 name_hash;
-    u32 system;
     i8 trigger_state;
     Trigger_Condition condition; // Here for convenience
     bool operator==(const Input_Action_Trigger & rhs);

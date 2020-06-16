@@ -94,6 +94,7 @@ bool Window::initialize(const Variant_Map & init_params)
     glfwSetWindowPosCallback(window_, glfw_window_position_callback);
     glfwSetWindowFocusCallback(window_, glfw_focus_change_callback);
     glfwSetFramebufferSizeCallback(window_, glfw_franebuffer_resized_callback);
+    glfwSetInputMode(window_, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
     return true;
 }
 
@@ -259,48 +260,48 @@ namespace Events
 {
 namespace Window_Closed
 {
-const int id = str_hash("Window_Closed");
+const u32 id = str_hash("Window_Closed");
 } // namespace Window_Closed
 
 namespace Cursor_Moved
 {
-const int id = str_hash("Cursor_Moved");
+const u32 id = str_hash("Cursor_Moved");
 const String new_pos = "new_pos"; // dtup2
 } // namespace Cursor_Moved
 
 namespace Window_Resized
 {
-const int id = str_hash("Window_Resized");
+const u32 id = str_hash("Window_Resized");
 const String new_size = "new_size"; // itup2
 } // namespace Window_Resized
 
 namespace Window_Focus_Change
 {
-const int id = str_hash("Window_Focus_Change");
+const u32 id = str_hash("Window_Focus_Change");
 const String focused = "focused"; // i32
 } // namespace Window_Focus_Change
 
 namespace Window_Iconified
 {
-const int id = str_hash("Window_Iconified");
+const u32 id = str_hash("Window_Iconified");
 const String iconified = "iconified"; // i32
 } // namespace Window_Iconified
 
 namespace Window_Maximized
 {
-const int id = str_hash("Window_Maximized");
+const u32 id = str_hash("Window_Maximized");
 const String maximized = "maximized"; // i32
 } // namespace Window_Maximized
 
 namespace Window_Moved
 {
-const int id = str_hash("Window_Moved");
+const u32 id = str_hash("Window_Moved");
 const String new_pos = "new_pos"; // itup2
 } // namespace Window_Moved
 
 namespace Framebuffer_Resized
 {
-const int id = str_hash("Framebuffer_Resized");
+const u32 id = str_hash("Framebuffer_Resized");
 const String new_size = "new_size"; // itup2
 } // namespace Framebuffer_Resized
 

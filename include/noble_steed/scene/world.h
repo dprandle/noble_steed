@@ -6,6 +6,8 @@
 
 class PoolAllocator;
 
+#define ns_world ns_ctxt.get_world()
+
 namespace noble_steed
 {
 class Component;

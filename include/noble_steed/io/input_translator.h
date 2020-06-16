@@ -15,27 +15,44 @@ namespace Events
 {
 namespace Key_Press
 {
-extern const int id;
-extern const String key;      // i32
-extern const String scancode; // i32
-extern const String action;   // i32
-extern const String mods;     // i32
+extern const u32 id;
+/// i16 - key code (KEY_BLA)
+extern const String key;
+/// i16 - os specific scancode
+extern const String scancode;
+/// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
+extern const String action;
+/// i16 - bitmask of all keyboard modifiers 
+extern const String mods;
 } // namespace Key_Press
 
 namespace Mouse_Press
 {
-extern const int id;
-extern const String button; // i32
-extern const String action; // i32
-extern const String mods;   // i32
+extern const u32 id;
+/// i16 - mouse button code (MOUSE_BUTTON_BLA)
+extern const String button;
+/// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
+extern const String action;
+/// i16 - bitmask of all keyboard modifiers 
+extern const String mods;
 } // namespace Mouse_Press
 
 namespace Scroll
 {
-extern const int id;
-extern const String x_offset; // double
-extern const String y_offset; // double
+extern const u32 id;
+/// double - scroll amount in x direction - this will be zero in normal cases
+extern const String x_offset;
+/// double - scroll amount in vertical - this is the var of interest
+extern const String y_offset;
 } // namespace Scroll
+
+namespace Trigger
+{
+/// Trigger event is special in that it's id is the name_hash determined at runtime - it doesn't have a set id
+extern const u32 id;
+/// i8 - state is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE - wont be here in mouse movement events or scroll ones
+extern const String state;
+}
 
 } // namespace Events
 

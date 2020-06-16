@@ -15,27 +15,34 @@ namespace Events
 {
 namespace Key_Press
 {
-const int id = str_hash("Key_Press");
-const String key = "key";           // i32
-const String scancode = "scancode"; // i32
-const String action = "action";     // i32
-const String mods = "mods";         // i32
+const u32 id = str_hash("Key_Press");
+const String key = "key";   
+const String scancode = "scancode";
+const String action = "action";
+const String mods = "mods";
 } // namespace Key_Press
 
 namespace Mouse_Press
 {
-const int id = str_hash("Mouse_Press");
-const String button = "button"; // i32
-const String action = "action"; // i32
-const String mods = "mods"; // i32
+const u32 id = str_hash("Mouse_Press");
+const String button = "button";
+const String action = "action";
+const String mods = "mods";
 }
 
 namespace Scroll
 {
-const int id = str_hash("Scroll");
+const u32 id = str_hash("Scroll");
 const String x_offset = "x_offset"; // double
 const String y_offset = "y_offset"; // double
 }
+
+namespace Trigger
+{
+extern const u32 id = -1;
+extern const String state = "state";
+}
+
 
 } // namespace Events
 
@@ -51,7 +58,7 @@ void Input_Translator::initialize(const Variant_Map & init_params)
     glfwSetKeyCallback(app.get_window()->get_glfw_window(), glfw_key_press_callback);
     glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(), glfw_mouse_button_callback);
     glfwSetScrollCallback(app.get_window()->get_glfw_window(), glfw_scroll_callback);
-
+    
     subscribe_event_handler(Events::Key_Press::id, this, &Input_Translator::handle_key_press);
     subscribe_event_handler(Events::Mouse_Press::id, this, &Input_Translator::handle_mouse_press);
     subscribe_event_handler(Events::Scroll::id, this, &Input_Translator::handle_scroll);
@@ -61,7 +68,35 @@ void Input_Translator::initialize(const Variant_Map & init_params)
 
 void Input_Translator::handle_key_press(Event & ev)
 {
-    dlog("Received key press event id {}!", ev.id);
+    using namespace Events;
+    Trigger_Condition tc;
+    i8 action = ev.data[Key_Press::action].get_value<i8>();
+    tc.input_code = ev.data[Key_Press::key].get_value<i16>();
+    tc.modifier_mask = ev.data[Key_Press::mods].get_value<i16>();
+    
+    // Go through the context stack starting with the top.. send out the event for the first
+    // matching one found and return
+    for (int i = context_stack_.size() - 1; i >= 0; --i)
+    {
+        Input_Context * cur_ctxt = context_stack_[i];
+        auto trigger_range = cur_ctxt->get_triggers(tc);
+        auto range_iter = trigger_range.first;
+        bool found_match = false;
+        while (range_iter != trigger_range.second)
+        {
+            if (check_bit(range_iter->second.trigger_state,action))
+            {
+                Event ev;
+                ev.id = range_iter->second.name_hash;
+                ev.data[Trigger::state] = action;
+                post_event(ev);
+                found_match = true;
+            }
+            ++range_iter;
+        }
+        if (found_match)
+            return;
+    }
 }
 
 void Input_Translator::handle_mouse_press(Event & ev)
@@ -104,10 +139,13 @@ void Input_Translator::glfw_key_press_callback(GLFWwindow * window, i32 key, i32
     using namespace Events;
     Event ev;
     ev.id = Key_Press::id;
-    ev.data[Key_Press::key] = key;
-    ev.data[Key_Press::scancode] = scancode;
-    ev.data[Key_Press::action] = action;
-    ev.data[Key_Press::mods] = mods;
+    ev.data[Key_Press::key] = i16(key);
+    ev.data[Key_Press::scancode] = i16(scancode);
+    if (action == GLFW_PRESS)
+        ev.data[Key_Press::action] = i8(Trigger_State::T_PRESS);
+    else if (action == GLFW_RELEASE)
+        ev.data[Key_Press::action] = i8(Trigger_State::T_RELEASE);
+    ev.data[Key_Press::mods] = i16(mods);
     post_event(ev);
 }
 
@@ -116,9 +154,12 @@ void Input_Translator::glfw_mouse_button_callback(GLFWwindow * window, i32 butto
     using namespace Events;
     Event ev;
     ev.id = Mouse_Press::id;
-    ev.data[Mouse_Press::button] = button;
-    ev.data[Mouse_Press::action] = action;
-    ev.data[Mouse_Press::mods] = mods;
+    ev.data[Mouse_Press::button] = i16(button);
+    if (action == GLFW_PRESS)
+        ev.data[Mouse_Press::action] = i8(Trigger_State::T_PRESS);
+    else if (action == GLFW_RELEASE)
+        ev.data[Mouse_Press::action] = i8(Trigger_State::T_RELEASE);
+    ev.data[Mouse_Press::mods] = i16(mods);
     post_event(ev);
 }
 

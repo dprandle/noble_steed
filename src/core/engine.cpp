@@ -2,6 +2,8 @@
 #include <noble_steed/core/context.h>
 #include <noble_steed/graphics/window.h>
 #include <noble_steed/io/json_archive.h>
+#include <noble_steed/scene/world.h>
+#include <noble_steed/io/input_map.h>
 
 const std::chrono::nanoseconds TIMESTEP(10000000); // 10 milliseconds
 
@@ -60,10 +62,10 @@ void Engine::initialize(const Variant_Map & init_params)
     cur_time_ = start_;
     lag_ = std::chrono::nanoseconds::zero();
 
-    itup2 g;
 
     using namespace Events;
     subscribe_event_handler(Window_Closed::id, [=](Event & ev) { set_running(false); });
+    subscribe_event_handler(str_hash("Scooby"),[=](Event & ev) { dlog("Scooby received!"); });
 }
 
 void Engine::terminate()
