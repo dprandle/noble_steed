@@ -16,7 +16,7 @@ namespace Events
 namespace Key_Press
 {
 const u32 id = str_hash("Key_Press");
-const String key = "key";   
+const String key = "key";
 const String scancode = "scancode";
 const String action = "action";
 const String mods = "mods";
@@ -28,21 +28,20 @@ const u32 id = str_hash("Mouse_Press");
 const String button = "button";
 const String action = "action";
 const String mods = "mods";
-}
+} // namespace Mouse_Press
 
 namespace Scroll
 {
 const u32 id = str_hash("Scroll");
 const String x_offset = "x_offset"; // double
 const String y_offset = "y_offset"; // double
-}
+} // namespace Scroll
 
 namespace Trigger
 {
 extern const u32 id = -1;
 extern const String state = "state";
-}
-
+} // namespace Trigger
 
 } // namespace Events
 
@@ -58,12 +57,12 @@ void Input_Translator::initialize(const Variant_Map & init_params)
     glfwSetKeyCallback(app.get_window()->get_glfw_window(), glfw_key_press_callback);
     glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(), glfw_mouse_button_callback);
     glfwSetScrollCallback(app.get_window()->get_glfw_window(), glfw_scroll_callback);
-    
+
     subscribe_event_handler(Events::Key_Press::id, this, &Input_Translator::handle_key_press);
     subscribe_event_handler(Events::Mouse_Press::id, this, &Input_Translator::handle_mouse_press);
     subscribe_event_handler(Events::Scroll::id, this, &Input_Translator::handle_scroll);
 
-    sig_connect(ns_eng->update,this,&Input_Translator::update);
+    sig_connect(ns_eng->update, this, &Input_Translator::update);
 }
 
 void Input_Translator::handle_key_press(Event & ev)
@@ -73,7 +72,11 @@ void Input_Translator::handle_key_press(Event & ev)
     i8 action = ev.data[Key_Press::action].get_value<i8>();
     tc.input_code = ev.data[Key_Press::key].get_value<i16>();
     tc.modifier_mask = ev.data[Key_Press::mods].get_value<i16>();
-    
+    send_event_for_trigger_action_(tc,action);
+}
+
+void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action)
+{
     // Go through the context stack starting with the top.. send out the event for the first
     // matching one found and return
     for (int i = context_stack_.size() - 1; i >= 0; --i)
@@ -84,11 +87,11 @@ void Input_Translator::handle_key_press(Event & ev)
         bool found_match = false;
         while (range_iter != trigger_range.second)
         {
-            if (check_bit(range_iter->second.trigger_state,action))
+            if (check_bit(range_iter->second.trigger_state, action))
             {
                 Event ev;
                 ev.id = range_iter->second.name_hash;
-                ev.data[Trigger::state] = action;
+                ev.data[Events::Trigger::state] = action;
                 post_event(ev);
                 found_match = true;
             }
@@ -101,7 +104,12 @@ void Input_Translator::handle_key_press(Event & ev)
 
 void Input_Translator::handle_mouse_press(Event & ev)
 {
-    dlog("Received mouse press event id {}!", ev.id);
+    using namespace Events;
+    Trigger_Condition tc;
+    i8 action = ev.data[Mouse_Press::action].get_value<i8>();
+    tc.input_code = ev.data[Mouse_Press::button].get_value<i16>();
+    tc.modifier_mask = ev.data[Mouse_Press::mods].get_value<i16>();
+    send_event_for_trigger_action_(tc,action);
 }
 
 void Input_Translator::handle_scroll(Event & ev)

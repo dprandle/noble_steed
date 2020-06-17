@@ -22,9 +22,18 @@ int main()
     Input_Context ic;
     Input_Action_Trigger iac;
     iac.name_hash = str_hash("Scooby");
-    iac.condition.input_code = KEY_G;
+    iac.condition.input_code = MOUSE_BUTTON_LEFT;
     iac.condition.modifier_mask = MOD_ALT | MOD_CAPS_LOCK;
     iac.trigger_state = Trigger_State::T_PRESS;
+    ic.add_trigger(iac);
+
+    iac.name_hash = str_hash("Dooby");
+    ic.add_trigger(iac);
+
+    iac.name_hash = str_hash("Channel");
+    ic.add_trigger(iac);
+
+    iac.name_hash = str_hash("Tooby");
     ic.add_trigger(iac);
 
     auto isys = ns_world->get_system<Input_Translator>();

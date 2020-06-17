@@ -65,7 +65,10 @@ void Engine::initialize(const Variant_Map & init_params)
 
     using namespace Events;
     subscribe_event_handler(Window_Closed::id, [=](Event & ev) { set_running(false); });
-    subscribe_event_handler(str_hash("Scooby"),[=](Event & ev) { dlog("Scooby received!"); });
+    subscribe_event_handler(str_hash("Scooby"),[=](Event & ev) { dlog("Scooby1 received!"); });
+    subscribe_event_handler(str_hash("Dooby"),[=](Event & ev) { dlog("Scooby2 received!"); });
+    subscribe_event_handler(str_hash("Channel"),[=](Event & ev) { dlog("Scooby3 received!"); });
+    subscribe_event_handler(str_hash("Tooby"),[=](Event & ev) { dlog("Scooby4 received!"); });
 }
 
 void Engine::terminate()

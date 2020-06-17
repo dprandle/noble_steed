@@ -10,6 +10,7 @@ namespace noble_steed
 {
 struct Input_Context;
 struct Input_Action_Trigger;
+union Trigger_Condition;
 
 namespace Events
 {
@@ -73,6 +74,8 @@ class Input_Translator : public System
     void update();
 
   private:
+    void send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action);
+
     bool _trigger_already_active(Input_Action_Trigger * trig);
 
     void handle_key_press(Event & ev);
