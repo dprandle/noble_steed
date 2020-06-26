@@ -35,6 +35,7 @@ namespace Scroll
 const u32 id = str_hash("Scroll");
 const String x_offset = "x_offset"; // double
 const String y_offset = "y_offset"; // double
+const String mods = "mods";
 } // namespace Scroll
 
 namespace Trigger
@@ -75,7 +76,7 @@ void Input_Translator::handle_key_press(Event & ev)
     send_event_for_trigger_action_(tc,action);
 }
 
-void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action)
+void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Map & other_params)
 {
     // Go through the context stack starting with the top.. send out the event for the first
     // matching one found and return
@@ -92,6 +93,7 @@ void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & 
                 Event ev;
                 ev.id = range_iter->second.name_hash;
                 ev.data[Events::Trigger::state] = action;
+                ev.data.insert(other_params.begin(),other_params.end());
                 post_event(ev);
                 found_match = true;
             }
@@ -114,7 +116,15 @@ void Input_Translator::handle_mouse_press(Event & ev)
 
 void Input_Translator::handle_scroll(Event & ev)
 {
-    dlog("Received scroll event id {}!", ev.id);
+    using namespace Events;
+    Trigger_Condition tc;
+    i8 action = T_MOUSE_MOVE_OR_SCROLL;
+    tc.input_code = MOUSE_SCROLL;
+    tc.modifier_mask = ev.data[Scroll::mods].get_value<i16>();
+    Variant_Map params;
+    params[Scroll::x_offset] = ev.data[Scroll::x_offset];
+    params[Scroll::y_offset] = ev.data[Scroll::y_offset];
+    send_event_for_trigger_action_(tc,action, params);
 }
 
 void Input_Translator::terminate()
@@ -178,6 +188,20 @@ void Input_Translator::glfw_scroll_callback(GLFWwindow * window, double x_offset
     ev.id = Scroll::id;
     ev.data[Scroll::x_offset] = x_offset;
     ev.data[Scroll::y_offset] = y_offset;
+    i16 mods;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+        mods |= MOD_SHIFT;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+        mods |= MOD_CONTROL;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SUPER) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SUPER) == GLFW_PRESS)
+        mods |= MOD_SUPER;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS)
+        mods |= MOD_ALT;
+    if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
+        mods |= MOD_CAPS_LOCK;
+    if (glfwGetKey(window, GLFW_KEY_NUM_LOCK) == GLFW_PRESS)
+        mods |= MOD_NUM_LOCK;
+    ev.data[Scroll::mods] = mods;
     post_event(ev);
 }
 
@@ -328,4 +352,6 @@ const i16 MOUSE_BUTTON_LEFT = GLFW_MOUSE_BUTTON_LEFT;
 const i16 MOUSE_BUTTON_RIGHT = GLFW_MOUSE_BUTTON_RIGHT;
 const i16 MOUSE_BUTTON_MIDDLE = GLFW_MOUSE_BUTTON_MIDDLE;
 
+const i16 MOUSE_SCROLL = 8;
+const i16 MOUSE_MOVEMENT = 9;
 } // namespace noble_steed

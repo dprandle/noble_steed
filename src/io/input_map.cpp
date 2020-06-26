@@ -4,6 +4,20 @@
 
 namespace noble_steed
 {
+Input_Action_Trigger::Input_Action_Trigger(const String & name, const Trigger_Condition & tcond, Trigger_State tstate):
+    name_hash(str_hash(name)), condition(tcond), trigger_state(tstate)
+{
+    if (tcond.input_code <= GLFW_MOUSE_BUTTON_LAST)
+        trigger_state = T_MOUSE_MOVE_OR_SCROLL;
+}
+
+Input_Action_Trigger::Input_Action_Trigger(u32 nm_hash, const Trigger_Condition & tcond, Trigger_State tstate):
+    name_hash(nm_hash), condition(tcond), trigger_state(tstate)
+{
+    if (tcond.input_code <= GLFW_MOUSE_BUTTON_LAST)
+        trigger_state = T_MOUSE_MOVE_OR_SCROLL;
+}
+
 bool Input_Action_Trigger::operator==(const Input_Action_Trigger & rhs)
 {
     return (name_hash == rhs.name_hash && condition == rhs.condition && trigger_state == rhs.trigger_state);
@@ -96,10 +110,10 @@ bool Input_Map::rename_context(const String & old_name, const String & new_name)
     Input_Context * old_ic = get_context(old_name);
     if (!old_ic)
         return false;
-    
+
     Input_Context cpy = *old_ic;
     remove_context(old_name);
-    return add_context(new_name,cpy);
+    return add_context(new_name, cpy);
 }
 
 } // namespace noble_steed

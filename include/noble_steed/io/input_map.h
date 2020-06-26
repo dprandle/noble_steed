@@ -8,7 +8,8 @@ namespace noble_steed
 enum Trigger_State
 {
     T_PRESS = 1,
-    T_RELEASE = 2
+    T_RELEASE = 2,
+    T_MOUSE_MOVE_OR_SCROLL = 4
 };
 
 union Trigger_Condition
@@ -31,7 +32,9 @@ union Trigger_Condition
 
 struct Input_Action_Trigger
 {
-    //
+    Input_Action_Trigger(const String & name, const Trigger_Condition & tcond, Trigger_State tstate = T_PRESS);
+    Input_Action_Trigger(u32 name_hash, const Trigger_Condition & tcond, Trigger_State tstate = T_PRESS);
+
     u32 name_hash;
     i8 trigger_state;
     Trigger_Condition condition; // Here for convenience

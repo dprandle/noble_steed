@@ -41,6 +41,8 @@ extern const String mods;
 namespace Scroll
 {
 extern const u32 id;
+/// i16 - bitmask of all keyboard modifiers 
+extern const String mods;
 /// double - scroll amount in x direction - this will be zero in normal cases
 extern const String x_offset;
 /// double - scroll amount in vertical - this is the var of interest
@@ -74,7 +76,7 @@ class Input_Translator : public System
     void update();
 
   private:
-    void send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action);
+    void send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Map & other_params = Variant_Map());
 
     bool _trigger_already_active(Input_Action_Trigger * trig);
 
@@ -243,4 +245,6 @@ extern const i16 MOUSE_BUTTON_LEFT;
 extern const i16 MOUSE_BUTTON_RIGHT;
 extern const i16 MOUSE_BUTTON_MIDDLE;
 
+extern const i16 MOUSE_SCROLL;
+extern const i16 MOUSE_MOVEMENT;
 } // namespace noble_steed
