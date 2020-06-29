@@ -188,7 +188,7 @@ void Input_Translator::glfw_scroll_callback(GLFWwindow * window, double x_offset
     ev.id = Scroll::id;
     ev.data[Scroll::x_offset] = x_offset;
     ev.data[Scroll::y_offset] = y_offset;
-    i16 mods;
+    i16 mods = 0;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
         mods |= MOD_SHIFT;
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
@@ -338,6 +338,7 @@ const i16 MOD_ALT = GLFW_MOD_ALT;
 const i16 MOD_SUPER = GLFW_MOD_SUPER;
 const i16 MOD_CAPS_LOCK = GLFW_MOD_CAPS_LOCK;
 const i16 MOD_NUM_LOCK = GLFW_MOD_NUM_LOCK;
+const i16 MOD_NONE = 0;
 
 const i16 MOUSE_BUTTON_1 = GLFW_MOUSE_BUTTON_1;
 const i16 MOUSE_BUTTON_2 = GLFW_MOUSE_BUTTON_2;

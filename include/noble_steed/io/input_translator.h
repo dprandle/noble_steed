@@ -230,6 +230,7 @@ extern const i16 MOD_ALT;
 extern const i16 MOD_SUPER;
 extern const i16 MOD_CAPS_LOCK;
 extern const i16 MOD_NUM_LOCK;
+extern const i16 MOD_NONE;
 
 // Mouse buttons
 extern const i16 MOUSE_BUTTON_1;

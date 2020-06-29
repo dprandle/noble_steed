@@ -14,6 +14,8 @@ enum Trigger_State
 
 union Trigger_Condition
 {
+    Trigger_Condition():lookup_key(0) {}
+
     struct
     {
         // Mouse button or key code
@@ -32,8 +34,9 @@ union Trigger_Condition
 
 struct Input_Action_Trigger
 {
-    Input_Action_Trigger(const String & name, const Trigger_Condition & tcond, Trigger_State tstate = T_PRESS);
-    Input_Action_Trigger(u32 name_hash, const Trigger_Condition & tcond, Trigger_State tstate = T_PRESS);
+    Input_Action_Trigger(const String & name, const Trigger_Condition & tcond = Trigger_Condition(), Trigger_State tstate = T_PRESS);
+    Input_Action_Trigger(u32 name_hash, const Trigger_Condition & tcond = Trigger_Condition(), Trigger_State tstate = T_PRESS);
+    Input_Action_Trigger(const Input_Action_Trigger &) = default;
 
     u32 name_hash;
     i8 trigger_state;
