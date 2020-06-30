@@ -18,7 +18,7 @@ Input_Action_Trigger::Input_Action_Trigger(u32 nm_hash, const Trigger_Condition 
         trigger_state = T_MOUSE_MOVE_OR_SCROLL;
 }
 
-bool Input_Action_Trigger::operator==(const Input_Action_Trigger & rhs)
+bool Input_Action_Trigger::operator==(const Input_Action_Trigger & rhs) const
 {
     return (name_hash == rhs.name_hash && condition == rhs.condition && trigger_state == rhs.trigger_state);
 }
@@ -84,10 +84,12 @@ Input_Map & Input_Map::operator=(Input_Map rhs)
     return *this;
 }
 
-bool Input_Map::add_context(const String & name, const Input_Context & to_add)
+Input_Context * Input_Map::add_context(const String & name, const Input_Context & to_add)
 {
     auto ret = contexts_.emplace(str_hash(name), to_add);
-    return ret.second;
+    if (ret.second)
+        return &ret.first->second;
+    return nullptr;
 }
 
 Input_Context * Input_Map::get_context(const String & name)
@@ -117,3 +119,26 @@ bool Input_Map::rename_context(const String & old_name, const String & new_name)
 }
 
 } // namespace noble_steed
+
+#include <rttr/registration>
+
+RTTR_REGISTRATION
+{
+    using namespace rttr;
+    using namespace noble_steed;
+
+    registration::class_<Trigger_Condition>("noble_steed::Trigger_Condition")
+        .property("input_code;", &Trigger_Condition::input_code)
+        .property("modifier_mask;", &Trigger_Condition::modifier_mask);
+
+    registration::class_<Input_Action_Trigger>("noble_steed::Input_Action_Trigger")
+        .property("name_hash", &Input_Action_Trigger::name_hash)
+        .property("trigger_state", &Input_Action_Trigger::trigger_state)
+        .property("condition", &Input_Action_Trigger::condition);
+
+    registration::class_<Input_Context>("noble_steed::Input_Context")
+        .property("t_map", &Input_Context::t_map_);
+
+    registration::class_<Input_Map>("noble_steed::Input_Map")
+        .property("context_map", &Input_Map::contexts_, registration::public_access);
+}

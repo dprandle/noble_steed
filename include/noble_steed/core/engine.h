@@ -23,6 +23,8 @@ class Engine : public System
 
     void run_frame();
 
+    std::chrono::nanoseconds elapsed();
+
     virtual void initialize(const Variant_Map & init_params);
 
     virtual void terminate();

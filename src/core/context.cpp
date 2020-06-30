@@ -7,11 +7,13 @@
 #include <noble_steed/core/resource_cache.h>
 #include <noble_steed/core/engine.h>
 #include <noble_steed/io/input_translator.h>
+#include <noble_steed/graphics/renderer.h>
 
 // Defualt types to register
 #include <noble_steed/scene/transform.h>
 #include <noble_steed/scene/world_chunk.h>
 #include <noble_steed/hash/crc32.h>
+#include <noble_steed/io/input_map.h>
 
 namespace noble_steed
 {
@@ -19,6 +21,14 @@ Context * Context::s_this_ = nullptr;
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 const String INIT_CWD_KEY = "cwd";
 const u32 INVALID_ID = static_cast<u32>(-1);
+
+namespace init_param_key
+{
+namespace context
+{
+const String HEADLESS = "HEADLESS";
+} // namespace context
+} // namespace init_param_key
 
 Context::Context()
     : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
@@ -155,12 +165,20 @@ void * Context::malloc_(const rttr::type & type, u32 elements)
 }
 void Context::register_default_types_(const Variant_Map & init_params)
 {
+    using namespace init_param_key::context;
+
     // Systems
     register_system_type<Engine>(init_params);
     register_system_type<Input_Translator>(init_params);
 
+    i8 headless = 0;
+    grab_param(init_params, HEADLESS, headless);
+    if (!headless)
+        register_system_type<Renderer>(init_params);
+
     // Resources
     register_resource_type<World_Chunk>(".bbworld", init_params);
+    register_resource_type<Input_Map>(".imap", init_params);
 
     // Entity
     register_pool_factory<Entity>(init_params, DEFAULT_ENTITY_ALLOC);
@@ -251,8 +269,9 @@ void Context::unsubscribe_from_event(Context_Obj * obj, u32 event_id)
     }
 }
 
-void Context::post_event_to_queues(const Event & event)
+void Context::post_event_to_queues(Event & event)
 {
+    event.timestamp = ns_eng->elapsed();
     auto iter = event_subscribers_.find(event.id);
     if (iter != event_subscribers_.end())
     {
@@ -267,7 +286,8 @@ void Context::post_event_to_queues(const Event & event)
 
 void Context::post_event_to_queues(const String & event_name, const Variant_Map & data)
 {
-    post_event_to_queues(Event(event_name,data));
+    Event ev(event_name, data);
+    post_event_to_queues(ev);
 }
 
 String Context::get_resource_extension(const rttr::type & resource_type)

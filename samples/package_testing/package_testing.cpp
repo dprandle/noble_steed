@@ -59,8 +59,8 @@ int main()
     Variant_Map vm;
     String current_package = "data/best_package_ever";
     Vector<String> packages = {current_package};
-    vm[IP_PACKAGE_DIRS_KEY] = packages;
-    vm[IP_CURRENT_PACKAGE_KEY] = current_package;
+    vm[init_param_key::resource_cache::PACKAGE_DIRS] = packages;
+    vm[init_param_key::resource_cache::CURRENT_PACKAGE] = current_package;
 
     ctxt.register_resource_type<silly_resource_1>("res1",vm);
     ctxt.register_resource_type<silly_resource_2>("res2",vm);

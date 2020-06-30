@@ -2,6 +2,7 @@
 
 #include <noble_steed/core/common.h>
 #include <noble_steed/container/vector.h>
+#include <noble_steed/core/resource.h>
 
 namespace noble_steed
 {
@@ -26,7 +27,7 @@ union Trigger_Condition
     // Union of input_code and modifier mask - use this as the key for Input_Context lookups
     i32 lookup_key;
 
-    bool operator==(const Trigger_Condition & rhs)
+    bool operator==(const Trigger_Condition & rhs) const
     {
         return (lookup_key == rhs.lookup_key);
     }
@@ -41,7 +42,7 @@ struct Input_Action_Trigger
     u32 name_hash;
     i8 trigger_state;
     Trigger_Condition condition; // Here for convenience
-    bool operator==(const Input_Action_Trigger & rhs);
+    bool operator==(const Input_Action_Trigger & rhs) const;
 };
 
 using Trigger_Map = Hash_Multimap<i32, Input_Action_Trigger>;
@@ -62,7 +63,7 @@ struct Input_Context
 
 using Context_Map = Hash_Map<u32, Input_Context>;
 
-class Input_Map
+class Input_Map : public Resource
 {
   public:
     Input_Map();
@@ -73,7 +74,7 @@ class Input_Map
 
     Input_Map & operator=(Input_Map rhs);
 
-    bool add_context(const String & name, const Input_Context & to_add);
+    Input_Context * add_context(const String & name, const Input_Context & to_add);
 
     Input_Context * get_context(const String & name);
 
@@ -83,6 +84,9 @@ class Input_Map
 
   private:
     Context_Map contexts_;
+
+    RTTR_REGISTRATION_FRIEND
+    RTTR_ENABLE(Resource)
 };
 
 } // namespace noble_steed

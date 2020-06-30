@@ -12,9 +12,9 @@ struct Input_Context;
 struct Input_Action_Trigger;
 union Trigger_Condition;
 
-namespace Events
+namespace events
 {
-namespace Key_Press
+namespace key_press
 {
 extern const u32 id;
 /// i16 - key code (KEY_BLA)
@@ -23,41 +23,57 @@ extern const String key;
 extern const String scancode;
 /// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
 extern const String action;
-/// i16 - bitmask of all keyboard modifiers 
+/// i16 - bitmask of all keyboard modifiers
 extern const String mods;
-} // namespace Key_Press
+} // namespace key_press
 
-namespace Mouse_Press
+namespace mouse_press
 {
 extern const u32 id;
 /// i16 - mouse button code (MOUSE_BUTTON_BLA)
 extern const String button;
 /// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
 extern const String action;
-/// i16 - bitmask of all keyboard modifiers 
+/// i16 - bitmask of all keyboard modifiers
 extern const String mods;
-} // namespace Mouse_Press
+} // namespace mouse_press
 
-namespace Scroll
+namespace scroll
 {
 extern const u32 id;
-/// i16 - bitmask of all keyboard modifiers 
+/// i16 - bitmask of all keyboard modifiers
 extern const String mods;
 /// double - scroll amount in x direction - this will be zero in normal cases
 extern const String x_offset;
 /// double - scroll amount in vertical - this is the var of interest
 extern const String y_offset;
-} // namespace Scroll
+} // namespace scroll
 
-namespace Trigger
+/// This event is posted whenever the cursor is moved with the window having focus.
+namespace cursor_moved
+{
+extern const u32 id;
+/// i16 - bitmask of all keyboard modifiers
+extern const String mods;
+/// dtup2 - new cursor position in screen coordinates
+extern const String new_pos;
+} // namespace cursor_moved
+
+namespace trigger
 {
 /// Trigger event is special in that it's id is the name_hash determined at runtime - it doesn't have a set id
 extern const u32 id;
 /// i8 - state is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE - wont be here in mouse movement events or scroll ones
 extern const String state;
-}
+/// dtup2 - Scroll offsets when the trigger is triggered from a scroll event
+extern const String scroll_offsets;
+/// dtup2 - Mouse delta from this frame to previous frame - will be 0 if just received focus - when trigger generated from mouse move event
+extern const String mouse_delta;
+/// dtup2 - Mouse new position as of this frame in screen coordinates
+extern const String current_mpos;
+} // namespace trigger
 
-} // namespace Events
+} // namespace events
 
 // Keep track of current modifier state etc?
 class Input_Translator : public System
@@ -86,12 +102,20 @@ class Input_Translator : public System
 
     void handle_scroll(Event & ev);
 
+    void handle_mouse_movement(Event & ev);
+
+    void handle_focus_change(Event & ev);
+
     static void glfw_key_press_callback(GLFWwindow * window, i32 key, i32 scancode, i32 action, i32 mods);
     static void glfw_mouse_button_callback(GLFWwindow * window, i32 button, i32 action, i32 mods);
     static void glfw_scroll_callback(GLFWwindow * window, double x_offset, double y_offset);
+    static void glfw_cursor_pos_callback(GLFWwindow * window, double x_pos, double y_pos);
 
     Vector<Input_Context *> context_stack_;
     Vector<Input_Action_Trigger *> active_triggers_;
+
+    dtup2 cur_mpos_;
+    dtup2 prev_mpos_;
 
     RTTR_ENABLE(System)
 };
@@ -230,6 +254,9 @@ extern const i16 MOD_ALT;
 extern const i16 MOD_SUPER;
 extern const i16 MOD_CAPS_LOCK;
 extern const i16 MOD_NUM_LOCK;
+extern const i16 MOD_MOUSE_LEFT;
+extern const i16 MOD_MOUSE_RIGHT;
+extern const i16 MOD_MOUSE_MIDDLE;
 extern const i16 MOD_NONE;
 
 // Mouse buttons

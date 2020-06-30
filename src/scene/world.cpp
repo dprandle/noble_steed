@@ -5,6 +5,7 @@
 #include <noble_steed/scene/component.h>
 #include <noble_steed/core/engine.h>
 #include <noble_steed/io/input_translator.h>
+#include <noble_steed/graphics/renderer.h>
 
 namespace noble_steed
 {
@@ -41,6 +42,12 @@ void World::add_default_systems(const Variant_Map & init_params)
 {
     add_system<Engine>(init_params);
     add_system<Input_Translator>(init_params);
+
+    i8 headless = 0;
+    grab_param(init_params, init_param_key::context::HEADLESS, headless);
+    if (!headless)
+        add_system<Renderer>();
+
 }
 
 void World::clear_systems()

@@ -11,40 +11,50 @@
 
 namespace noble_steed
 {
-namespace Events
+namespace events
 {
-namespace Key_Press
+namespace key_press
 {
 const u32 id = str_hash("Key_Press");
 const String key = "key";
 const String scancode = "scancode";
 const String action = "action";
 const String mods = "mods";
-} // namespace Key_Press
+} // namespace key_press
 
-namespace Mouse_Press
+namespace mouse_press
 {
 const u32 id = str_hash("Mouse_Press");
 const String button = "button";
 const String action = "action";
 const String mods = "mods";
-} // namespace Mouse_Press
+} // namespace mouse_press
 
-namespace Scroll
+namespace scroll
 {
 const u32 id = str_hash("Scroll");
 const String x_offset = "x_offset"; // double
 const String y_offset = "y_offset"; // double
 const String mods = "mods";
-} // namespace Scroll
+} // namespace scroll
 
-namespace Trigger
+namespace cursor_moved
+{
+const u32 id = str_hash("Cursor_Moved");
+const String mods = "mods";
+const String new_pos = "new_pos";
+} // namespace cursor_moved
+
+namespace trigger
 {
 extern const u32 id = -1;
 extern const String state = "state";
-} // namespace Trigger
+extern const String scroll_offsets = "scroll_offsets";
+extern const String mouse_delta = "mouse_delta";
+extern const String current_mpos = "current_mpos";
+} // namespace trigger
 
-} // namespace Events
+} // namespace events
 
 Input_Translator::Input_Translator()
 {}
@@ -58,22 +68,24 @@ void Input_Translator::initialize(const Variant_Map & init_params)
     glfwSetKeyCallback(app.get_window()->get_glfw_window(), glfw_key_press_callback);
     glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(), glfw_mouse_button_callback);
     glfwSetScrollCallback(app.get_window()->get_glfw_window(), glfw_scroll_callback);
+    glfwSetCursorPosCallback(app.get_window()->get_glfw_window(), glfw_cursor_pos_callback);
 
-    subscribe_event_handler(Events::Key_Press::id, this, &Input_Translator::handle_key_press);
-    subscribe_event_handler(Events::Mouse_Press::id, this, &Input_Translator::handle_mouse_press);
-    subscribe_event_handler(Events::Scroll::id, this, &Input_Translator::handle_scroll);
+    subscribe_event_handler(events::key_press::id, this, &Input_Translator::handle_key_press);
+    subscribe_event_handler(events::mouse_press::id, this, &Input_Translator::handle_mouse_press);
+    subscribe_event_handler(events::scroll::id, this, &Input_Translator::handle_scroll);
+    subscribe_event_handler(events::cursor_moved::id, this, &Input_Translator::handle_mouse_movement);
 
     sig_connect(ns_eng->update, this, &Input_Translator::update);
 }
 
 void Input_Translator::handle_key_press(Event & ev)
 {
-    using namespace Events;
+    using namespace events;
     Trigger_Condition tc;
-    i8 action = ev.data[Key_Press::action].get_value<i8>();
-    tc.input_code = ev.data[Key_Press::key].get_value<i16>();
-    tc.modifier_mask = ev.data[Key_Press::mods].get_value<i16>();
-    send_event_for_trigger_action_(tc,action);
+    i8 action = ev.data[key_press::action].get_value<i8>();
+    tc.input_code = ev.data[key_press::key].get_value<i16>();
+    tc.modifier_mask = ev.data[key_press::mods].get_value<i16>();
+    send_event_for_trigger_action_(tc, action);
 }
 
 void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Map & other_params)
@@ -92,8 +104,9 @@ void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & 
             {
                 Event ev;
                 ev.id = range_iter->second.name_hash;
-                ev.data[Events::Trigger::state] = action;
-                ev.data.insert(other_params.begin(),other_params.end());
+                ev.data[events::trigger::state] = action;
+                ev.data[events::trigger::current_mpos] = cur_mpos_;
+                ev.data.insert(other_params.begin(), other_params.end());
                 post_event(ev);
                 found_match = true;
             }
@@ -106,25 +119,53 @@ void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & 
 
 void Input_Translator::handle_mouse_press(Event & ev)
 {
-    using namespace Events;
+    using namespace events;
     Trigger_Condition tc;
-    i8 action = ev.data[Mouse_Press::action].get_value<i8>();
-    tc.input_code = ev.data[Mouse_Press::button].get_value<i16>();
-    tc.modifier_mask = ev.data[Mouse_Press::mods].get_value<i16>();
-    send_event_for_trigger_action_(tc,action);
+    i8 action = ev.data[mouse_press::action].get_value<i8>();
+    tc.input_code = ev.data[mouse_press::button].get_value<i16>();
+    tc.modifier_mask = ev.data[mouse_press::mods].get_value<i16>();
+    send_event_for_trigger_action_(tc, action);
 }
 
 void Input_Translator::handle_scroll(Event & ev)
 {
-    using namespace Events;
+    using namespace events;
     Trigger_Condition tc;
     i8 action = T_MOUSE_MOVE_OR_SCROLL;
     tc.input_code = MOUSE_SCROLL;
-    tc.modifier_mask = ev.data[Scroll::mods].get_value<i16>();
+    tc.modifier_mask = ev.data[scroll::mods].get_value<i16>();
     Variant_Map params;
-    params[Scroll::x_offset] = ev.data[Scroll::x_offset];
-    params[Scroll::y_offset] = ev.data[Scroll::y_offset];
-    send_event_for_trigger_action_(tc,action, params);
+    dtup2 nscroll;
+    nscroll.x = ev.data[scroll::x_offset].to_double();
+    nscroll.y = ev.data[scroll::y_offset].to_double();
+    params[trigger::scroll_offsets] = nscroll;
+    send_event_for_trigger_action_(tc, action, params);
+}
+
+void Input_Translator::handle_focus_change(Event & ev)
+{
+    using namespace events;
+    i8 foc = ev.data[window_focus_change::focused].get_value<i8>();
+    if (foc)
+    {
+        cur_mpos_ = app.get_window()->get_cursor_pos();
+        prev_mpos_ = cur_mpos_;
+    }
+}
+
+void Input_Translator::handle_mouse_movement(Event & ev)
+{
+    using namespace events;
+    Trigger_Condition tc;
+    i8 action = T_MOUSE_MOVE_OR_SCROLL;
+    tc.input_code = MOUSE_MOVEMENT;
+    tc.modifier_mask = ev.data[cursor_moved::mods].get_value<i16>();
+    prev_mpos_ = cur_mpos_;
+    cur_mpos_ = ev.data[cursor_moved::new_pos].get_value<dtup2>();
+    dtup2 mdelta = cur_mpos_ - prev_mpos_;
+    Variant_Map params;
+    params[trigger::mouse_delta] = mdelta;
+    send_event_for_trigger_action_(tc, action, params);
 }
 
 void Input_Translator::terminate()
@@ -154,40 +195,58 @@ void Input_Translator::pop_context()
 
 void Input_Translator::glfw_key_press_callback(GLFWwindow * window, i32 key, i32 scancode, i32 action, i32 mods)
 {
-    using namespace Events;
+    using namespace events;
     Event ev;
-    ev.id = Key_Press::id;
-    ev.data[Key_Press::key] = i16(key);
-    ev.data[Key_Press::scancode] = i16(scancode);
+    ev.id = key_press::id;
+    ev.data[key_press::key] = i16(key);
+    ev.data[key_press::scancode] = i16(scancode);
     if (action == GLFW_PRESS)
-        ev.data[Key_Press::action] = i8(Trigger_State::T_PRESS);
+        ev.data[key_press::action] = i8(Trigger_State::T_PRESS);
     else if (action == GLFW_RELEASE)
-        ev.data[Key_Press::action] = i8(Trigger_State::T_RELEASE);
-    ev.data[Key_Press::mods] = i16(mods);
+        ev.data[key_press::action] = i8(Trigger_State::T_RELEASE);
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_LEFT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_RIGHT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+        mods |= MOD_MOUSE_MIDDLE;
+
+    ev.data[key_press::mods] = i16(mods);
+
     post_event(ev);
 }
 
 void Input_Translator::glfw_mouse_button_callback(GLFWwindow * window, i32 button, i32 action, i32 mods)
 {
-    using namespace Events;
+    using namespace events;
     Event ev;
-    ev.id = Mouse_Press::id;
-    ev.data[Mouse_Press::button] = i16(button);
+    ev.id = mouse_press::id;
+    ev.data[mouse_press::button] = i16(button);
     if (action == GLFW_PRESS)
-        ev.data[Mouse_Press::action] = i8(Trigger_State::T_PRESS);
+        ev.data[mouse_press::action] = i8(Trigger_State::T_PRESS);
     else if (action == GLFW_RELEASE)
-        ev.data[Mouse_Press::action] = i8(Trigger_State::T_RELEASE);
-    ev.data[Mouse_Press::mods] = i16(mods);
+        ev.data[mouse_press::action] = i8(Trigger_State::T_RELEASE);
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && button != GLFW_MOUSE_BUTTON_LEFT)
+        mods |= MOD_MOUSE_LEFT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && button != GLFW_MOUSE_BUTTON_RIGHT)
+        mods |= MOD_MOUSE_RIGHT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && button != GLFW_MOUSE_BUTTON_MIDDLE)
+        mods |= MOD_MOUSE_MIDDLE;
+
+    ev.data[mouse_press::mods] = i16(mods);
+
     post_event(ev);
 }
 
 void Input_Translator::glfw_scroll_callback(GLFWwindow * window, double x_offset, double y_offset)
 {
-    using namespace Events;
+    using namespace events;
     Event ev;
-    ev.id = Scroll::id;
-    ev.data[Scroll::x_offset] = x_offset;
-    ev.data[Scroll::y_offset] = y_offset;
+    ev.id = scroll::id;
+    ev.data[scroll::x_offset] = x_offset;
+    ev.data[scroll::y_offset] = y_offset;
     i16 mods = 0;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
         mods |= MOD_SHIFT;
@@ -201,7 +260,42 @@ void Input_Translator::glfw_scroll_callback(GLFWwindow * window, double x_offset
         mods |= MOD_CAPS_LOCK;
     if (glfwGetKey(window, GLFW_KEY_NUM_LOCK) == GLFW_PRESS)
         mods |= MOD_NUM_LOCK;
-    ev.data[Scroll::mods] = mods;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_LEFT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_RIGHT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+        mods |= MOD_MOUSE_MIDDLE;
+    ev.data[scroll::mods] = mods;
+    post_event(ev);
+}
+
+void Input_Translator::glfw_cursor_pos_callback(GLFWwindow * window, double x_pos, double y_pos)
+{
+    using namespace events;
+    Event ev;
+    ev.id = cursor_moved::id;
+    ev.data[cursor_moved::new_pos] = dtup2(x_pos, y_pos);
+    i16 mods = 0;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+        mods |= MOD_SHIFT;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+        mods |= MOD_CONTROL;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SUPER) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SUPER) == GLFW_PRESS)
+        mods |= MOD_SUPER;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS)
+        mods |= MOD_ALT;
+    if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
+        mods |= MOD_CAPS_LOCK;
+    if (glfwGetKey(window, GLFW_KEY_NUM_LOCK) == GLFW_PRESS)
+        mods |= MOD_NUM_LOCK;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_LEFT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        mods |= MOD_MOUSE_RIGHT;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+        mods |= MOD_MOUSE_MIDDLE;
+    ev.data[scroll::mods] = mods;
     post_event(ev);
 }
 
@@ -338,6 +432,9 @@ const i16 MOD_ALT = GLFW_MOD_ALT;
 const i16 MOD_SUPER = GLFW_MOD_SUPER;
 const i16 MOD_CAPS_LOCK = GLFW_MOD_CAPS_LOCK;
 const i16 MOD_NUM_LOCK = GLFW_MOD_NUM_LOCK;
+const i16 MOD_MOUSE_LEFT = 0x0040;
+const i16 MOD_MOUSE_RIGHT = 0x0080;
+const i16 MOD_MOUSE_MIDDLE = 0x0100;
 const i16 MOD_NONE = 0;
 
 const i16 MOUSE_BUTTON_1 = GLFW_MOUSE_BUTTON_1;

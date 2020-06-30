@@ -15,6 +15,7 @@ struct Event
     Event();
     Event(const String & name, const Variant_Map & data_=Variant_Map());
     u32 id;
+    std::chrono::nanoseconds timestamp;
     Variant_Map data;
 };
 

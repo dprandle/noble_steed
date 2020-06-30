@@ -12,17 +12,23 @@ int main()
 
     Application applic;
     Variant_Map init_params;
-    
+
     //init_params[Init_Params::Window::ALWAS_ON_TOP] = true;
-    init_params[Init_Params::Window::TITLE] = "Scoobers";
+    init_params[init_param_key::window::TITLE] = "Scoobers";
 
     applic.initialize(init_params);
     auto rc = ns_ctxt.get_resource_cache();
 
+    auto allr = rc->get_all();
+    for (int i = 0; i < allr.size(); ++i)
+    {
+        dlog("Res name: {}  Res id: {}  Res package name: {}",allr[i]->get_name(),allr[i]->get_id(),allr[i]->get_package());
+    }
+
     Input_Context ic;
     Input_Action_Trigger iac("Scooby");
     iac.condition.input_code = MOUSE_BUTTON_LEFT;
-    iac.condition.modifier_mask = MOD_ALT | MOD_CAPS_LOCK;
+    iac.condition.modifier_mask = MOD_ALT | MOD_CAPS_LOCK | MOD_MOUSE_MIDDLE;
     iac.trigger_state = Trigger_State::T_PRESS;
     ic.add_trigger(iac);
 
@@ -61,8 +67,29 @@ int main()
     iac.condition.modifier_mask = MOD_CAPS_LOCK | MOD_CONTROL;
     ic.add_trigger(iac);
 
-    auto isys = ns_world->get_system<Input_Translator>();
-    isys->push_context(&ic);
+    iac.name_hash = str_hash("Mouse_Move_Right_Click");
+    iac.condition.input_code = MOUSE_MOVEMENT;
+    iac.condition.modifier_mask = MOD_MOUSE_RIGHT;
+    ic.add_trigger(iac);
+
+    auto imap = rc->add<Input_Map>("editor");
+    if (!imap)
+        imap = rc->get<Input_Map>("editor");
+
+    if (imap)
+    {
+        auto icptr = imap->add_context("global", ic);
+        if (!icptr)
+            icptr = imap->get_context("global");
+
+        if (icptr)
+        {
+            auto isys = ns_world->get_system<Input_Translator>();
+            isys->push_context(icptr);
+        }
+
+        imap->save();
+    }
 
     applic.exec();
     return 0;

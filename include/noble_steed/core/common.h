@@ -12,20 +12,6 @@ std::ostream & operator<<(std::ostream & lhs, const rttr::variant & rhs);
 
 namespace noble_steed
 {
-// #define MAKE_LOGGABLE(type)                                                                                                                          \
-//     inline std::ostream & operator<<(std::ostream & lhs, const type & rhs)                                                                           \
-//     {                                                                                                                                                \
-//         rttr::instance i(rhs);                                                                                                                       \
-//         return lhs << i;                                                                                                                             \
-//     };
-
-// #define MAKE_LOGGABLE_TEMPLATE(type)                                                                                                                 \
-//     template<class T>                                                                                                                                \
-//     std::ostream & operator<<(std::ostream & lhs, const type<T> & rhs)                                                                               \
-//     {                                                                                                                                                \
-//         rttr::instance i(rhs);                                                                                                                       \
-//         return lhs << i;                                                                                                                             \
-//     }
 
 using Variant = rttr::variant;
 using Variant_Map = Hash_Map<String, Variant>;
@@ -66,9 +52,9 @@ const String ENTITY_ALLOC_KEY = "Entity_Alloc";
 template<class T, class S>
 using Pair = std::pair<T, S>;
 
-#define check_bit(flag,bit) ((flag & bit) == bit)
-#define unset_bit(flag,bit) flag &= ~bit
-#define set_bit(flag,bit) flag |= bit
+#define check_bit(flag, bit) ((flag & bit) == bit)
+#define unset_bit(flag, bit) flag &= ~bit
+#define set_bit(flag, bit) flag |= bit
 
 template<class T>
 struct Tuple2
@@ -112,6 +98,78 @@ struct Tuple2
             T v;
         };
     };
+
+    Tuple2<T> operator-(const Tuple2<T> & rhs)
+    {
+        return Tuple2<T>(x - rhs.x, y - rhs.y);
+    }
+
+    Tuple2<T> operator-(const T & rhs)
+    {
+        return Tuple2<T>(x - rhs, y - rhs);
+    }
+
+    Tuple2<T> operator+(const Tuple2<T> & rhs)
+    {
+        return Tuple2<T>(x + rhs.x, y + rhs.y);
+    }
+
+    Tuple2<T> operator+(const T & rhs)
+    {
+        return Tuple2<T>(x + rhs, y + rhs);
+    }
+
+    Tuple2<T> & operator+=(const Tuple2<T> & rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
+        return *this;
+    }
+
+    Tuple2<T> & operator+=(const T & rhs)
+    {
+        x += rhs;
+        y += rhs;
+        return *this;
+    }
+
+    Tuple2<T> & operator-=(const Tuple2<T> & rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        return *this;
+    }
+
+    Tuple2<T> & operator-=(const T & rhs)
+    {
+        x -= rhs;
+        y -= rhs;
+        return *this;
+    }
+
+    Tuple2<T> operator*(const T & rhs)
+    {
+        return Tuple2<T>(x * rhs, y * rhs);
+    }
+
+    Tuple2<T> operator/(const T & rhs)
+    {
+        return Tuple2<T>(x / rhs, y / rhs);
+    }
+
+    Tuple2<T> operator*=(const T & rhs)
+    {
+        x *= rhs;
+        y *= rhs;
+        return *this;
+    }
+
+    Tuple2<T> operator/=(const T & rhs)
+    {
+        x /= rhs;
+        y /= rhs;
+        return *this;
+    }
 };
 
 template<class T>
@@ -151,6 +209,85 @@ struct Tuple3
             T p;
         };
     };
+
+    Tuple3<T> operator-(const Tuple3<T> & rhs)
+    {
+        return Tuple3<T>(x - rhs.x, y - rhs.y, z - rhs.z);
+    }
+
+    Tuple3<T> operator-(const T & rhs)
+    {
+        return Tuple3<T>(x - rhs, y - rhs, z - rhs);
+    }
+
+    Tuple3<T> operator+(const Tuple3<T> & rhs)
+    {
+        return Tuple2<T>(x + rhs.x, y + rhs.y, z + rhs.z);
+    }
+
+    Tuple3<T> operator+(const T & rhs)
+    {
+        return Tuple3<T>(x + rhs, y + rhs, z + rhs);
+    }
+
+    Tuple3<T> & operator+=(const Tuple3<T> & rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
+        return *this;
+    }
+
+    Tuple3<T> & operator+=(const T & rhs)
+    {
+        x += rhs;
+        y += rhs;
+        z += rhs;
+        return *this;
+    }
+
+    Tuple3<T> & operator-=(const Tuple3<T> & rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        z -= rhs.z;
+        return *this;
+    }
+
+    Tuple3<T> & operator-=(const T & rhs)
+    {
+        x -= rhs;
+        y -= rhs;
+        z -= rhs;
+        return *this;
+    }
+
+    Tuple3<T> operator*(const T & rhs)
+    {
+        return Tuple3<T>(x * rhs, y * rhs, z * rhs);
+    }
+
+    Tuple3<T> operator/(const T & rhs)
+    {
+        return Tuple3<T>(x / rhs, y / rhs, z / rhs);
+    }
+
+    Tuple3<T> operator*=(const T & rhs)
+    {
+        x *= rhs;
+        y *= rhs;
+        z *= rhs;
+        return *this;
+    }
+
+    Tuple3<T> operator/=(const T & rhs)
+    {
+        x /= rhs;
+        y /= rhs;
+        z /= rhs;
+        return *this;
+    }
+
 };
 
 template<class T>
@@ -194,6 +331,91 @@ struct Tuple4
             T q;
         };
     };
+
+    Tuple4<T> operator-(const Tuple4<T> & rhs)
+    {
+        return Tuple4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w);
+    }
+
+    Tuple4<T> operator-(const T & rhs)
+    {
+        return Tuple4<T>(x - rhs, y - rhs, z - rhs, w - rhs);
+    }
+
+    Tuple4<T> operator+(const Tuple4<T> & rhs)
+    {
+        return Tuple2<T>(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
+    }
+
+    Tuple4<T> operator+(const T & rhs)
+    {
+        return Tuple4<T>(x + rhs, y + rhs, z + rhs, w + rhs);
+    }
+
+    Tuple4<T> & operator+=(const Tuple4<T> & rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
+        w += rhs.w;
+        return *this;
+    }
+
+    Tuple4<T> & operator+=(const T & rhs)
+    {
+        x += rhs;
+        y += rhs;
+        z += rhs;
+        w += rhs;
+        return *this;
+    }
+
+    Tuple4<T> & operator-=(const Tuple4<T> & rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        z -= rhs.z;
+        w -= rhs.w;
+        return *this;
+    }
+
+    Tuple4<T> & operator-=(const T & rhs)
+    {
+        x -= rhs;
+        y -= rhs;
+        z -= rhs;
+        w -= rhs;
+        return *this;
+    }
+
+    Tuple4<T> operator*(const T & rhs)
+    {
+        return Tuple4<T>(x * rhs, y * rhs, z * rhs, w * rhs);
+    }
+
+    Tuple4<T> operator/(const T & rhs)
+    {
+        return Tuple4<T>(x / rhs, y / rhs, z / rhs, w / rhs);
+    }
+
+    Tuple4<T> operator*=(const T & rhs)
+    {
+        x *= rhs;
+        y *= rhs;
+        z *= rhs;
+        w *= rhs;
+        return *this;
+    }
+
+    Tuple4<T> operator/=(const T & rhs)
+    {
+        x /= rhs;
+        y /= rhs;
+        z /= rhs;
+        w /= rhs;
+        return *this;
+    }
+
 };
 
 template<class T>

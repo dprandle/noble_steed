@@ -155,9 +155,8 @@ void Resource::set_display_name(const String & disp_name)
 
 void Resource::set_package(const String & package_name)
 {
-    std::hash<String> hasher;
     String total_path = package_name + name_;
-    u64 hashed_id = hasher(total_path);
+    u32 hashed_id = str_hash(total_path);
     if (id_ != -1 && hashed_id != id_)
     {
         String type_str(get_derived_info().m_type.get_name());

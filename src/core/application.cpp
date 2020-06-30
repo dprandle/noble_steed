@@ -1,16 +1,13 @@
 #include <stdio.h>
-#include <bx/bx.h>
-#include <bx/spscqueue.h>
-#include <bx/thread.h>
-#include <bx/debug.h>
-#include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <glm/mat4x4.hpp>
+#include <glm/common.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+
 #include <iostream>
 #include <sstream>
 
@@ -43,27 +40,11 @@ void Application::initialize(const Variant_Map & init_params)
     if (!glfwInit())
     {
         return;
-    }
-
-    //glfwSetKeyCallback(window_, glfw_key_press_callback);
+    }    
 
     window_ = new Window;
     if (!window_->initialize(init_params))
         return;
-
-    itup2 sz = window_->get_size();
-
-    // This will be moved to the renderer eventually
-    bgfx::Init bgfx_init;
-    bgfx_init.platformData.nwh = window_->get_native_window();
-    bgfx_init.type = bgfx::RendererType::Count; // Automatically choose a renderer.
-    bgfx_init.resolution.width = sz.w;
-    bgfx_init.resolution.height = sz.h;
-    bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
-    bgfx::renderFrame();
-    bgfx::init(bgfx_init);
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-    bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
 
     ctxt_ = new Context;
     ctxt_->initialize(init_params);
@@ -83,18 +64,16 @@ int Application::exec()
     // dlog("Scooby");
     Engine * eng = ns_eng;
     eng->set_running(true);
+    
+    
     while (eng->is_running())
     {
         glfwPollEvents();
         eng->run_frame();
-        bgfx::frame();
-        bgfx::touch(0);
     }
 
     ctxt_->terminate();
     delete ctxt_;
-
-    bgfx::shutdown();
 
     window_->terminate();
     delete window_;
@@ -126,6 +105,8 @@ void Application::terminate()
 }
 
 void Application::glfw_error_callback(i32 error, const char * description)
-{}
+{
+    elog("GLFW Error {}",description);
+}
 
 } // namespace noble_steed

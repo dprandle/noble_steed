@@ -8,8 +8,16 @@
 
 namespace noble_steed
 {
-extern const String IP_PACKAGE_DIRS_KEY;
-extern const String IP_CURRENT_PACKAGE_KEY;
+namespace init_param_key
+{
+namespace resource_cache
+{
+/// Vector<String> - A vector of directories which should be searched for package dirs
+extern const String PACKAGE_DIRS;
+/// String - The package dir name that should be set as the default package
+extern const String CURRENT_PACKAGE;
+} // namespace resource_cache
+} // namespace init_param_key
 
 extern const String CORE_PACKAGE_NAME;
 extern const String NONE_LOADED_PACKAGE_NAME;
@@ -28,14 +36,20 @@ class Resource_Cache
     ResType * add(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(add(t, name, package, init_params));
+        Resource * res = add(t, name, package, init_params);
+        if (res)
+            return static_cast<ResType *>(res);
+        return nullptr;
     }
 
     template<class ResType>
     ResType * add(const ResType & copy)
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(add_from_(copy));
+        Resource * res = add_from_(copy);
+        if (res)
+            return static_cast<ResType *>(res);
+        return nullptr;
     }
 
     Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params);
@@ -45,13 +59,19 @@ class Resource_Cache
     template<class ResType>
     ResType * get(u32 id)
     {
-        return rttr::rttr_cast<ResType *>(get(id));
+        Resource * res = get(id);
+        if (res)
+            return rttr::rttr_cast<ResType *>(res);
+        return nullptr;
     }
 
     template<class ResType>
     ResType * get(const String & name, const String & package = String()) const
     {
-        return rttr::rttr_cast<ResType *>(get(name, package));
+        Resource * res = get(name, package);
+        if (res)
+            return rttr::rttr_cast<ResType *>(res);
+        return nullptr;
     }
 
     Resource * get(const String & name, const String & package) const;
@@ -103,7 +123,10 @@ class Resource_Cache
     ResType * load(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(load(t, name, package, init_params));
+        Resource * res = load(t, name, package, init_params);
+        if (res)
+            return static_cast<ResType *>(res);
+        return nullptr;
     }
 
     template<class ResType>
@@ -111,14 +134,16 @@ class Resource_Cache
     load(const String & custom_path, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
         rttr::type t = rttr::type::get<ResType>();
-        return static_cast<ResType *>(load(t, name, package, custom_path, init_params));
+        Resource * res = load(t, name, package, custom_path, init_params);
+        if (res)
+            return static_cast<ResType *>(res);
+        return nullptr;
     }
 
     Resource *
     load(const rttr::type & resource_type, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
 
-    Resource *
-    load(u32 type_id, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
+    Resource * load(u32 type_id, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
 
     Resource * load(const rttr::type & resource_type,
                     const String & custom_path,
@@ -143,7 +168,7 @@ class Resource_Cache
     template<class ResType>
     void save_all() const
     {
-        ilog("Saving all {} resources!",rttr::type::get<ResType>().get_name().to_string());
+        ilog("Saving all {} resources!", rttr::type::get<ResType>().get_name().to_string());
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {
@@ -158,7 +183,7 @@ class Resource_Cache
     void save_all(String package) const
     {
         make_valid_package_name_(package);
-        ilog("Saving all {} resources in package {}!",rttr::type::get<ResType>().get_name().to_string(),package);
+        ilog("Saving all {} resources in package {}!", rttr::type::get<ResType>().get_name().to_string(), package);
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {

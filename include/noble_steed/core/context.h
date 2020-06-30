@@ -23,6 +23,15 @@ extern const uint8_t MIN_CHUNK_ALLOC_SIZE;
 // Set the CWD to this absolute path on startup - at least try to
 extern const String INIT_CWD_KEY;
 
+namespace init_param_key
+{
+namespace context
+{
+/// i8 - use the renderer or run without rendering at all
+extern const String HEADLESS;
+} // namespace context
+} // namespace init_param_key
+
 class Logger;
 class Resource_Cache;
 class Resource;
@@ -49,7 +58,7 @@ class Context
     T * raw_malloc(u32 element_count = 1)
     {
         rttr::type type = rttr::type::get<T>();
-        T * mem_ptr = static_cast<T *>(malloc_(type,element_count));
+        T * mem_ptr = static_cast<T *>(malloc_(type, element_count));
         return mem_ptr;
     }
 
@@ -67,9 +76,9 @@ class Context
     T * malloc_array(u32 array_size, const Args &... each_element_constructor_args)
     {
         T * mem_ptr = raw_malloc<T>(array_size);
-        array_alloc_sizes[static_cast<void*>(mem_ptr)] = array_size;
+        array_alloc_sizes[static_cast<void *>(mem_ptr)] = array_size;
         for (u32 i = 0; i < array_size; ++i)
-            new (mem_ptr+i) T(each_element_constructor_args...);
+            new (mem_ptr + i) T(each_element_constructor_args...);
         return mem_ptr;
     }
 
@@ -83,11 +92,11 @@ class Context
     template<class T>
     void free_array(T * to_free)
     {
-        auto fiter = array_alloc_sizes.find(static_cast<void*>(to_free));
+        auto fiter = array_alloc_sizes.find(static_cast<void *>(to_free));
         if (fiter != array_alloc_sizes.end())
         {
             for (int i = 0; i < fiter->second; ++i)
-                (to_free+i)->~T();
+                (to_free + i)->~T();
         }
         raw_free(to_free);
     }
@@ -105,9 +114,9 @@ class Context
         PoolAllocator * alloc = create_pool_allocator_(t, alloc_quantity, init_params);
         if (alloc == nullptr)
             return nullptr;
-        
+
         Pool_Factory<Derived> * fac = malloc<Pool_Factory<Derived>>(alloc);
-        type_factories_[type_id] = fac;        
+        type_factories_[type_id] = fac;
         return fac;
     }
 
@@ -142,7 +151,7 @@ class Context
     Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Map & init_params)
     {
         rttr::type t = rttr::type::get<T>();
-        if (!set_resource_extension_(t,extension))
+        if (!set_resource_extension_(t, extension))
             return nullptr;
         auto ret = register_pool_factory<T>(init_params, DEFAULT_RES_ALLOC);
         if (ret == nullptr)
@@ -201,9 +210,9 @@ class Context
 
     void unsubscribe_from_event(Context_Obj * obj, u32 event_id);
 
-    void post_event_to_queues(const Event & event);
+    void post_event_to_queues(Event & event);
 
-    void post_event_to_queues(const String & event_name, const Variant_Map & data=Variant_Map());
+    void post_event_to_queues(const String & event_name, const Variant_Map & data = Variant_Map());
 
   private:
     void * malloc_(const rttr::type & type, u32 elements);
@@ -222,7 +231,7 @@ class Context
 
     Hash_Map<u32, PoolAllocator *> pool_allocators_;
 
-    Hash_Map<void*, u32> array_alloc_sizes;
+    Hash_Map<void *, u32> array_alloc_sizes;
 
     // Key is hashed extension including the dot, and value is resource type id
     Hash_Map<u32, u32> extension_resource_type_;
@@ -235,7 +244,7 @@ class Context
 
     World * world_;
 
-    Hash_Map<u32, Hash_Set<Context_Obj*>> event_subscribers_;
+    Hash_Map<u32, Hash_Set<Context_Obj *>> event_subscribers_;
 
     Resource_Cache * resource_cache_;
 

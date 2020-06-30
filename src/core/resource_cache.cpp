@@ -6,8 +6,14 @@
 
 namespace noble_steed
 {
-const String IP_PACKAGE_DIRS_KEY = "Package_Dirs";
-const String IP_CURRENT_PACKAGE_KEY = "Current_Package";
+namespace init_param_key
+{
+namespace resource_cache
+{
+const String PACKAGE_DIRS = "Package_Dirs";
+const String CURRENT_PACKAGE = "Current_Package";
+} // namespace resource_cache
+} // namespace init_params
 
 const String CORE_PACKAGE_NAME = "data/core";
 const String NONE_LOADED_PACKAGE_NAME = "data/scooby";
@@ -23,8 +29,9 @@ Resource_Cache::~Resource_Cache()
 void Resource_Cache::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing resource cache");
+    using namespace init_param_key::resource_cache;
 
-    auto iter = init_params.find(IP_PACKAGE_DIRS_KEY);
+    auto iter = init_params.find(PACKAGE_DIRS);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<Vector<String>>())
@@ -39,7 +46,7 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
         }
     }
 
-    iter = init_params.find(IP_CURRENT_PACKAGE_KEY);
+    iter = init_params.find(CURRENT_PACKAGE);
     if (iter != init_params.end())
     {
         if (iter->second.is_type<String>())
@@ -83,7 +90,7 @@ Resource * Resource_Cache::add(u32 type_id, const String & name, const String & 
 
 Resource * Resource_Cache::load(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
 {
-    return load(type_hash(resource_type),name,package,init_params);
+    return load(type_hash(resource_type), name, package, init_params);
 }
 
 Resource * Resource_Cache::load(u32 type_id, const String & name, const String & package, const Variant_Map & init_params)
@@ -169,7 +176,7 @@ Resource * Resource_Cache::get(const String & name, const String & package) cons
     {
         wlog("Cannot load resource {} - no package passed in and no current package set", name);
     }
-    u32 id = str_hash(package + name);
+    u32 id = str_hash(actual_package + name);
     return get(id);
 }
 
@@ -302,16 +309,16 @@ bool Resource_Cache::load_package(String package, bool make_current)
             // Remove the extension from the file name, and the package prefix from the file name
             // This results in the obj name being what is left
             size_t np = obj_name.find(package);
-            obj_name.erase(np,package.size());
+            obj_name.erase(np, package.size());
             np = obj_name.find(ext);
-            obj_name.erase(np,ext.size());
+            obj_name.erase(np, ext.size());
             u32 type_id = ns_ctxt.get_extension_resource_type(ext);
 
             dlog("Loading obj name: {}", obj_name);
             dlog("Loading extension: {}", ext);
             dlog("Loading type id: {}", type_id);
 
-            load(ns_ctxt.get_extension_resource_type(ext),obj_name,package);
+            load(ns_ctxt.get_extension_resource_type(ext), obj_name, package);
             ++dir_path_iter;
         }
 
