@@ -29,7 +29,7 @@ void Logger::add_logger(const String & logger_name, const Log_Level_Info & log_l
     std::strftime(str, 20, format.c_str(), local_time);
 
     String cur_date = str;
-    String app_name = executable_name();
+    String app_name = fs::executable_name();
     String per_exec_name("Most Recent");
 
     String daily_file_path;

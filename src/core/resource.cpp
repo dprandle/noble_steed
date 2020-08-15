@@ -8,10 +8,10 @@
 
 namespace noble_steed
 {
-Resource::Resource():Context_Obj(),package_(),name_(),display_name_(),id_(0)
+Resource::Resource() : Context_Obj(), package_(), name_(), display_name_(), id_(0)
 {}
 
-Resource::Resource(const Resource & copy):Context_Obj(copy),package_(copy.package_),display_name_(copy.display_name_),id_(0)
+Resource::Resource(const Resource & copy) : Context_Obj(copy), package_(copy.package_), display_name_(copy.display_name_), id_(0)
 {
     set_name(copy.name_ + " (copy)");
 }
@@ -25,10 +25,10 @@ Resource & Resource::operator=(Resource rhs)
 void Resource::swap(Resource & rhs)
 {
     Context_Obj::swap(rhs);
-    std::swap(package_,rhs.package_);
-    std::swap(name_,rhs.name_);
-    std::swap(display_name_,rhs.display_name_);
-    std::swap(id_,rhs.id_);
+    std::swap(package_, rhs.package_);
+    std::swap(name_, rhs.name_);
+    std::swap(display_name_, rhs.display_name_);
+    std::swap(id_, rhs.id_);
 }
 
 Resource::~Resource()
@@ -48,10 +48,10 @@ bool Resource::save(const String & custom_path)
     sizet pos = custom_path.find_last_of('/');
     if (pos != String::npos)
     {
-        String dir = custom_path.substr(0,pos);
+        String dir = custom_path.substr(0, pos);
         if (!fs::is_directory(dir) && fs::create_directories(dir))
         {
-            ilog("Created directory {} for {}",dir,custom_path);
+            ilog("Created directory {} for {}", dir, custom_path);
         }
     }
 
@@ -112,6 +112,11 @@ String Resource::get_relative_path()
 const String & Resource::get_name()
 {
     return name_;
+}
+
+String Resource::get_relative_basename()
+{
+    return package_ + name_;
 }
 
 const String & Resource::get_package()

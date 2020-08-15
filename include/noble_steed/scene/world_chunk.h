@@ -16,7 +16,7 @@ class World_Chunk : public Resource
 
     World_Chunk(const World_Chunk & copy);
 
-    virtual ~World_Chunk();
+    ~World_Chunk();
 
     void initialize(const Variant_Map & init_params);
 
@@ -39,11 +39,11 @@ class World_Chunk : public Resource
     World_Chunk & operator=(World_Chunk rhs);
 
   protected:
-    virtual void swap(World_Chunk & rhs);
+    void swap(World_Chunk & rhs);
 
-    virtual void pack_begin(JSON_Archive::Direction io_dir);
+    void pack_begin(JSON_Archive::Direction io_dir);
 
-    virtual void pack_end(JSON_Archive::Direction io_dir);
+    void pack_end(JSON_Archive::Direction io_dir);
 
   private:
     void on_ent_id_change(Tuple2<u32> ids);

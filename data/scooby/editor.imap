@@ -1,0 +1,125 @@
+{
+    "type_id": 3682316367,
+    "name": "editor",
+    "package": "data/scooby/",
+    "display_name": "",
+    "context_map": [
+        {
+            "key": 3892677507,
+            "value": {
+                "t_map": [
+                    {
+                        "key": 18087936,
+                        "value": {
+                            "name_hash": 3147201938,
+                            "trigger_state": 1,
+                            "condition": {
+                                "input_code;": 0,
+                                "modifier_mask;": 276
+                            }
+                        }
+                    },
+                    {
+                        "key": 18087936,
+                        "value": {
+                            "name_hash": 898474593,
+                            "trigger_state": 1,
+                            "condition": {
+                                "input_code;": 0,
+                                "modifier_mask;": 276
+                            }
+                        }
+                    },
+                    {
+                        "key": 18087936,
+                        "value": {
+                            "name_hash": 1833220059,
+                            "trigger_state": 1,
+                            "condition": {
+                                "input_code;": 0,
+                                "modifier_mask;": 276
+                            }
+                        }
+                    },
+                    {
+                        "key": 18087936,
+                        "value": {
+                            "name_hash": 1433220579,
+                            "trigger_state": 1,
+                            "condition": {
+                                "input_code;": 0,
+                                "modifier_mask;": 276
+                            }
+                        }
+                    },
+                    {
+                        "key": 1048584,
+                        "value": {
+                            "name_hash": 429437687,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 8,
+                                "modifier_mask;": 16
+                            }
+                        }
+                    },
+                    {
+                        "key": 131080,
+                        "value": {
+                            "name_hash": 371206930,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 8,
+                                "modifier_mask;": 2
+                            }
+                        }
+                    },
+                    {
+                        "key": 8,
+                        "value": {
+                            "name_hash": 3457024470,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 8,
+                                "modifier_mask;": 0
+                            }
+                        }
+                    },
+                    {
+                        "key": 2097160,
+                        "value": {
+                            "name_hash": 3658778805,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 8,
+                                "modifier_mask;": 32
+                            }
+                        }
+                    },
+                    {
+                        "key": 1179656,
+                        "value": {
+                            "name_hash": 2715325261,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 8,
+                                "modifier_mask;": 18
+                            }
+                        }
+                    },
+                    {
+                        "key": 8388617,
+                        "value": {
+                            "name_hash": 524239026,
+                            "trigger_state": 4,
+                            "condition": {
+                                "input_code;": 9,
+                                "modifier_mask;": 128
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

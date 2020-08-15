@@ -1,0 +1,26 @@
+project(Comp_And_Entity)
+set(THIS_TARGET_NAME comp_and_entity)
+
+file(GLOB THIS_TARGET_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+
+if(WIN32)
+elseif(APPLE)
+add_executable(${THIS_TARGET_NAME} MACOSX_BUNDLE ${THIS_TARGET_SRC})
+set_target_properties(${THIS_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE})
+set_target_properties(${THIS_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "${THIS_TARGET_NAME}")
+set_target_properties(${THIS_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_BUNDLE_GUI_IDENTIFIER "com.${THIS_TARGET_NAME}")
+else()
+add_executable(${THIS_TARGET_NAME} ${THIS_TARGET_SRC})
+endif()
+
+target_link_libraries(${THIS_TARGET_NAME} ${TARGET_NAME})
+
+add_custom_target(deploy_${THIS_TARGET_NAME}_import ALL
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/import ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/import/${THIS_TARGET_NAME}
+  DEPENDS ${THIS_TARGET_NAME}
+  )
+
+add_custom_target(deploy_${THIS_TARGET_NAME}_data ALL
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/${THIS_TARGET_NAME}
+  DEPENDS ${THIS_TARGET_NAME}
+  )

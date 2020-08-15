@@ -1,22 +1,24 @@
-#include <bx/bx.h>
-#include <bx/spscqueue.h>
-#include <bx/thread.h>
-#include <bx/debug.h>
-#include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
+#include "bx/bx.h"
+#include "bx/spscqueue.h"
+#include "bx/thread.h"
+#include "bx/debug.h"
+#include "bgfx/bgfx.h"
+#include "bgfx/platform.h"
 
-#include <noble_steed/core/application.h>
-#include <noble_steed/core/engine.h>
-#include <noble_steed/core/context.h>
+#include "noble_steed/core/application.h"
+#include "noble_steed/core/engine.h"
+#include "noble_steed/core/context.h"
+#include "noble_steed/core/resource_cache.h"
 
-#include <noble_steed/graphics/renderer.h>
-#include <noble_steed/graphics/window.h>
+#include "noble_steed/graphics/shader.h"
+#include "noble_steed/graphics/renderer.h"
+#include "noble_steed/graphics/window.h"
 
-#include <noble_steed/io/json_archive.h>
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/io/input_translator.h>
+#include "noble_steed/io/json_archive.h"
+#include "noble_steed/io/input_map.h"
+#include "noble_steed/io/input_translator.h"
 
-#include <noble_steed/scene/world.h>
+#include "noble_steed/scene/world.h"
 
 namespace noble_steed
 {
@@ -62,7 +64,8 @@ void Renderer::initialize(const Variant_Map & init_params)
     bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
 
     sig_connect(ns_eng->render, this, &Renderer::render_frame);
-
+    sig_connect(ns_eng->update, [&](){process_events();});
+    subscribe_event_handler(str_hash("load_and_compile_shader"), this, &Renderer::compile_shader);
 }
 
 void Renderer::terminate()
@@ -74,6 +77,16 @@ void Renderer::terminate()
 void Renderer::swap(const Renderer & rhs)
 {
     System::swap(rhs);
+}
+
+void Renderer::compile_shader(Event & ev)
+{  
+    Resource_Cache * rc = ns_ctxt.get_resource_cache();
+    auto shdr = rc->add<Shader>("simple","core");
+    shdr->set_vertex_source_from_file("import/basic_window/simple.vsc");
+    shdr->set_fragment_source_from_file("import/basic_window/simple.fsc");
+    shdr->set_varying_def_source_from_file("import/basic_window/varying.def.sc");
+    ilog("DONE");
 }
 
 } // namespace noble_steed

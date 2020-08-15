@@ -48,6 +48,8 @@ class Resource : public Context_Obj
 
     String get_relative_path();
 
+    String get_relative_basename();
+
     u32 get_id();
 
     Signal<u32, u32, bool *> change_id;

@@ -70,18 +70,6 @@ void Engine::initialize(const Variant_Map & init_params)
 
     using namespace events;
     subscribe_event_handler(window_closed::id, [=](Event & ev) { set_running(false); });
-    subscribe_event_handler(str_hash("Scooby"), [=](Event & ev) { dlog("Scooby1 received!"); });
-    subscribe_event_handler(str_hash("Dooby"), [=](Event & ev) { dlog("Scooby2 received!"); });
-    subscribe_event_handler(str_hash("Channel"), [=](Event & ev) { dlog("Scooby3 received!"); });
-    subscribe_event_handler(str_hash("Tooby"), [=](Event & ev) { dlog("Scooby4 received!"); });
-    subscribe_event_handler(str_hash("Scroll Ctrl"), [=](Event & ev) { dlog("Scroll Ctrl received!"); });
-    subscribe_event_handler(str_hash("Scroll No Mod"), [=](Event & ev) { dlog("Scroll No Mod received!"); });
-    subscribe_event_handler(str_hash("Scroll Caps Lock"), [=](Event & ev) { dlog("Scroll Caps Lock received!"); });
-    subscribe_event_handler(str_hash("Scroll Num Lock"), [=](Event & ev) { dlog("Scroll Num Lock received!"); });
-    subscribe_event_handler(str_hash("Scroll Caps Lock Ctrl"), [=](Event & ev) { dlog("Scroll Caps Lock Ctrl received! Timestamp: {}", ev.timestamp.count()); });
-    subscribe_event_handler(str_hash("Mouse_Move_Right_Click"), [=](Event & ev) {
-        dlog("Mouse_Move_Right_Click received! Mouse delta: {}", ev.data[events::trigger::mouse_delta].get_value<dtup2>());
-    });
 }
 
 void Engine::terminate()

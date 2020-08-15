@@ -14,6 +14,7 @@
 #include <noble_steed/scene/world_chunk.h>
 #include <noble_steed/hash/crc32.h>
 #include <noble_steed/io/input_map.h>
+#include <noble_steed/graphics/shader.h>
 
 namespace noble_steed
 {
@@ -179,6 +180,7 @@ void Context::register_default_types_(const Variant_Map & init_params)
     // Resources
     register_resource_type<World_Chunk>(".bbworld", init_params);
     register_resource_type<Input_Map>(".imap", init_params);
+    register_resource_type<Shader>(".sc",init_params);
 
     // Entity
     register_pool_factory<Entity>(init_params, DEFAULT_ENTITY_ALLOC);

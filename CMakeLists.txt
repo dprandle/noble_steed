@@ -117,7 +117,7 @@ elseif(APPLE)
     set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
     
     link_directories(/usr/local/lib)
-    include_directories(/usr/local/include)
+    include_directories(/usr/local/include)    
     add_library(${TARGET_NAME} ${SRC_FILES})
     target_link_libraries(${TARGET_NAME}
         ${BGFX_LIB_PATH}  
@@ -186,10 +186,5 @@ endif()
 # target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
 #   ${TARGET_NAME}
 # )
-
-# add_custom_target(deploy_files ALL
-#   COMMAND mv ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}${PYTHON_APPEND_STRING} ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${PYTHON_MODULE_NAME}.so
-#   DEPENDS ${PYTHON_MODULE_NAME}
-#   )
 
 add_subdirectory(samples)

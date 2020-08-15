@@ -1,5 +1,6 @@
 #include <noble_steed/io/filesystem.h>
 #include <noble_steed/core/context.h>
+#include <fstream>
 
 const noble_steed::u32 MAX_PATH = 200;
 
@@ -9,10 +10,27 @@ const noble_steed::u32 MAX_PATH = 200;
 #include <mach-o/dyld.h>
 #endif
 
-namespace noble_steed
+namespace std
 {
-String executable_name()
+namespace experimental
 {
+namespace filesystem
+{
+bool read_file_to_string(const noble_steed::String & fname, noble_steed::String & read_into)
+{
+    std::ifstream ifs;
+    ifs.open(fname,std::ifstream::in);
+    if (ifs.is_open())
+    {
+        read_into.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+        return true;
+    }
+    return false;
+}
+
+noble_steed::String executable_name()
+{
+    using namespace noble_steed;
     String ret;
 #if defined(PLATFORM_POSIX) || defined(__linux__)
     std::ifstream("/proc/self/comm") >> ret;
@@ -37,4 +55,6 @@ String executable_name()
     return ret;
 }
 
-}
+} // namespace filesystem
+} // namespace experimental
+} // namespace std
