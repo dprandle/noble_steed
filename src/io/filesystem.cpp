@@ -23,6 +23,20 @@ bool read_file_to_string(const noble_steed::String & fname, noble_steed::String 
     if (ifs.is_open())
     {
         read_into.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+        ifs.close();
+        return true;
+    }
+    return false;
+}
+
+bool write_string_to_file(const noble_steed::String & fname, const noble_steed::String & string)
+{
+    std::ofstream ofs;
+    ofs.open(fname, std::ofstream::out);
+    if (ofs.is_open())
+    {
+        ofs << string;
+        ofs.close();
         return true;
     }
     return false;

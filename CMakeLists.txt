@@ -94,12 +94,14 @@ include_directories(
   ${PYTHON_INCLUDE_DIRS}
   )
   
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tools)
 add_subdirectory(${PYBIND_DIR})
 add_subdirectory(${GLFW_DIR})
 add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
 add_subdirectory(${SPDLOG_DIR})
 add_subdirectory(${MEMORY_ALLOCATORS_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if (WIN32)
 # Windows stuff here
@@ -113,7 +115,8 @@ elseif(APPLE)
     # Set dependency library paths
     set(BGFX_LIB_NAME libbgfx-shared-libRelease.dylib)
     set(RTTR_LIB_NAME librttr_core_d.dylib)
-    set(BGFX_LIB_PATH "${BGFX_DIR}/.build/osx64_clang/bin/${BGFX_LIB_NAME}")
+    set(BGFX_BIN_DIR "${BGFX_DIR}/.build/osx64_clang/bin")
+    set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
     set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
     
     link_directories(/usr/local/lib)
@@ -150,7 +153,8 @@ else()
     else()
       set(RTTR_LIB_NAME librttr_core.so)
     endif()
-    set(BGFX_LIB_PATH "${BGFX_DIR}/.build/linux64_gcc/bin/${BGFX_LIB_NAME}")
+    set(BGFX_BIN_DIR "${BGFX_DIR}/.build/linux64_gcc/bin")
+    set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
     set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
   
     target_link_libraries(${TARGET_NAME}
@@ -180,6 +184,12 @@ else()
     pthread
     )
 endif()
+
+configure_file(${BGFX_BIN_DIR}/shadercRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturecRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturevRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometrycRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryvRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 

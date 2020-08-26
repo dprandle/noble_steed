@@ -82,10 +82,12 @@ void Renderer::swap(const Renderer & rhs)
 void Renderer::compile_shader(Event & ev)
 {  
     Resource_Cache * rc = ns_ctxt.get_resource_cache();
-    auto shdr = rc->add<Shader>("simple","core");
+    auto shdr = rc->add<Shader>("shaders/simple","data/core");
     shdr->set_vertex_source_from_file("import/basic_window/simple.vsc");
     shdr->set_fragment_source_from_file("import/basic_window/simple.fsc");
     shdr->set_varying_def_source_from_file("import/basic_window/varying.def.sc");
+    shdr->save();
+    shdr->compile();
     ilog("DONE");
 }
 

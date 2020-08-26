@@ -26,9 +26,11 @@ void Shader::terminate()
 bool Shader::compile()
 {
     // First, create text files from each src string (if not empty)
-    String vert_nm = get_relative_basename() + ".vsc";
-    String frag_nm = get_relative_basename() + ".fsc";
-    String vary_nm = get_relative_basename() + ".def";
+    String rel_base_name = get_relative_basename();
+    fs::write_string_to_file(rel_base_name + ".vsc", vertex_src_);
+    fs::write_string_to_file(rel_base_name + ".fsc", fragment_src_);
+    fs::write_string_to_file(get_relative_path() + "varying.def.sc", varying_def_src_);
+    
     return true;
 }
 
