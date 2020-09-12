@@ -35,11 +35,13 @@ where you choose one option within the carrots - ie for linux could be linux-rel
 
 The cmake config parameters to use are as follows:
 
+```js
 "BUILD_DOCUMENTATION":false,
 "BUILD_EXAMPLES":false,
 "BUILD_INSTALLER":false,
 "BUILD_PACKAGE":false,
 "BUILD_UNIT_TESTS":false
+```
 
 ```sh
 cd rttr
@@ -53,6 +55,8 @@ cd ../../..
 
 The cmake config parameters to use are as follows:
 
+```js
+{
 "ASSIMP_BUILD_TESTS":false,
 "BUILD_BULLET2_DEMOS":false,
 "BUILD_CPU_DEMOS":false,
@@ -62,6 +66,8 @@ The cmake config parameters to use are as follows:
 "BUILD_EXTRAS":false,
 "BUILD_UNIT_TESTS":false,
 "SPDLOG_BUILD_SHARED":true
+}
+```
 
 ```sh
 mkdir build && cd build
