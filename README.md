@@ -4,7 +4,9 @@
 
 ### Install git, cmake, build tools, and clang (optional)
 
+```sh
 sudo apt install git cmake build-essential clang
+```
 
 ### Clone repo and init/update submodules
 
