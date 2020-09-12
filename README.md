@@ -25,7 +25,7 @@ sudo apt-get install libgl1-mesa-dev x11proto-core-dev libx11-dev python3 python
 
 ```sh
 cd deps/bgfx
-make <linux/osx/vs2017>-<debug/release><32/64>
+make <linux/osx/vs2017>-<debug/release><32/64> -j
 cd ..
 ```
 
