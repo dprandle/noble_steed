@@ -27,7 +27,6 @@ set(GLM_DIR ${DEPENDENCY_DIR}/glm)
 set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
 set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
 set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
-set(MEMORY_ALLOCATORS_DIR ${DEPENDENCY_DIR}/memory-allocators)
 set(RTTR_DIR ${DEPENDENCY_DIR}/rttr)
 set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
 
@@ -43,7 +42,6 @@ set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
 set(GLM_INCLUDE_DIR ${GLM_DIR})
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
-set(MEMORY_ALLOCATORS_INCLUDE_DIR ${MEMORY_ALLOCATORS_DIR}/includes)
 set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
 set(RTTR_VERSION_INCLUDE_DIR ${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/src)
@@ -74,6 +72,7 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/io/*.cpp
   ${NOBLE_STEED_SRC_DIR}/math/*.cpp
   ${NOBLE_STEED_SRC_DIR}/hash/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/memory/*.cpp
   )
 
 # Set project includes dir
@@ -86,7 +85,6 @@ include_directories(
   ${GLM_INCLUDE_DIR}
   ${BULLET_INCLUDE_DIR}
   ${SPDLOG_INCLUDE_DIR}
-  ${MEMORY_ALLOCATORS_INCLUDE_DIR}
   ${PYBIND_INCLUDE_DIR}
   ${RTTR_VERSION_INCLUDE_DIR}
   ${RTTR_INCLUDE_DIR}
@@ -100,7 +98,6 @@ add_subdirectory(${GLFW_DIR})
 add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
 add_subdirectory(${SPDLOG_DIR})
-add_subdirectory(${MEMORY_ALLOCATORS_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if (WIN32)
@@ -127,7 +124,6 @@ elseif(APPLE)
         pybind11::embed
         glfw
         ${RTTR_LIB_PATH}
-        memory-allocators
         assimp
         Bullet2FileLoader
         Bullet3Dynamics
@@ -175,7 +171,6 @@ else()
     Bullet3Common
     BulletDynamics
     LinearMath
-    memory-allocators
     ${PYTHON_LIBRARIES}
     spdlog
     X11
@@ -196,7 +191,6 @@ add_custom_target(deploy_shader_lib ALL
  COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
  DEPENDS ${TARGET_NAME}
  )
-
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 

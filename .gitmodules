@@ -22,9 +22,6 @@
 [submodule "deps/spdlog"]
 	path = deps/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "deps/memory-allocators"]
-	path = deps/memory-allocators
-	url = https://github.com/mtrebi/memory-allocators.git
 [submodule "deps/rttr"]
 	path = deps/rttr
 	url = https://github.com/rttrorg/rttr.git
