@@ -21,6 +21,7 @@ class Renderer : public System
     void terminate();
 
     void compile_shader(Event & ev);
+
   protected:
     void swap(const Renderer & rhs);
 

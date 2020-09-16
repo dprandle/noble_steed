@@ -15,9 +15,6 @@ const String CURRENT_PACKAGE = "Current_Package";
 } // namespace resource_cache
 } // namespace init_params
 
-const String CORE_PACKAGE_NAME = "data/core";
-const String NONE_LOADED_PACKAGE_NAME = "data/scooby";
-
 Resource_Cache::Resource_Cache()
 {}
 
@@ -313,6 +310,13 @@ bool Resource_Cache::load_package(String package, bool make_current)
             np = obj_name.find(ext);
             obj_name.erase(np, ext.size());
             u32 type_id = ns_ctxt.get_extension_resource_type(ext);
+
+            if (type_id == INVALID_ID)
+            {
+                ilog("Skipping {} as the extension {} is not registered as a valid type",obj_name,ext);
+                ++dir_path_iter;
+                continue;
+            }
 
             dlog("Loading obj name: {}", obj_name);
             dlog("Loading extension: {}", ext);

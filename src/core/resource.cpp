@@ -8,6 +8,9 @@
 
 namespace noble_steed
 {
+const String CORE_PACKAGE_NAME = "data/core";
+const String NONE_LOADED_PACKAGE_NAME = "data/scooby";
+
 Resource::Resource() : Context_Obj(), package_(), name_(), display_name_(), id_(0)
 {}
 
@@ -105,8 +108,36 @@ void Resource::terminate()
 
 String Resource::get_relative_path()
 {
+    return package_ + get_subdir_path();
+}
+
+String Resource::get_basename()
+{
+    fs::path pth = get_filename();
+    return pth.stem();
+}
+
+String Resource::get_relative_containing_dir_path()
+{
+    return package_ + get_subdir_dir();
+}
+
+String Resource::get_subdir_dir()
+{
+    fs::path pth = get_subdir_path();
+    return pth.remove_filename();
+}
+
+String Resource::get_subdir_path()
+{
     String ext = ns_ctxt.get_resource_extension(get_derived_info().m_type);
-    return package_ + name_ + ext;
+    return name_ + ext;
+}
+
+String Resource::get_filename()
+{
+    fs::path pth = get_subdir_path();
+    return pth.filename();
 }
 
 const String & Resource::get_name()

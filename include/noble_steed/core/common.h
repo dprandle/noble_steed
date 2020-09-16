@@ -1,9 +1,10 @@
 #pragma once
 
-#include <noble_steed/container/string.h>
-#include <noble_steed/container/hash_map.h>
-#include <noble_steed/container/hash_set.h>
-#include <noble_steed/container/list.h>
+#include "noble_steed/container/string.h"
+#include "noble_steed/container/hash_map.h"
+#include "noble_steed/container/hash_set.h"
+#include "noble_steed/container/list.h"
+#include "noble_steed/container/vector.h"
 #include <rttr/type>
 #include <utility>
 #include <ostream>
@@ -16,6 +17,7 @@ namespace noble_steed
 using Variant = rttr::variant;
 using Variant_Map = Hash_Map<String, Variant>;
 using Variant_List = List<Variant>;
+using Variant_Vec = Vector<Variant>;
 
 using i8 = int8_t;
 using u8 = uint8_t;
@@ -29,8 +31,17 @@ using uchar = unsigned char;
 using wchar = wchar_t;
 using char16 = char16_t;
 using char32 = char32_t;
-
 using sizet = std::size_t;
+
+using i8_Vector = Vector<int8_t>;
+using u8_Vector = Vector<uint8_t>;
+using i16_Vector = Vector<int16_t>;
+using u16_Vector = Vector<uint16_t>;
+using i32_Vector = Vector<int32_t>;
+using u32_Vector = Vector<uint32_t>;
+using i64_Vector = Vector<int64_t>;
+using u64_Vector = Vector<uint64_t>;
+
 
 const int KB_SIZE = 1024 * 8;
 const int MB_SIZE = 1024 * KB_SIZE;

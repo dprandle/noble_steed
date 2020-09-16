@@ -31,7 +31,7 @@ bool Window::initialize(const Variant_Map & init_params)
     const GLFWvidmode * mode = glfwGetVideoMode(monitor);
     itup2 default_size(mode->width, mode->height);
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RED_BITS, mode->redBits);
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);

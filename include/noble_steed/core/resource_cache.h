@@ -19,9 +19,6 @@ extern const String CURRENT_PACKAGE;
 } // namespace resource_cache
 } // namespace init_param_key
 
-extern const String CORE_PACKAGE_NAME;
-extern const String NONE_LOADED_PACKAGE_NAME;
-
 class Resource_Cache
 {
     friend class Context;

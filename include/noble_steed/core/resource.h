@@ -9,6 +9,9 @@ namespace noble_steed
 {
 struct JSON_Archive;
 
+extern const String CORE_PACKAGE_NAME;
+extern const String NONE_LOADED_PACKAGE_NAME;
+
 class Resource : public Context_Obj
 {
     friend class Resource_Cache;
@@ -38,6 +41,8 @@ class Resource : public Context_Obj
 
     const String & get_name();
 
+    String get_basename();
+
     const String & get_package();
 
     void set_display_name(const String & disp_name);
@@ -48,7 +53,15 @@ class Resource : public Context_Obj
 
     String get_relative_path();
 
+    String get_relative_containing_dir_path();
+
     String get_relative_basename();
+
+    String get_subdir_dir();
+
+    String get_subdir_path();
+
+    String get_filename();
 
     u32 get_id();
 

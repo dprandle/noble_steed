@@ -20,8 +20,11 @@ extern const u32 INVALID_ID;
 // component will still be allocated 8 bytes
 extern const uint8_t MIN_CHUNK_ALLOC_SIZE;
 
-// Set the CWD to this absolute path on startup - at least try to
+/// Set the CWD to this absolute path on startup - at least try to
 extern const String INIT_CWD_KEY;
+
+/// Command line tools used by engine location (directory)
+extern const String COMMAND_LINE_TOOLS_DIR;
 
 namespace init_param_key
 {

@@ -5,6 +5,7 @@
 #include <noble_steed/core/resource_cache.h>
 #include <noble_steed/core/context.h>
 #include <noble_steed/scene/world.h>
+#include <bgfx/bgfx.h>
 
 int main()
 {
@@ -31,6 +32,7 @@ int main()
     iac.condition.modifier_mask = MOD_ALT;
     iac.trigger_state = Trigger_State::T_PRESS;
     ic.add_trigger(iac);
+
 
     auto imap = rc->add<Input_Map>("editor");
     if (!imap)

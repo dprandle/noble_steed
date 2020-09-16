@@ -53,8 +53,10 @@ void Renderer::initialize(const Variant_Map & init_params)
 
     // This will be moved to the renderer eventually
     bgfx::Init bgfx_init;
+    
+    
     bgfx_init.platformData.nwh = app.get_window()->get_native_window();
-    bgfx_init.type = bgfx::RendererType::Count; // Automatically choose a renderer.
+    bgfx_init.type = bgfx::RendererType::Metal; // Automatically choose a renderer.
     bgfx_init.resolution.width = sz.w;
     bgfx_init.resolution.height = sz.h;
     bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
@@ -83,6 +85,8 @@ void Renderer::compile_shader(Event & ev)
 {  
     Resource_Cache * rc = ns_ctxt.get_resource_cache();
     auto shdr = rc->add<Shader>("shaders/simple","data/core");
+    if (!shdr)
+        shdr = rc->get<Shader>("shaders/simple","data/core");
     shdr->set_vertex_source_from_file("import/basic_window/simple.vsc");
     shdr->set_fragment_source_from_file("import/basic_window/simple.fsc");
     shdr->set_varying_def_source_from_file("import/basic_window/varying.def.sc");

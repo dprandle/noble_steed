@@ -185,11 +185,18 @@ else()
     )
 endif()
 
-configure_file(${BGFX_BIN_DIR}/shadercRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturecRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturevRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometrycRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryvRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools COPYONLY)
+configure_file(${BGFX_BIN_DIR}/shadercRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturecRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturevRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometrycRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryvRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
+
+# Copy the shader lib source to the default shader lib directory in build folder
+add_custom_target(deploy_shader_lib ALL
+ COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
+ DEPENDS ${TARGET_NAME}
+ )
+
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 

@@ -22,6 +22,8 @@ Context * Context::s_this_ = nullptr;
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 const String INIT_CWD_KEY = "cwd";
 const u32 INVALID_ID = static_cast<u32>(-1);
+/// Command line tools used by engine location (directory)
+const String COMMAND_LINE_TOOLS_DIR = "tools";
 
 namespace init_param_key
 {
