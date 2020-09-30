@@ -46,7 +46,7 @@ void World::add_default_systems(const Variant_Map & init_params)
     i8 headless = 0;
     grab_param(init_params, init_param_key::context::HEADLESS, headless);
     if (!headless)
-        add_system<Renderer>();
+        add_system<Renderer>(init_params);
 
 }
 

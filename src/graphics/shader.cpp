@@ -26,34 +26,24 @@ void Shader::terminate()
     Resource::terminate();
 }
 
-bool Shader::compile()
+bool Shader::compile(const String & platform, const String & shader_model_profile, const String & output_relative_dir)
 {
     bool ret = false;
+    String outdir(output_relative_dir);
+
+    if (outdir.empty())
+        outdir = shader_model_profile;
+
     // First, create text files from each src string (if not empty)
-    String rel_base_name = get_relative_basename();
-    String varying_fname = get_relative_containing_dir_path() + "varying.def.sc";
+    String containing_dir = get_relative_containing_dir_path();
+    String varying_fname = containing_dir + "varying.def.sc";
     if (!fs::write_string_to_file(varying_fname, varying_def_src_))
     {
         wlog("Could not write varying def {} to file - file could not be opened", varying_fname);
         return ret;
     }
-    String frag_out, vert_out;
-    bgfx::ShaderHandle frag_handle, vert_handle;
-    ret = build_shader_(rel_base_name, "vertex", vertex_src_, vert_out);
-    ret = ret && build_shader_(rel_base_name, "fragment", fragment_src_, frag_out);
-    ret = ret && load_shader_(vert_out,vert_handle);
-    ret = ret && load_shader_(frag_out,frag_handle);
-    if (ret)
-    {
-        prog_handle_ = bgfx::createProgram(vert_handle, frag_handle, true);
-    }
-    else
-    {
-        if (vert_handle.idx != 0)
-            bgfx::destroy(vert_handle);
-        if (frag_handle.idx != 0)
-            bgfx::destroy(frag_handle);
-    }
+    ret = build_shader_(containing_dir, "vertex", vertex_src_, platform, shader_model_profile, outdir);
+    ret = ret && build_shader_(containing_dir, "fragment", fragment_src_, platform, shader_model_profile, outdir);
     fs::remove(varying_fname);
     return ret;
 }
@@ -63,7 +53,7 @@ bool Shader::load_shader_(const String & fname, bgfx::ShaderHandle & handle)
     i8_Vector buf;
     if (!fs::read_file_to_buffer(fname, buf))
     {
-        wlog("Could not open {}",fname);
+        wlog("Could not open {}", fname);
         return false;
     }
     buf.push_back(0);
@@ -72,11 +62,18 @@ bool Shader::load_shader_(const String & fname, bgfx::ShaderHandle & handle)
     return true;
 }
 
-bool Shader::build_shader_(const String & rel_base_name, const String & type, const String & source, String & output_name)
+bool Shader::build_shader_(const String & containing_dir,
+                           const String & type,
+                           const String & source,
+                           const String & platform,
+                           const String & shader_model_profile,
+                           const String & output_relative_dir)
 {
-    String basename = rel_base_name + "_" + type;
-    String fname = basename + ".sc";
-    output_name = basename + binary_extension_;
+    String basename = get_basename() + "_" + type;
+    String fname = containing_dir + basename + ".sc";
+    String output_dir = containing_dir + output_relative_dir;
+    fs::create_directory(output_dir);
+    String output_name = output_dir + "/" + basename + binary_extension_;
     if (!fs::write_string_to_file(fname, source))
     {
         wlog("Could not write {} shader {} to file - file could not be opened", type, fname);
@@ -90,11 +87,11 @@ bool Shader::build_shader_(const String & rel_base_name, const String & type, co
     args.push_back("-o");
     args.push_back(output_name);
     args.push_back("--platform");
-    args.push_back("osx");
+    args.push_back(platform);
     args.push_back("--type");
     args.push_back(type);
     args.push_back("--profile");
-    args.push_back("metal");
+    args.push_back(shader_model_profile);
     args.push_back("--verbose");
     args.push_back("-i");
     args.push_back(SHADER_LIB_LOCATION);
@@ -105,13 +102,33 @@ bool Shader::build_shader_(const String & rel_base_name, const String & type, co
         wlog("Failed to compile {} shader from {} to {}:\n{}", type, fname, basename + binary_extension_, output);
         return false;
     }
-    dlog("Compiled {} shader from {} to {}:\n{}", type, fname, basename + binary_extension_, output);
+    dlog("Compiled {} shader from {} to {}:\n{}", type, fname, output_name, output);
     return true;
 }
 
-bool Shader::create_program()
+bool Shader::create_program(const String & output_relative_dir)
 {
-    return true;
+    bool ret = true;
+    String prefix = get_relative_containing_dir_path() + output_relative_dir + "/" + get_basename();
+    String vert_out = prefix + "_vertex" + binary_extension_;
+    String frag_out = prefix + "_fragment" + binary_extension_;
+
+    bgfx::ShaderHandle frag_handle, vert_handle;
+    ret = ret && load_shader_(vert_out, vert_handle);
+    ret = ret && load_shader_(frag_out, frag_handle);
+    if (ret)
+    {
+        prog_handle_ = bgfx::createProgram(vert_handle, frag_handle, true);
+    }
+    else
+    {
+        if (vert_handle.idx != 0)
+            bgfx::destroy(vert_handle);
+        if (frag_handle.idx != 0)
+            bgfx::destroy(frag_handle);
+    }
+    return ret;
+    return ret;
 }
 
 Shader & Shader::operator=(Shader rhs)

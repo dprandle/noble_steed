@@ -1,11 +1,13 @@
-#include <noble_steed/core/application.h>
-#include <noble_steed/graphics/window.h>
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/io/input_translator.h>
-#include <noble_steed/core/resource_cache.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/scene/world.h>
 #include <bgfx/bgfx.h>
+
+#include "noble_steed/core/application.h"
+#include "noble_steed/graphics/window.h"
+#include "noble_steed/io/input_map.h"
+#include "noble_steed/io/input_translator.h"
+#include "noble_steed/core/resource_cache.h"
+#include "noble_steed/core/context.h"
+#include "noble_steed/scene/world.h"
+#include "noble_steed/graphics/renderer.h"
 
 int main()
 {
@@ -16,6 +18,7 @@ int main()
 
     //init_params[Init_Params::Window::ALWAS_ON_TOP] = true;
     init_params[init_param_key::window::TITLE] = "Basic Window";
+    init_params[init_param_key::renderer::SHADER_PROFILE] = "metal";
 
     applic.initialize(init_params);
     auto rc = ns_ctxt.get_resource_cache();
@@ -32,7 +35,6 @@ int main()
     iac.condition.modifier_mask = MOD_ALT;
     iac.trigger_state = Trigger_State::T_PRESS;
     ic.add_trigger(iac);
-
 
     auto imap = rc->add<Input_Map>("editor");
     if (!imap)

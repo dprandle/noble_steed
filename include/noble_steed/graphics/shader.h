@@ -1,8 +1,9 @@
 #pragma once
 
+#include <bgfx/bgfx.h>
+
 #include "../core/common.h"
 #include "../core/resource.h"
-#include "bgfx/bgfx.h"
 
 namespace noble_steed
 {
@@ -15,9 +16,14 @@ class Shader : public Resource
 
     virtual ~Shader();
 
-    bool compile();
+    /// Compile shader to byte code that the render that can then be used in create_program
+    /// Platform and shader_model_profile should be an option matching shaderc --platform and --profile
+    /// If output_relative_dir is not specified, shader_model_profile is used as the output dir
+    bool compile(const String & platform, const String & shader_model_profile, const String & output_relative_dir="");
 
-    bool create_program();
+    /// Creates a program from a binary shader file - this will crash if the wrong outur_relative_dir for the renderer type is passed in
+    /// Meaning, if the renderer type is set to metal and glsl is passed in - this will crash. Shader will do what its told though and try.
+    bool create_program(const String & output_relative_dir);
 
     void initialize(const Variant_Map & init_params);
 
@@ -55,7 +61,12 @@ class Shader : public Resource
     virtual void pack_end(JSON_Archive::Direction io_dir);
 
   private:
-    bool build_shader_(const String & rel_base_name, const String & type, const String & source, String & output_name);
+    bool build_shader_(const String & rel_base_name,
+                       const String & type,
+                       const String & source,
+                       const String & platform,
+                       const String & shader_model_profile,
+                       const String & output_relative_dir);
     bool load_shader_(const String & fname, bgfx::ShaderHandle & handle);
     bgfx::ProgramHandle prog_handle_;
 
