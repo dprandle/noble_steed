@@ -1,4 +1,5 @@
-#include <noble_steed/core/system.h>
+#include <bgfx/bgfx.h>
+#include "../core/system.h"
 
 namespace noble_steed
 {
@@ -51,6 +52,7 @@ class Renderer : public System
     String shader_platform_;
     String shader_profile_;
     String shader_bin_rel_dir_;
+
 };
 
 } // namespace noble_steed

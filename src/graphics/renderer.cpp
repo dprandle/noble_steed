@@ -10,6 +10,7 @@
 #include "noble_steed/core/context.h"
 #include "noble_steed/core/resource_cache.h"
 
+#include "noble_steed/graphics/mesh.h"
 #include "noble_steed/graphics/shader.h"
 #include "noble_steed/graphics/renderer.h"
 #include "noble_steed/graphics/window.h"
@@ -143,6 +144,8 @@ void Renderer::initialize(const Variant_Map & init_params)
     bgfx::init(bgfx_init);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
     bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
+
+    Vertex_Data::initialize();
 
     sig_connect(ns_eng->render, this, &Renderer::render_frame);
     sig_connect(ns_eng->update, [&]() { process_events(); });
