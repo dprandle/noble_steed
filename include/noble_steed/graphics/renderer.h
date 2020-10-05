@@ -46,6 +46,7 @@ class Renderer : public System
     void compile_shader(Event & ev);
 
   protected:
+    void register_default_types_();
     void swap(const Renderer & rhs);
 
   private:

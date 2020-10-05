@@ -30,7 +30,13 @@ struct Submesh
 class Mesh: public Resource
 {
     public:
+
+    Submesh * get_submesh(u32 index);
+    void add_submesh(const Submesh & subm);
+    void remove_submesh(u32 index);
+
     private:
+    Vector<Submesh> submeshes_;
 };
 
 }
