@@ -101,7 +101,7 @@ void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & 
         bool found_match = false;
         while (range_iter != trigger_range.second)
         {
-            if (check_bit(range_iter->second.trigger_state, action))
+            if (check_bitmask_all(range_iter->second.trigger_state, action))
             {
                 Event ev;
                 ev.id = range_iter->second.name_hash;

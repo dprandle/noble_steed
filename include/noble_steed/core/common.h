@@ -47,27 +47,39 @@ using u64_Vector = Vector<uint64_t>;
 const int KB_SIZE = 1024 * 8;
 const int MB_SIZE = 1024 * KB_SIZE;
 
-// This is the default alloc amount - in terms of quantity of the components.. To set this to a different value
-// set the key CompName_Alloc with a u16 value indicating the quantity in init_params - where CompName is replaced with the rttr registerd component name
+/// This is the default alloc amount - in terms of quantity of the components.. To set this to a different value
+/// set the key CompName_Alloc with a u16 value indicating the quantity in init_params - where CompName is replaced with the rttr registerd component name
 const u16 DEFAULT_COMP_ALLOC = 1000;
 
-// This is the default number of resources that will be allocated in each resource pool allocator
-// Set this to a different value by including ResType_Alloc as a key in init_params with the value as a u16
+/// This is the default number of resources that will be allocated in each resource pool allocator
+/// Set this to a different value by including ResType_Alloc as a key in init_params with the value as a u16
 const u16 DEFAULT_RES_ALLOC = 100;
 
-// This is the pre-allocated amount for entities - adjust this as required
+/// This is the pre-allocated amount for entities - adjust this as required
 const u16 DEFAULT_ENTITY_ALLOC = 1000;
 
-// Init params key to override the default entity allocation amount
+/// Init params key to override the default entity allocation amount
 const String ENTITY_ALLOC_KEY = "Entity_Alloc";
 
 template<class T, class S>
 using Pair = std::pair<T, S>;
 
-#define check_bit(flag, bit) ((flag & bit) == bit)
-#define unset_bit(flag, bit) flag &= ~bit
-#define set_bit(flag, bit) flag |= bit
+/// Check if all the bits provided in \param bitmask are set in \param flag
+#define check_bitmask_all(flag, bitmask) ((flag & bitmask) == bitmask)
 
+/// Check if any of the bits provdied in \param bitmask are set in \param flag 
+#define check_bitmask_any(flag, bitmask) ((flag & bitmask) != 0)
+
+/// Unset (make zero) all of the bits provided by \param bitmask in \param flag
+#define unset_bitmask(flag, bitmask) flag &= ~bitmask
+
+/// Set (make one) all of the bits provided by \param bitmask in \param flag
+#define set_bitmask(flag, bitmask) flag |= bitmask
+
+#define bgfx_valid_handle(handle) (handle != u16(-1))
+
+/// Simplified structure for holding two of anything (provided by \tparam T) with several different
+/// alias accessors.
 template<class T>
 struct Tuple2
 {
