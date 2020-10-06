@@ -23,18 +23,19 @@ struct Vertex_Data
 
 struct Vertex_Buffer
 {
-    bgfx::VertexLayout layout;
     bgfx::VertexBufferHandle handle;
-};
-
-struct Vertex_Buffer : public Vertex_Buffer
-{
-    Vector<T> buffer_data;
+    bgfx::VertexLayout layout;
+    String name;
 };
 
 struct Submesh
 {
-    Hash_Map<u32, Vertex_Buffer*>
+    Vector<Vertex_Buffer> buffers;
+    Vector<vec3> positions;
+    Vector<vec3> normals;
+    Vector<vec3> tangents;
+    Vector<vec3> bitangents;
+    Vector<vec2> tex_coords;
 };
 
 class Mesh: public Resource

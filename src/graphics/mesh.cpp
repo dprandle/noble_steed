@@ -18,7 +18,7 @@ Submesh * Mesh::get_submesh(u32 index)
 {
     if (index > submeshes_.size())
         return nullptr;
-    return 
+    return &submeshes_[index];
 }
 
 void Mesh::add_submesh(const Submesh & subm)
@@ -36,7 +36,6 @@ void Mesh::remove_submesh(u32 index)
         submeshes_.pop_back();
         return;
     }
-    submeshes_[index]
 }
 
 u32 Mesh::submesh_count()
