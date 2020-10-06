@@ -42,8 +42,11 @@ bool Shader::compile(const String & platform, const String & shader_model_profil
         wlog("Could not write varying def {} to file - file could not be opened", varying_fname);
         return ret;
     }
-    ret = build_shader_(containing_dir, "vertex", vertex_src_, platform, shader_model_profile, outdir);
-    ret = ret && build_shader_(containing_dir, "fragment", fragment_src_, platform, shader_model_profile, outdir);
+    String profile = shader_model_profile;
+    if (profile == "glsl")
+        profile = "";
+    ret = build_shader_(containing_dir, "vertex", vertex_src_, platform, profile, outdir);
+    ret = ret && build_shader_(containing_dir, "fragment", fragment_src_, platform, profile, outdir);
     fs::remove(varying_fname);
     return ret;
 }

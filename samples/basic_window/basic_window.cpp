@@ -18,7 +18,8 @@ int main()
 
     //init_params[Init_Params::Window::ALWAS_ON_TOP] = true;
     init_params[init_param_key::window::TITLE] = "Basic Window";
-    init_params[init_param_key::renderer::SHADER_PROFILE] = "metal";
+    //init_params[init_param_key::renderer::SHADER_PROFILE] = "metal";
+//    init_params[init_param_key::renderer::SHADER_PROFILE] = "spirv";
 
     applic.initialize(init_params);
     auto rc = ns_ctxt.get_resource_cache();
@@ -32,7 +33,7 @@ int main()
     Input_Context ic;
     Input_Action_Trigger iac("load_and_compile_shader");
     iac.condition.input_code = MOUSE_BUTTON_LEFT;
-    iac.condition.modifier_mask = MOD_ALT;
+    iac.condition.modifier_mask = MOD_CONTROL;
     iac.trigger_state = Trigger_State::T_PRESS;
     ic.add_trigger(iac);
 

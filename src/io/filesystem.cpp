@@ -7,6 +7,7 @@
 const noble_steed::u32 MAX_PATH = 200;
 
 #if defined(PLATFORM_POSIX) || defined(__linux__)
+#include <sys/wait.h>
 #elif defined(_WIN32)
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>

@@ -85,6 +85,7 @@ void Input_Translator::handle_key_press(Event & ev)
     i8 action = ev.data[key_press::action].get_value<i8>();
     tc.input_code = ev.data[key_press::key].get_value<i16>();
     tc.modifier_mask = ev.data[key_press::mods].get_value<i16>();
+    dlog("Detected key {}  {}",tc.input_code,tc.modifier_mask);
     send_event_for_trigger_action_(tc, action);
 }
 
@@ -124,6 +125,7 @@ void Input_Translator::handle_mouse_press(Event & ev)
     i8 action = ev.data[mouse_press::action].get_value<i8>();
     tc.input_code = ev.data[mouse_press::button].get_value<i16>();
     tc.modifier_mask = ev.data[mouse_press::mods].get_value<i16>();
+    dlog("in code: {}  mod mask: {}",tc.input_code, tc.modifier_mask);
     send_event_for_trigger_action_(tc, action);
 }
 

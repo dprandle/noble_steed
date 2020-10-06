@@ -15,7 +15,11 @@ void Vertex_Data::initialize()
 }
 
 Submesh * Mesh::get_submesh(u32 index)
-{}
+{
+    if (index > submeshes_.size())
+        return nullptr;
+    return 
+}
 
 void Mesh::add_submesh(const Submesh & subm)
 {
@@ -23,6 +27,21 @@ void Mesh::add_submesh(const Submesh & subm)
 }
 
 void Mesh::remove_submesh(u32 index)
-{}
+{
+    if (index >= submeshes_.size())
+        return;
+    u32 old_ind = submeshes_.size()-1;
+    if (index == old_ind)
+    {
+        submeshes_.pop_back();
+        return;
+    }
+    submeshes_[index]
+}
+
+u32 Mesh::submesh_count()
+{
+    return submeshes_.size();
+}
 
 } // namespace noble_steed

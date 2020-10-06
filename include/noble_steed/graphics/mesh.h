@@ -21,10 +21,20 @@ struct Vertex_Data
     static bgfx::VertexLayout layout_;
 };
 
+struct Vertex_Buffer
+{
+    bgfx::VertexLayout layout;
+    bgfx::VertexBufferHandle handle;
+};
+
+struct Vertex_Buffer : public Vertex_Buffer
+{
+    Vector<T> buffer_data;
+};
+
 struct Submesh
 {
-    Vector<Vertex_Data> vertices;
-    Vector<u32> indices;
+    Hash_Map<u32, Vertex_Buffer*>
 };
 
 class Mesh: public Resource
@@ -34,6 +44,9 @@ class Mesh: public Resource
     Submesh * get_submesh(u32 index);
     void add_submesh(const Submesh & subm);
     void remove_submesh(u32 index);
+    u32 submesh_count();
+
+    Signal<u32,u32> submesh_id_change;
 
     private:
     Vector<Submesh> submeshes_;
