@@ -1,8 +1,10 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-#include <noble_steed/core/common.h>
 #include <spdlog/fmt/ostr.h>
+
+#include "../core/common.h"
+#include "../core/variant.h"
 
 #define tlog SPDLOG_TRACE
 #define dlog SPDLOG_DEBUG
@@ -82,7 +84,7 @@ class Logger
 
     void remove_logger(const String & logger_name);
 
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
 

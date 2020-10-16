@@ -16,7 +16,7 @@ Shader::Shader(const Shader & copy) : Resource(copy)
 Shader::~Shader()
 {}
 
-void Shader::initialize(const Variant_Map & init_params)
+void Shader::initialize(const Variant_Hash & init_params)
 {
     Resource::initialize(init_params);
 }

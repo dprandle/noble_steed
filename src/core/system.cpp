@@ -22,7 +22,7 @@ void System::swap(const System & rhs)
 System::~System()
 {}
 
-void System::initialize(const Variant_Map & init_params)
+void System::initialize(const Variant_Hash & init_params)
 {
     rttr::type t = get_derived_info().m_type;
     ilog("Initializing system with type {}", String(t.get_name()));

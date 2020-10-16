@@ -138,7 +138,7 @@ void Logger::remove_logger(const String & logger_name)
     }
 }
 
-void Logger::initialize(const Variant_Map & init_params)
+void Logger::initialize(const Variant_Hash & init_params)
 {
     Log_Level_Info def_inf;
     def_inf.console_debug_level = Logger::Debug;
@@ -147,10 +147,10 @@ void Logger::initialize(const Variant_Map & init_params)
     def_inf.daily_file_release_level = Logger::Off;
     def_inf.per_exec_file_debug_level = Logger::Trace;
     def_inf.per_exec_file_release_level = Logger::Off;
-
+    
     auto fiter = init_params.find(IP_DEFAULT_LOGGER_INFO);
     if (fiter != init_params.end())
-        def_inf = fiter->second.get_value<Log_Level_Info>();
+        def_inf = fiter->second.get_custom_value<Log_Level_Info>();
 
     // Create dir if it doesn't exist
     fs::create_directories(LOGS_FOLDER_PATH);

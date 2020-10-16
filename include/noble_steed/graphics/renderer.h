@@ -39,13 +39,17 @@ class Renderer : public System
 
     void render_frame();
 
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
+  protected:
 
     void compile_shader(Event & ev);
 
-  protected:
+    /// Event handler for resize framebuffer event - called every time the framebuffer is resized either programmatically or by the user resizing the window
+    void handle_framebuffer_resize(Event & ev);
+
+
     void register_default_types_();
     void swap(const Renderer & rhs);
 

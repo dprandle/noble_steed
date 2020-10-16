@@ -25,7 +25,7 @@ class Engine : public System
 
     std::chrono::nanoseconds elapsed();
 
-    virtual void initialize(const Variant_Map & init_params);
+    virtual void initialize(const Variant_Hash & init_params);
 
     virtual void terminate();
 

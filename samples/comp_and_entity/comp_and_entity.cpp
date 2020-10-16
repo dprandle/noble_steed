@@ -52,11 +52,7 @@ RTTR_REGISTRATION
 int main()
 {
     Context ctxt;
-    Variant_Map vm;
-
-    Variant v;
-    Hash_Map<int, int> hm;
-    v = hm;
+    Variant_Hash vm;
 
     ctxt.initialize(vm);
     ctxt.register_system_type<silly_system>(vm);

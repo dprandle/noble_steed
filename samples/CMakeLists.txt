@@ -1,5 +1,5 @@
 project(samples)
 add_subdirectory(basic_window)
-# add_subdirectory(comp_and_entity)
+add_subdirectory(comp_and_entity)
 # add_subdirectory(copy_assignment)
 # add_subdirectory(package_testing)

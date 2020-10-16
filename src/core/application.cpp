@@ -33,7 +33,7 @@ Application::~Application()
 {}
 
 // TODO Add vars window width, height, name
-void Application::initialize(const Variant_Map & init_params)
+void Application::initialize(const Variant_Hash & init_params)
 {
     // Create a GLFW window without an OpenGL context.
     glfwSetErrorCallback(glfw_error_callback);

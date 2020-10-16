@@ -23,7 +23,7 @@ Window::Window() : window_(nullptr), close_window_(false)
 Window::~Window()
 {}
 
-bool Window::initialize(const Variant_Map & init_params)
+bool Window::initialize(const Variant_Hash & init_params)
 {
     using namespace init_param_key::window;
 
@@ -121,6 +121,13 @@ itup2 Window::get_size()
     return ret;
 }
 
+itup2 Window::get_framebuffer_size()
+{
+    itup2 ret;
+    glfwGetFramebufferSize(window_, &ret.w, &ret.h);
+    return ret;
+}
+
 dtup2 Window::get_normalized_cursor_pos()
 {
     dtup2 ret = get_cursor_pos();
@@ -151,8 +158,8 @@ void Window::glfw_resize_window_callback(GLFWwindow * window, i32 width, i32 hei
 {
     using namespace events;
     Event ev;
-    ev.id = window_resized::id;
-    ev.data[window_resized::new_size] = itup2(width, height);
+    ev.id = window::resized::id;
+    ev.data[window::resized::new_size] = itup2(width, height);
     post_event(ev);
 }
 
@@ -160,8 +167,8 @@ void Window::glfw_focus_change_callback(GLFWwindow * window, i32 focused)
 {
     using namespace events;
     Event ev;
-    ev.id = window_focus_change::id;
-    ev.data[window_focus_change::focused] = i8(focused);
+    ev.id = window::focus_change::id;
+    ev.data[window::focus_change::focused] = i8(focused);
     post_event(ev);
 }
 
@@ -169,7 +176,7 @@ void Window::glfw_close_window_callback(GLFWwindow * window)
 {
     using namespace events;
     Event ev;
-    ev.id = window_closed::id;
+    ev.id = window::closed::id;
     post_event(ev);
 }
 
@@ -177,8 +184,8 @@ void Window::glfw_iconify_window_callback(GLFWwindow * window, i32 iconified)
 {
     using namespace events;
     Event ev;
-    ev.id = window_iconified::id;
-    ev.data[window_iconified::iconified] = i8(iconified);
+    ev.id = window::iconified::id;
+    ev.data[window::iconified::iconified] = i8(iconified);
     post_event(ev);
 }
 
@@ -186,8 +193,8 @@ void Window::glfw_maximize_window_callback(GLFWwindow * window, i32 maximized)
 {
     using namespace events;
     Event ev;
-    ev.id = window_maximized::id;
-    ev.data[window_maximized::maximized] = i8(maximized);
+    ev.id = window::maximized::id;
+    ev.data[window::maximized::maximized] = i8(maximized);
     post_event(ev);
 }
 
@@ -195,8 +202,8 @@ void Window::glfw_window_position_callback(GLFWwindow * window, i32 x_pos, i32 y
 {
     using namespace events;
     Event ev;
-    ev.id = window_moved::id;
-    ev.data[window_moved::new_pos] = itup2(x_pos, y_pos);
+    ev.id = window::moved::id;
+    ev.data[window::moved::new_pos] = itup2(x_pos, y_pos);
     post_event(ev);
 }
 
@@ -204,8 +211,8 @@ void Window::glfw_franebuffer_resized_callback(GLFWwindow * window, i32 width, i
 {
     using namespace events;
     Event ev;
-    ev.id = framebuffer_resized::id;
-    ev.data[framebuffer_resized::new_size] = itup2(width, height);
+    ev.id = window::framebuffer_resized::id;
+    ev.data[window::framebuffer_resized::new_size] = itup2(width, height);
     post_event(ev);
 }
 
@@ -244,41 +251,43 @@ const String FOCUSED = "FOCUSED";
 /// bool - Center the cursor on fullscreen windows - ignored for windowed mode windows - default is true
 const String CENTER_CURSOR = "CENTER_CURSOR";
 
-} // namespace Window
-} // namespace Init_Params
+} // namespace window
+} // namespace init_param_key
 
 namespace events
 {
-namespace window_closed
+namespace window
+{
+namespace closed
 {
 const u32 id = str_hash("Window_Closed");
 } // namespace window_closed
 
-namespace window_resized
+namespace resized
 {
 const u32 id = str_hash("Window_Resized");
 const String new_size = "new_size";
 } // namespace window_resized
 
-namespace window_focus_change
+namespace focus_change
 {
 const u32 id = str_hash("Window_Focus_Change");
 const String focused = "focused";
 } // namespace window_focus_change
 
-namespace window_iconified
+namespace iconified
 {
 const u32 id = str_hash("Window_Iconified");
 const String iconified = "iconified";
 } // namespace window_iconified
 
-namespace window_maximized
+namespace maximized
 {
 const u32 id = str_hash("Window_Maximized");
 const String maximized = "maximized";
 } // namespace window_maximized
 
-namespace window_moved
+namespace moved
 {
 const u32 id = str_hash("Window_Moved");
 const String new_pos = "new_pos";
@@ -289,6 +298,6 @@ namespace framebuffer_resized
 const u32 id = str_hash("Framebuffer_Resized");
 const String new_size = "new_size";
 } // namespace framebuffer_resized
-
+}
 } // namespace events
 } // namespace noble_steed

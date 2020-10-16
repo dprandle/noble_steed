@@ -61,7 +61,7 @@ std::chrono::nanoseconds Engine::elapsed()
     return std::chrono::high_resolution_clock::now() - start_;
 }
 
-void Engine::initialize(const Variant_Map & init_params)
+void Engine::initialize(const Variant_Hash & init_params)
 {
     System::initialize(init_params);
     start_ = std::chrono::high_resolution_clock::now();
@@ -69,7 +69,7 @@ void Engine::initialize(const Variant_Map & init_params)
     lag_ = std::chrono::nanoseconds::zero();
 
     using namespace events;
-    subscribe_event_handler(window_closed::id, [=](Event & ev) { set_running(false); });
+    subscribe_event_handler(window::closed::id, [=](Event & ev) { set_running(false); });
 }
 
 void Engine::terminate()

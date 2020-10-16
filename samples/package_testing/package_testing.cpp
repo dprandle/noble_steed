@@ -56,7 +56,7 @@ RTTR_REGISTRATION
 int main()
 {
     Context ctxt;
-    Variant_Map vm;
+    Variant_Hash vm;
     String current_package = "data/best_package_ever";
     Vector<String> packages = {current_package};
     vm[init_param_key::resource_cache::PACKAGE_DIRS] = packages;

@@ -7,7 +7,10 @@ namespace noble_steed
 Event::Event() : id(INVALID_ID), data()
 {}
 
-Event::Event(const String & name, const Variant_Map & data_) : id(str_hash(name)), data(data_)
+Event::Event(const String & name, const Variant_Hash & data_) : id(str_hash(name)), data(data_)
+{}
+
+Event::Event(u32 id_, const Variant_Hash & data_): id(id_), data(data_)
 {}
 
 void Event_Buffer::push(const Event & event)
@@ -68,8 +71,8 @@ void Context_Obj::process_events()
         }
         else
         {
-            wlog("Event was routed to {} but was ignored because there was no valid handler",this->get_derived_info().m_type.get_name().to_string());
-        }        
+            wlog("Event was routed to {} but was ignored because there was no valid handler", this->get_derived_info().m_type.get_name().to_string());
+        }
     }
     event_mutex_.unlock();
 }

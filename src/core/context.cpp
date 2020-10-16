@@ -15,6 +15,7 @@
 #include <noble_steed/hash/crc32.h>
 #include <noble_steed/io/input_map.h>
 #include <noble_steed/graphics/shader.h>
+#include <noble_steed/graphics/mesh.h>
 
 namespace noble_steed
 {
@@ -53,7 +54,7 @@ Context::~Context()
     mem_free_list_.Reset();
 }
 
-void Context::initialize(const Variant_Map & init_params)
+void Context::initialize(const Variant_Hash & init_params)
 {
     auto fiter = init_params.find(INIT_CWD_KEY);
     if (fiter != init_params.end())
@@ -72,7 +73,7 @@ void Context::initialize(const Variant_Map & init_params)
         }
         else
         {
-            wlog("Passed in recognized key {} but value type was {} instead of string", INIT_CWD_KEY, String(fiter->second.get_type().get_name()));
+            //wlog("Passed in recognized key {} but value type was {} instead of string", INIT_CWD_KEY, String(fiter->second.get_type().get_name()));
         }
     }
     // Create log directory
@@ -166,7 +167,7 @@ void * Context::malloc_(const rttr::type & type, u32 elements)
         type_size = MIN_ALLOC_SIZE;
     return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);
 }
-void Context::register_default_types_(const Variant_Map & init_params)
+void Context::register_default_types_(const Variant_Hash & init_params)
 {
     using namespace init_param_key::context;
 
@@ -183,6 +184,7 @@ void Context::register_default_types_(const Variant_Map & init_params)
     register_resource_type<World_Chunk>(".bbworld", init_params);
     register_resource_type<Input_Map>(".imap", init_params);
     register_resource_type<Shader>(".sc",init_params);
+    register_resource_type<Mesh>(".msh", init_params);
 
     // Entity
     register_pool_factory<Entity>(init_params, DEFAULT_ENTITY_ALLOC);
@@ -275,7 +277,7 @@ void Context::unsubscribe_from_event(Context_Obj * obj, u32 event_id)
 
 void Context::post_event_to_queues(Event & event)
 {
-    event.timestamp = ns_eng->elapsed();
+    //event.timestamp = ns_eng->elapsed();
     auto iter = event_subscribers_.find(event.id);
     if (iter != event_subscribers_.end())
     {
@@ -288,7 +290,7 @@ void Context::post_event_to_queues(Event & event)
     }
 }
 
-void Context::post_event_to_queues(const String & event_name, const Variant_Map & data)
+void Context::post_event_to_queues(const String & event_name, const Variant_Hash & data)
 {
     Event ev(event_name, data);
     post_event_to_queues(ev);
@@ -309,7 +311,7 @@ u32 Context::hash_str(const String & str)
     return crc32(str.c_str(), str.size());
 }
 
-PoolAllocator * Context::create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Map & init_params)
+PoolAllocator * Context::create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Hash & init_params)
 {
     sizet type_size = type.get_sizeof();
 

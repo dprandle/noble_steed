@@ -25,7 +25,7 @@ class Shader : public Resource
     /// Meaning, if the renderer type is set to metal and glsl is passed in - this will crash. Shader will do what its told though and try.
     bool create_program(const String & output_relative_dir);
 
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
 

@@ -123,16 +123,190 @@ void Index_Buffer::free()
     handle = -1;
 }
 
-void Vertex_Data::alloc_buffers()
+template<class T>
+void create_if_needed(Vertex_Buffer_Data<T> & buf,
+                      Vector<Vertex_Buffer> & buffers,
+                      const String & name,
+                      bgfx::Attrib::Enum attrib,
+                      u8 elements,
+                      bgfx::AttribType::Enum att_type,
+                      bool normalize = false)
 {
-
+    if (!buf.data.empty())
+    {
+        if (!buf.buffer)
+        {
+            buffers.resize(buffers.size() + 1);
+            buf.buffer = &buffers.back();
+        }
+        if (!bgfx_valid_handle(buf.buffer->handle))
+        {
+            buf.buffer->data = buf.data.data();
+            buf.buffer->data_size = buf.data.size();
+            buf.buffer->name = name;
+            buf.buffer->layout.begin().add(attrib, elements, att_type, normalize).end();
+        }
+    }
 }
 
-void Vertex_Data::update_buffers()
-{}
+void Vertex_Data::create_buffers(const String & name_prefix)
+{
+    create_if_needed(positions, buffers, name_prefix + ".verts.positions", bgfx::Attrib::Position, 3, bgfx::AttribType::Float);
+    create_if_needed(normals, buffers, name_prefix + ".verts.normals", bgfx::Attrib::Normal, 3, bgfx::AttribType::Float);
+    create_if_needed(tangents, buffers, name_prefix + ".verts.tangents", bgfx::Attrib::Tangent, 3, bgfx::AttribType::Float);
+    create_if_needed(bitangents, buffers, name_prefix + ".verts.bitangents", bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Float);
+
+    if (!bone_weights.data.empty())
+    {
+        if (!bone_weights.buffer)
+        {
+            buffers.resize(buffers.size() + 1);
+            bone_weights.buffer = &buffers.back();
+        }
+        if (!bgfx_valid_handle(bone_weights.buffer->handle))
+        {
+            bone_weights.buffer->data = bone_weights.data.data();
+            bone_weights.buffer->data_size = bone_weights.data.size();
+            bone_weights.buffer->name = name_prefix + ".verts.bone_weights";
+            bone_weights.buffer->layout.begin()
+                .add(bgfx::Attrib::Indices, 4, bgfx::AttribType::Int16, false)
+                .add(bgfx::Attrib::Weight, 4, bgfx::AttribType::Float, false)
+                .end();
+        }
+    }
+
+    //create_if_needed(bone_weights, "bone_weights", bgfx::Attrib::Position, 3, bgfx::AttribType::Float);
+    create_if_needed(colors0, buffers, name_prefix + ".verts.colors0", bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true);
+    create_if_needed(tex_coords_0, buffers, name_prefix + ".verts.tex_coords_0", bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float);
+}
+
+void Vertex_Data::alloc_buffers()
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (!bgfx_valid_handle(buffers[i].handle))
+            buffers[i].alloc();
+    }
+}
+
+void Vertex_Data::update_buffers(u32 offset)
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (bgfx_valid_handle(buffers[i].handle) && buffers[i].dynamic)
+            buffers[i].update(offset);
+    }
+}
 
 void Vertex_Data::free_buffers()
-{}
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (bgfx_valid_handle(buffers[i].handle))
+            buffers[i].free();
+    }
+}
+
+void Vertex_Data::destroy_buffers()
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (!bgfx_valid_handle(buffers[i].handle))
+        {
+            u32 ind = buffers.size() - 1;
+            if (i != ind)
+            {
+                buffers[i] = buffers[ind];
+                --i;
+            }
+            buffers.pop_back();
+        }
+    }
+}
+
+void Index_Data::create_buffers(const String & name_prefix)
+{
+    buffers.resize(COUNT);
+    buffers[TRIANGLES].name = name_prefix + ".indices.triangles";
+    buffers[TRIANGLE_STRIP].name = name_prefix + ".indices.triangle_strip";
+    buffers[LINES].name = name_prefix + ".indices.lines";
+    buffers[LINE_STRIP].name = name_prefix + ".indices.line_strip";
+    buffers[POINTS].name = name_prefix + ".indices.points";
+}
+
+void Index_Data::alloc_buffers()
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (!bgfx_valid_handle(buffers[i].handle))
+            buffers[i].alloc();
+    }
+}
+
+void Index_Data::update_buffers(u32 offset)
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (bgfx_valid_handle(buffers[i].handle) && buffers[i].dynamic)
+            buffers[i].update(offset);
+    }
+}
+
+void Index_Data::free_buffers()
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (bgfx_valid_handle(buffers[i].handle))
+            buffers[i].free();
+    }
+}
+
+void Index_Data::destroy_buffers()
+{
+    for (int i = 0; i < buffers.size(); ++i)
+    {
+        if (!bgfx_valid_handle(buffers[i].handle))
+        {
+            u32 ind = buffers.size() - 1;
+            if (i != ind)
+            {
+                buffers[i] = buffers[ind];
+                --i;
+            }
+            buffers.pop_back();
+        }
+    }
+}
+
+void Submesh::create_buffers()
+{
+    vert_data.create_buffers(name);
+    index_buffers.create_buffers(name);
+}
+
+void Submesh::alloc_buffers()
+{
+    vert_data.alloc_buffers();
+    index_buffers.alloc_buffers();
+}
+
+void Submesh::update_buffers(u32 offset)
+{
+    vert_data.update_buffers(offset);
+    index_buffers.update_buffers(offset);
+}
+
+void Submesh::free_buffers()
+{
+    vert_data.free_buffers();
+    index_buffers.free_buffers();
+}
+
+void Submesh::destroy_buffers()
+{
+    vert_data.destroy_buffers();
+    index_buffers.destroy_buffers();
+}
 
 Submesh * Mesh::get_submesh(u32 index)
 {
@@ -145,6 +319,8 @@ Submesh * Mesh::add_submesh(u32 & sub_ind, const Submesh & copy)
 {
     sub_ind = submeshes_.size();
     submeshes_.push_back(copy);
+    submeshes_[sub_ind].owner = this;
+    submeshes_[sub_ind].name = get_relative_path();
     return &submeshes_[sub_ind];
 }
 

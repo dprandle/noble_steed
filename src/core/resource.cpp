@@ -96,7 +96,7 @@ bool Resource::load()
     return load(get_relative_path());
 }
 
-void Resource::initialize(const Variant_Map & init_params)
+void Resource::initialize(const Variant_Hash & init_params)
 {
     ilog("Initializing resource type {}", String(get_derived_info().m_type.get_name()));
 }

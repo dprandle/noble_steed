@@ -18,7 +18,7 @@ class Component : public Context_Obj
 
     virtual ~Component();
 
-    virtual void initialize(const Variant_Map & init_params);
+    virtual void initialize(const Variant_Hash & init_params);
 
     virtual void terminate();
 

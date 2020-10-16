@@ -11,7 +11,7 @@ using namespace noble_steed;
 int main()
 {
     Context ctxt;
-    Variant_Map vm;
+    Variant_Hash vm;
 
     ctxt.initialize(vm);
     

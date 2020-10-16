@@ -14,6 +14,17 @@ BGFX_HANDLE(Index_Buffer_Handle)
 
 namespace noble_steed
 {
+
+enum Index_Buffer_Type
+{
+    TRIANGLES,
+    TRIANGLE_STRIP,
+    LINES,
+    LINE_STRIP,
+    POINTS,
+    COUNT
+};
+
 struct Vertex_Buffer
 {
     Vertex_Buffer();
@@ -90,9 +101,21 @@ struct Vertex_Buffer_Data
 
 struct Vertex_Data
 {
+    /// Create buffers for all data that has at least one vertice
+    void create_buffers(const String & name_prefix);
+
+    /// Allocate buffers for all invalid handles - if dynamic and data is null, will just allocate based on size. If not dynamic and data is null,
+    /// then don't do anything and log warning.
     void alloc_buffers();
-    void update_buffers();
+
+    /// Update all buffers that are set to dynamic and allocated
+    void update_buffers(u32 offset);
+
+    /// Free all buffers that have previously been allocated
     void free_buffers();
+
+    /// Remove all unused (not allocated) buffers
+    void destroy_buffers();
     
     Vector<Vertex_Buffer> buffers;
 
@@ -101,29 +124,49 @@ struct Vertex_Data
     Vertex_Buffer_Data<vec3> tangents;
     Vertex_Buffer_Data<vec3> bitangents;
     Vertex_Buffer_Data<Bone_Weight> bone_weights;
-    Vertex_Buffer_Data<u8vec4> colors;
-    Vertex_Buffer_Data<u8vec4> colors2;
-    Vertex_Buffer_Data<u8vec4> colors3;
-    Vertex_Buffer_Data<u8vec4> colors4;
-    Vertex_Buffer_Data<vec2> tex_coords_1;
-    Vertex_Buffer_Data<vec2> tex_coords_2;
-    Vertex_Buffer_Data<vec2> tex_coords_3;
-    Vertex_Buffer_Data<vec2> tex_coords_4;
-    Vertex_Buffer_Data<vec2> tex_coords_5;
-    Vertex_Buffer_Data<vec2> tex_coords_6;
-    Vertex_Buffer_Data<vec2> tex_coords_7;
-    Vertex_Buffer_Data<vec2> tex_coords_8;
+    Vertex_Buffer_Data<u8vec4> colors0;
+    Vertex_Buffer_Data<vec2> tex_coords_0;
+};
+
+struct Index_Data
+{
+    /// Create buffers for all data that has at least one vertice
+    void create_buffers(const String & name_prefix);
+
+    /// Allocate buffers for all invalid handles - if dynamic and data is null, will just allocate based on size. If not dynamic and data is null,
+    /// then don't do anything and log warning.
+    void alloc_buffers();
+
+    /// Update all buffers that are set to dynamic and allocated
+    void update_buffers(u32 offset);
+
+    /// Free all buffers that have previously been allocated
+    void free_buffers();
+
+    /// Remove all unused (not allocated) buffers
+    void destroy_buffers();
+
+    Vector<Index_Buffer> buffers;
 };
 
 class Mesh;
 
 struct Submesh
 {
-    Submesh();
+    void create_buffers();
+
+    void alloc_buffers();
+
+    void update_buffers(u32 offset);
+
+    void free_buffers();
+
+    void destroy_buffers();
 
     Vertex_Data vert_data;
-    Vector<Index_Buffer> index_buffers;
+    Index_Data index_buffers;
     Mesh * owner;
+    String name;
     bool use_shared_vert_data;
 };
 

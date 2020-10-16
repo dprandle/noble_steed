@@ -33,7 +33,7 @@ class Resource : public Context_Obj
     // file to succeed
     virtual bool load(const String & custom_path);
 
-    virtual void initialize(const Variant_Map & init_params);
+    virtual void initialize(const Variant_Hash & init_params);
 
     virtual void terminate();
 

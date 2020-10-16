@@ -26,7 +26,7 @@ void Component::swap(Component & rhs)
 Component::~Component()
 {}
 
-void Component::initialize(const Variant_Map & init_params)
+void Component::initialize(const Variant_Hash & init_params)
 {
     ilog("Initializing component type {} and owner id {}", String(get_derived_info().m_type.get_name()), owner_id_);
 }

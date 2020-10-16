@@ -17,7 +17,7 @@ class System : public Context_Obj
 
     virtual ~System();
 
-    virtual void initialize(const Variant_Map & init_params);
+    virtual void initialize(const Variant_Hash & init_params);
 
     virtual void terminate();
 

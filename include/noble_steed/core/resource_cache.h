@@ -24,13 +24,13 @@ class Resource_Cache
     friend class Context;
 
   public:
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
 
     // add resource
     template<class ResType>
-    ResType * add(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
+    ResType * add(const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
     {
         rttr::type t = rttr::type::get<ResType>();
         Resource * res = add(t, name, package, init_params);
@@ -49,9 +49,9 @@ class Resource_Cache
         return nullptr;
     }
 
-    Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params);
+    Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params);
 
-    Resource * add(u32 type_id, const String & name, const String & package, const Variant_Map & init_params);
+    Resource * add(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params);
 
     template<class ResType>
     ResType * get(u32 id)
@@ -117,7 +117,7 @@ class Resource_Cache
     Vector<Resource *> get_all(String package) const;
 
     template<class ResType>
-    ResType * load(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
+    ResType * load(const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
     {
         rttr::type t = rttr::type::get<ResType>();
         Resource * res = load(t, name, package, init_params);
@@ -128,7 +128,7 @@ class Resource_Cache
 
     template<class ResType>
     ResType *
-    load(const String & custom_path, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
+    load(const String & custom_path, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
     {
         rttr::type t = rttr::type::get<ResType>();
         Resource * res = load(t, name, package, custom_path, init_params);
@@ -138,15 +138,15 @@ class Resource_Cache
     }
 
     Resource *
-    load(const rttr::type & resource_type, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
+    load(const rttr::type & resource_type, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash());
 
-    Resource * load(u32 type_id, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
+    Resource * load(u32 type_id, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash());
 
     Resource * load(const rttr::type & resource_type,
                     const String & custom_path,
                     const String & name,
                     const String & package = String(),
-                    const Variant_Map & init_params = Variant_Map());
+                    const Variant_Hash & init_params = Variant_Hash());
 
     bool remove(u32 id);
 
@@ -223,7 +223,7 @@ class Resource_Cache
 
     Resource * allocate_resource_(u32 type_id, const Resource & copy);
 
-    bool add_resource_(Resource * res, const String & name, const String & package, const Variant_Map & init_params);
+    bool add_resource_(Resource * res, const String & name, const String & package, const Variant_Hash & init_params);
 
     void deallocate_resource_(Resource * res, u32 type_id);
 

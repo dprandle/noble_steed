@@ -1,8 +1,9 @@
 #pragma once
 
-#include <noble_steed/container/vector.h>
-#include <noble_steed/container/stack.h>
-#include <noble_steed/core/system.h>
+#include "../container/vector.h"
+#include "../container/stack.h"
+#include "../core/system.h"
+#include "../core/tuple.h"
 
 class PoolAllocator;
 
@@ -14,18 +15,18 @@ class Component;
 class Entity;
 class System;
 
-class World
+class World : public Context_Obj
 {
     friend class Context;
     friend Variant construct_factory_type(u32 type_id);
 
   public:
-    void initialize(const Variant_Map & init_params = Variant_Map());
+    void initialize(const Variant_Hash & init_params = Variant_Hash());
 
     void terminate();
 
     template<class T>
-    T * add_system(const Variant_Map & init_params = Variant_Map())
+    T * add_system(const Variant_Hash & init_params = Variant_Hash())
     {
         rttr::type t = rttr::type::get<T>();
         return static_cast<T*>(add_system_(t,init_params));
@@ -49,9 +50,9 @@ class World
 
     void clear_entities();
 
-    Entity * create(const Variant_Map & init_params=Variant_Map());
+    Entity * create(const Variant_Hash & init_params=Variant_Hash());
 
-    Entity * create(const Entity & copy, const Variant_Map & init_params=Variant_Map());
+    Entity * create(const Entity & copy, const Variant_Hash & init_params=Variant_Hash());
 
     bool contains(u32 id);
 
@@ -75,13 +76,15 @@ class World
 
     ~World();
 
-    void add_default_systems(const Variant_Map & init_params);
+    void handle_entity_packed_in(Event & ev);
+
+    void add_default_systems(const Variant_Hash & init_params);
 
     void rebuild_available_id_stack_();
     
-    void add_entity_(Entity * to_add, const Variant_Map & init_params);
+    void add_entity_(Entity * to_add, const Variant_Hash & init_params);
     
-    System * add_system_(const rttr::type & sys_typ,const Variant_Map & init_params);
+    System * add_system_(const rttr::type & sys_typ,const Variant_Hash & init_params);
 
     System * get_system_(const rttr::type & sys_type);
 

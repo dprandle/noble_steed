@@ -23,7 +23,7 @@ Resource_Cache::~Resource_Cache()
     clear();
 }
 
-void Resource_Cache::initialize(const Variant_Map & init_params)
+void Resource_Cache::initialize(const Variant_Hash & init_params)
 {
     ilog("Initializing resource cache");
     using namespace init_param_key::resource_cache;
@@ -33,13 +33,13 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
     {
         if (iter->second.is_type<Vector<String>>())
         {
-            auto view = iter->second.create_sequential_view();
-            for (int i = 0; i < view.get_size(); ++i)
-                load_package(view.get_value(i).to_string(), false);
+            // auto view = iter->second.create_sequential_view();
+            // for (int i = 0; i < view.get_size(); ++i)
+            //     load_package(view.get_value(i).to_string(), false);
         }
         else
         {
-            wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
+            //wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
         }
     }
 
@@ -52,7 +52,7 @@ void Resource_Cache::initialize(const Variant_Map & init_params)
         }
         else
         {
-            wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
+            //wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
         }
     }
 
@@ -69,12 +69,12 @@ void Resource_Cache::terminate()
     clear();
 }
 
-Resource * Resource_Cache::add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
+Resource * Resource_Cache::add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params)
 {
     return add(type_hash(resource_type), name, package, init_params);
 }
 
-Resource * Resource_Cache::add(u32 type_id, const String & name, const String & package, const Variant_Map & init_params)
+Resource * Resource_Cache::add(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params)
 {
     Resource * resource = allocate_resource_(type_id);
     if (!add_resource_(resource, name, package, init_params))
@@ -85,12 +85,12 @@ Resource * Resource_Cache::add(u32 type_id, const String & name, const String & 
     return resource;
 }
 
-Resource * Resource_Cache::load(const rttr::type & resource_type, const String & name, const String & package, const Variant_Map & init_params)
+Resource * Resource_Cache::load(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params)
 {
     return load(type_hash(resource_type), name, package, init_params);
 }
 
-Resource * Resource_Cache::load(u32 type_id, const String & name, const String & package, const Variant_Map & init_params)
+Resource * Resource_Cache::load(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params)
 {
     Resource * res = add(type_id, name, package, init_params);
     if (res != nullptr && !res->load())
@@ -105,7 +105,7 @@ Resource * Resource_Cache::load(const rttr::type & resource_type,
                                 const String & name,
                                 const String & package,
                                 const String & custom_path,
-                                const Variant_Map & init_params)
+                                const Variant_Hash & init_params)
 {
     Resource * res = add(resource_type, name, package, init_params);
     if (res != nullptr && !res->load(custom_path))
@@ -153,7 +153,7 @@ Resource * Resource_Cache::add_from_(const Resource & copy)
     rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
     u32 type_id = type_hash(t);
     Resource * resource = allocate_resource_(type_id, copy);
-    if (!add_resource_(resource, resource->get_name(), resource->get_package(), Variant_Map()))
+    if (!add_resource_(resource, resource->get_name(), resource->get_package(), Variant_Hash()))
     {
         deallocate_resource_(resource, type_id);
         return nullptr;
@@ -427,7 +427,7 @@ Resource * Resource_Cache::allocate_resource_(u32 type_id, const Resource & copy
     return res;
 }
 
-bool Resource_Cache::add_resource_(Resource * res, const String & name, const String & package, const Variant_Map & init_params)
+bool Resource_Cache::add_resource_(Resource * res, const String & name, const String & package, const Variant_Hash & init_params)
 {
     String actual_package(package);
     if (actual_package.empty())

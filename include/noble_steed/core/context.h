@@ -47,7 +47,7 @@ class Context
     Context();
     ~Context();
 
-    void initialize(const Variant_Map & init_params = Variant_Map());
+    void initialize(const Variant_Hash & init_params = Variant_Hash());
 
     void terminate();
 
@@ -107,7 +107,7 @@ class Context
     void raw_free(void * to_free);
 
     template<class Derived>
-    Pool_Factory<Derived> * register_pool_factory(const Variant_Map & init_params, u16 alloc_quantity)
+    Pool_Factory<Derived> * register_pool_factory(const Variant_Hash & init_params, u16 alloc_quantity)
     {
         rttr::type t = rttr::type::get<Derived>();
         u32 type_id = type_hash(t);
@@ -139,19 +139,19 @@ class Context
     }
 
     template<class T>
-    Free_List_Factory<T> * register_system_type(const Variant_Map & init_params)
+    Free_List_Factory<T> * register_system_type(const Variant_Hash & init_params)
     {
         return register_free_list_factory<T>(&mem_free_list_);
     }
 
     template<class T>
-    Pool_Factory<T> * register_component_type(const Variant_Map & init_params)
+    Pool_Factory<T> * register_component_type(const Variant_Hash & init_params)
     {
         return register_pool_factory<T>(init_params, DEFAULT_COMP_ALLOC);
     }
 
     template<class T>
-    Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Map & init_params)
+    Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Hash & init_params)
     {
         rttr::type t = rttr::type::get<T>();
         if (!set_resource_extension_(t, extension))
@@ -215,18 +215,18 @@ class Context
 
     void post_event_to_queues(Event & event);
 
-    void post_event_to_queues(const String & event_name, const Variant_Map & data = Variant_Map());
+    void post_event_to_queues(const String & event_name, const Variant_Hash & data = Variant_Hash());
 
   private:
     void * malloc_(const rttr::type & type, u32 elements);
 
-    void register_default_types_(const Variant_Map & init_params);
+    void register_default_types_(const Variant_Hash & init_params);
 
     bool set_resource_extension_(const rttr::type & resource_type, const String & extension);
 
     bool remove_resource_extension(const rttr::type & resource_type);
 
-    PoolAllocator * create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Map & init_params);
+    PoolAllocator * create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Hash & init_params);
 
     bool destroy_comp_allocator_(const rttr::type & type);
 

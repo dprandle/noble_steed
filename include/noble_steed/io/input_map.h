@@ -1,8 +1,9 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/container/vector.h>
-#include <noble_steed/core/resource.h>
+#include "../core/common.h"
+#include "../core/tuple.h"
+#include "../core/resource.h"
+#include "../container/vector.h"
 
 namespace noble_steed
 {

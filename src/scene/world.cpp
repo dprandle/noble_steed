@@ -18,7 +18,7 @@ World::~World()
     clear_systems();
 }
 
-void World::initialize(const Variant_Map & init_params)
+void World::initialize(const Variant_Hash & init_params)
 {
     ilog("Initializing world");
     u16 alloc_amount = DEFAULT_ENTITY_ALLOC;
@@ -29,6 +29,9 @@ void World::initialize(const Variant_Map & init_params)
     ent_ptrs_.reserve(alloc_amount);
 
     add_default_systems(init_params);
+
+    // Subscribe to ent pack in event
+    subscribe_event_handler(events::entity::entity_packed_in::id, this, &World::handle_entity_packed_in);
 }
 
 void World::terminate()
@@ -38,7 +41,7 @@ void World::terminate()
     clear_entities();
 }
 
-void World::add_default_systems(const Variant_Map & init_params)
+void World::add_default_systems(const Variant_Hash & init_params)
 {
     add_system<Engine>(init_params);
     add_system<Input_Translator>(init_params);
@@ -47,7 +50,6 @@ void World::add_default_systems(const Variant_Map & init_params)
     grab_param(init_params, init_param_key::context::HEADLESS, headless);
     if (!headless)
         add_system<Renderer>(init_params);
-
 }
 
 void World::clear_systems()
@@ -63,7 +65,7 @@ void World::clear_entities()
     rebuild_available_id_stack_();
 }
 
-System * World::add_system_(const rttr::type & sys_type, const Variant_Map & init_params)
+System * World::add_system_(const rttr::type & sys_type, const Variant_Hash & init_params)
 {
     u32 id = type_hash(sys_type);
     if (systems_.find(id) != systems_.end())
@@ -111,7 +113,7 @@ void World::remove_system_(u32 type_id)
     }
 }
 
-Entity * World::create(const Variant_Map & init_params)
+Entity * World::create(const Variant_Hash & init_params)
 {
     Entity * ent = nullptr;
     auto fac = ns_ctxt.get_factory<Entity>();
@@ -121,7 +123,7 @@ Entity * World::create(const Variant_Map & init_params)
     return ent;
 }
 
-Entity * World::create(const Entity & copy, const Variant_Map & init_params)
+Entity * World::create(const Entity & copy, const Variant_Hash & init_params)
 {
     Entity * ent = nullptr;
     auto fac = ns_ctxt.get_factory<Entity>();
@@ -153,7 +155,7 @@ void World::rebuild_available_id_stack_()
     }
 }
 
-void World::add_entity_(Entity * to_add, const Variant_Map & init_params)
+void World::add_entity_(Entity * to_add, const Variant_Hash & init_params)
 {
     // Assign id to entity - if crashes here then ent is nullptr likely from insufficient memory block (up the size)
     if (!ent_id_stack_.empty())
@@ -209,6 +211,12 @@ Entity * World::get(u32 id)
 bool World::destroy(u32 id)
 {
     return destroy(get(id));
+}
+
+void World::handle_entity_packed_in(Event & ev)
+{
+    // Entity * ent = ev.data[events::entity::entity_packed_in::entity_ptr].get_value<Entity*>();
+    // add_entity_(ent, Variant_Hash());
 }
 
 bool World::destroy(Entity * ent)

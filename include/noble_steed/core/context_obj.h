@@ -7,16 +7,19 @@
 #include <noble_steed/container/array.h>
 #include <mutex>
 
+#include "variant.h"
+
 namespace noble_steed
 {
 
 struct Event
 {
     Event();
-    Event(const String & name, const Variant_Map & data_=Variant_Map());
+    Event(const String & name, const Variant_Hash & data_=Variant_Hash());
+    Event(u32 id_, const Variant_Hash & data_=Variant_Hash());
     u32 id;
     std::chrono::nanoseconds timestamp;
-    Variant_Map data;
+    Variant_Hash data;
 };
 
 struct Event_Buffer

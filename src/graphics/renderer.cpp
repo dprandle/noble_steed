@@ -51,27 +51,25 @@ Renderer::~Renderer()
 
 void Renderer::render_frame()
 {
-    itup2 sz = app.get_window()->get_size();
-    bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
     bgfx::frame();
     bgfx::touch(0);
 }
 
-void Renderer::initialize(const Variant_Map & init_params)
+void Renderer::initialize(const Variant_Hash & init_params)
 {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     shader_platform_ = "windows";
 #elif __APPLE__
-    #include <TargetConditionals.h>
-    #if TARGET_IPHONE_SIMULATOR
+#include <TargetConditionals.h>
+#if TARGET_IPHONE_SIMULATOR
     shader_platform_ = "ios";
-    #elif TARGET_OS_IPHONE
+#elif TARGET_OS_IPHONE
     shader_platform_ = "ios";
-    #elif TARGET_OS_MAC
+#elif TARGET_OS_MAC
     shader_platform_ = "osx";
-    #else
+#else
     shader_platform_ = "unknown";
-    #endif
+#endif
 #elif __linux__
     shader_platform_ = "linux";
 #elif __unix__ // all unices not caught above
@@ -84,15 +82,15 @@ void Renderer::initialize(const Variant_Map & init_params)
 
     System::initialize(init_params);
 
-    if (!grab_param(init_params,init_param_key::renderer::SHADER_PLATFROM,shader_platform_))
+    if (!grab_param(init_params, init_param_key::renderer::SHADER_PLATFROM, shader_platform_))
     {
-        wlog("No platform provided - using default detected ({})",shader_platform_);
+        wlog("No platform provided - using default detected ({})", shader_platform_);
     }
 
     shader_profile_ = "glsl";
-    if (!grab_param(init_params,init_param_key::renderer::SHADER_PROFILE, shader_profile_))
+    if (!grab_param(init_params, init_param_key::renderer::SHADER_PROFILE, shader_profile_))
     {
-        ilog("No profile provided - using {} which is default",shader_profile_);
+        ilog("No profile provided - using {} which is default", shader_profile_);
     }
 
     shader_bin_rel_dir_ = shader_profile_;
@@ -101,7 +99,7 @@ void Renderer::initialize(const Variant_Map & init_params)
         ilog("No shader binary directory provided - using default {}", shader_bin_rel_dir_);
     }
 
-    itup2 sz = app.get_window()->get_size();
+    itup2 sz = app.get_window()->get_framebuffer_size();
 
     /// This will be moved to the renderer eventually
     bgfx::Init bgfx_init;
@@ -135,7 +133,6 @@ void Renderer::initialize(const Variant_Map & init_params)
     {
         bgfx_init.type = bgfx::RendererType::Gnm;
     }
-    
 
     bgfx_init.resolution.width = sz.w;
     bgfx_init.resolution.height = sz.h;
@@ -148,6 +145,7 @@ void Renderer::initialize(const Variant_Map & init_params)
     sig_connect(ns_eng->render, this, &Renderer::render_frame);
     sig_connect(ns_eng->update, [&]() { process_events(); });
     subscribe_event_handler(str_hash("load_and_compile_shader"), this, &Renderer::compile_shader);
+    subscribe_event_handler(events::window::framebuffer_resized::id, this, &Renderer::handle_framebuffer_resize);
 }
 
 void Renderer::terminate()
@@ -173,6 +171,13 @@ void Renderer::compile_shader(Event & ev)
     shdr->save();
     shdr->compile(shader_platform_, shader_profile_);
     shdr->create_program(shader_bin_rel_dir_);
+}
+
+void Renderer::handle_framebuffer_resize(Event & ev)
+{
+    // itup2 new_size = ev.data[events::window::framebuffer_resized::new_size].get_value<itup2>();
+    // bgfx::reset(new_size.w,new_size.h);
+    // bgfx::setViewRect(0, 0, 0, new_size.w, new_size.h);
 }
 
 } // namespace noble_steed

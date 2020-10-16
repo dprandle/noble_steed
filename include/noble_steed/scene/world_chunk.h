@@ -1,7 +1,8 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/core/resource.h>
+#include "../core/common.h"
+#include "../core/tuple.h"
+#include "../core/resource.h"
 
 namespace noble_steed
 {
@@ -18,15 +19,15 @@ class World_Chunk : public Resource
 
     ~World_Chunk();
 
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
 
-    bool add(Entity * to_add, const Variant_Map & init_params = Variant_Map());
+    bool add(Entity * to_add, const Variant_Hash & init_params = Variant_Hash());
 
-    Entity * add(const Variant_Map & init_params = Variant_Map());
+    Entity * add(const Variant_Hash & init_params = Variant_Hash());
 
-    Entity * add(const Entity & copy, const Variant_Map & init_params = Variant_Map());
+    Entity * add(const Entity & copy, const Variant_Hash & init_params = Variant_Hash());
 
     void clear(bool remove_entities_from_world);
 

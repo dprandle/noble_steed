@@ -1,9 +1,10 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/container/hash_map.h>
-#include <noble_steed/io/json_archive.h>
-#include <noble_steed/core/context_obj.h>
+#include "../core/common.h"
+#include "../core/context_obj.h"
+#include "../core/tuple.h"
+#include "../container/hash_map.h"
+#include "../io/json_archive.h"
 #include <rttr/registration_friend>
 
 namespace noble_steed
@@ -12,7 +13,8 @@ class Component;
 class World;
 class Entity : public Context_Obj
 {
-    template<class T> friend class Pool_Factory;
+    template<class T>
+    friend class Pool_Factory;
     friend class World;
 
   public:
@@ -24,7 +26,7 @@ class Entity : public Context_Obj
 
     // add component
     template<class CompType>
-    CompType * add(const Variant_Map & init_params = Variant_Map())
+    CompType * add(const Variant_Hash & init_params = Variant_Hash())
     {
         rttr::type t = rttr::type::get<CompType>();
         return static_cast<CompType *>(add(t));
@@ -37,7 +39,7 @@ class Entity : public Context_Obj
         return static_cast<CompType *>(add(t, copy));
     }
 
-    Component * add(const rttr::type & component_type, const Variant_Map & init_params = Variant_Map());
+    Component * add(const rttr::type & component_type, const Variant_Hash & init_params = Variant_Hash());
 
     Component * add(const Component & copy);
 
@@ -72,7 +74,7 @@ class Entity : public Context_Obj
 
     bool remove(Component * component);
 
-    void initialize(const Variant_Map & init_params);
+    void initialize(const Variant_Hash & init_params);
 
     void terminate();
 
@@ -91,6 +93,8 @@ class Entity : public Context_Obj
   protected:
     virtual void swap(Entity & rhs);
 
+    void pack_begin(JSON_Archive::Direction io_dir);
+
     void pack_end(JSON_Archive::Direction io_dir);
 
   private:
@@ -98,7 +102,7 @@ class Entity : public Context_Obj
 
     Component * allocate_comp_(const rttr::type & type, const Component & copy);
 
-    bool add_component_(Component * comp, const rttr::type & comp_type, const Variant_Map & init_params);
+    bool add_component_(Component * comp, const rttr::type & comp_type, const Variant_Hash & init_params);
 
     void deallocate_comp_(Component * comp, const rttr::type & comp_type);
 
@@ -114,4 +118,23 @@ class Entity : public Context_Obj
     JSON_PACKABLE
     RTTR_ENABLE(Context_Obj)
 };
+
+namespace events
+{
+namespace entity
+{
+/// This event is generated any time the \ref Entity.pack_begin function is called with direction in. This is to alert everyone that an entity
+/// has been created with the entity pool allocator. World responds to this event and adds the entity to the "world".
+namespace entity_packed_in
+{
+/// Hashed string id for the event
+extern const u32 id;
+
+/// Key for data to get the entity pointer - type is Entity *
+extern const String entity_ptr;
+} // namespace entity_packed_in
+
+} // namespace entity
+} // namespace events
+
 } // namespace noble_steed

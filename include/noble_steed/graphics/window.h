@@ -1,6 +1,9 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
+#include "../core/common.h"
+#include "../core/variant.h"
+#include "../core/tuple.h"
+
 
 struct GLFWwindow;
 
@@ -12,7 +15,7 @@ class Window
     Window();
     ~Window();
 
-    bool initialize(const Variant_Map & init_params);
+    bool initialize(const Variant_Hash & init_params);
 
     void terminate();
 
@@ -23,6 +26,8 @@ class Window
     GLFWwindow * get_glfw_window();
 
     itup2 get_size();
+
+    itup2 get_framebuffer_size();
 
     dtup2 get_normalized_cursor_pos();
 
@@ -81,13 +86,15 @@ extern const String CENTER_CURSOR;
 
 namespace events
 {
-namespace window_closed
+namespace window
+{
+namespace closed
 {
 extern const u32 id;
 } // namespace window_closed
 
 /// This event is posted whenever the window is resized
-namespace window_resized
+namespace resized
 {
 extern const u32 id;
 /// itup2 - new screen size in screen coordinates
@@ -95,7 +102,7 @@ extern const String new_size;
 } // namespace window_resized
 
 /// This event is posted whenever the focus is gained or lost on the main window
-namespace window_focus_change
+namespace focus_change
 {
 extern const u32 id;
 /// i8 - 1 for window focused and 0 for not
@@ -103,7 +110,7 @@ extern const String focused;
 } // namespace window_focus_change
 
 /// This event is posted whenever the window is iconified or restored from iconified. Iconified basically means minimized.
-namespace window_iconified
+namespace iconified
 {
 extern const u32 id;
 /// i8 - 1 for window iconified and 0 for not
@@ -111,7 +118,7 @@ extern const String iconified;
 } // namespace window_iconified
 
 /// This event is posted whenever the window is maximized or restored from maximized
-namespace window_maximized
+namespace maximized
 {
 extern const u32 id;
 /// i8 - 1 for window maximized and 0 for not
@@ -119,7 +126,7 @@ extern const String maximized;
 } // namespace window_maximized
 
 /// This event is posted whenever the window is moved - this event is never posted in full screen mode
-namespace window_moved
+namespace moved
 {
 extern const u32 id;
 /// itup2 - new window position - upper left corner in screen coordinates
@@ -133,7 +140,7 @@ extern const u32 id;
 /// itup2 - new framebuffer size in pixels
 extern const String new_size;
 } // namespace framebuffer_resized
-
+} // namespace window
 } // namespace events
 
 } // namespace noble_steed

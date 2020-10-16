@@ -1,6 +1,7 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
+#include "common.h"
+#include "variant.h"
 
 namespace noble_steed
 {
@@ -13,7 +14,7 @@ class Application
     Application();
     ~Application();
 
-    void initialize(const Variant_Map & init_params = Variant_Map());
+    void initialize(const Variant_Hash & init_params = Variant_Hash());
     void terminate();
 
     Window * get_window();

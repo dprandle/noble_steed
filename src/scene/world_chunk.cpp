@@ -42,7 +42,7 @@ World_Chunk::~World_Chunk()
     clear(true);
 }
 
-void World_Chunk::initialize(const Variant_Map & init_params)
+void World_Chunk::initialize(const Variant_Hash & init_params)
 {
     Resource::initialize(init_params);
 }
@@ -60,7 +60,7 @@ void World_Chunk::clear(bool remove_entities_from_world)
     ents_ptrs_.clear();
 }
 
-bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
+bool World_Chunk::add(Entity * to_add, const Variant_Hash & init_params)
 {
     if (!to_add->is_owned_by_context())
     {
@@ -79,7 +79,7 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
     return false;
 }
 
-Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
+Entity * World_Chunk::add(const Entity & copy, const Variant_Hash & init_params)
 {
     Entity * ent = ns_ctxt.get_world()->create(copy, init_params);
     if (add(ent, init_params))
@@ -89,7 +89,7 @@ Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
     return nullptr;
 }
 
-Entity * World_Chunk::add(const Variant_Map & init_params)
+Entity * World_Chunk::add(const Variant_Hash & init_params)
 {
     Entity * ent = ns_ctxt.get_world()->create(init_params);
     if (add(ent, init_params))

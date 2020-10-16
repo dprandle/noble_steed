@@ -71,22 +71,56 @@ Variant construct_factory_type(u32 type_id)
 {
     Variant extracted_value;
     auto fac = ns_ctxt.get_factory(type_id);
-    Context_Obj * cobj = fac->create();
-    rttr::type dt = cobj->get_derived_info().m_type;
-    if (dt.is_derived_from<Resource>())
-        extracted_value = static_cast<Resource *>(cobj);
-    else if (dt.is_derived_from<Component>())
-        extracted_value = static_cast<Component *>(cobj);
-    else if (dt.is_derived_from<Entity>())
+
+    extracted_value = fac->create();
+    return extracted_value;
+
+    // Context_Obj * cobj = fac->create();
+    // rttr::type dt = cobj->get_derived_info().m_type;
+
+    // if (dt.is_derived_from<Resource>())
+    //     extracted_value = static_cast<Resource *>(cobj);
+    // else if (dt.is_derived_from<Component>())
+    //     extracted_value = static_cast<Component *>(cobj);
+    // else if (dt.is_derived_from<Entity>())
+    // {
+    //     Entity * casted = static_cast<Entity *>(cobj);
+    //     ns_ctxt.get_world()->add_entity_(casted, Variant_Hash());
+    //     extracted_value = casted;
+    // }
+    // else if (dt.is_derived_from<System>())
+    //     extracted_value = static_cast<System *>(cobj);
+    // else
+    //     extracted_value = cobj;
+    // return extracted_value;
+}
+
+variant extract_value_from_obj(Value & json_value, const type & t)
+{
+    variant extracted_value;
+    Value::MemberIterator ret = json_value.FindMember("type_id");
+    if (ret != json_value.MemberEnd())
     {
-        Entity * casted = static_cast<Entity *>(cobj);
-        ns_ctxt.get_world()->add_entity_(casted,Variant_Map());
-        extracted_value = casted;
+        if (ret->value.IsUint())
+        {
+            u32 type_id = ret->value.GetUint();
+            extracted_value = construct_factory_type(type_id);
+        }
+        else
+        {
+            //elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
+        }
     }
-    else if (dt.is_derived_from<System>())
-        extracted_value = static_cast<System *>(cobj);
     else
-        extracted_value = cobj;
+    {
+        constructor ctor = t.get_constructor();
+        for (auto & item : t.get_constructors())
+        {
+            if (item.get_instantiated_type() == t)
+                ctor = item;
+        }
+        extracted_value = ctor.invoke();
+    }
     return extracted_value;
 }
 
@@ -104,26 +138,27 @@ static void write_array_recursively(variant_sequential_view & view, Value & json
         else if (json_index_value.IsObject())
         {
             rttr::type t = view.get_value_type();
-            variant extracted_value;
+            variant extracted_value = extract_value_from_obj(json_index_value, t);
+            // variant extracted_value;
 
-            Value::MemberIterator ret = json_index_value.FindMember("type_id");
-            if (ret != json_index_value.MemberEnd())
-            {
-                if (ret->value.IsUint())
-                {
-                    u32 type_id = ret->value.GetUint();
-                    extracted_value = construct_factory_type(type_id);
-                }
-                else
-                {
-                    elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
-                }
-            }
-            else
-            {
-                variant var_tmp = view.get_value(i);
-                extracted_value = var_tmp.extract_wrapped_value();
-            }
+            // Value::MemberIterator ret = json_index_value.FindMember("type_id");
+            // if (ret != json_index_value.MemberEnd())
+            // {
+            //     if (ret->value.IsUint())
+            //     {
+            //         u32 type_id = ret->value.GetUint();
+            //         extracted_value = construct_factory_type(type_id);
+            //     }
+            //     else
+            //     {
+            //         elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
+            //     }
+            // }
+            // else
+            // {
+            //     variant var_tmp = view.get_value(i);
+            //     extracted_value = var_tmp.extract_wrapped_value();
+            // }
             fromjson_recursively(extracted_value, json_index_value);
             view.set_value(i, extracted_value);
         }
@@ -144,37 +179,11 @@ variant extract_value(Value::MemberIterator & itr, const type & t)
     variant extracted_value = extract_basic_types(json_value);
     const bool could_convert = extracted_value.convert(t);
     //dlog("Extracting value for type {}", t.get_name().to_string());
-    if (!could_convert)
+    if (!could_convert && json_value.IsObject())
     {
-        if (json_value.IsObject())
-        {
-            Value::MemberIterator ret = json_value.FindMember("type_id");
-            if (ret != json_value.MemberEnd())
-            {
-                if (ret->value.IsUint())
-                {
-                    u32 type_id = ret->value.GetUint();
-                    extracted_value = construct_factory_type(type_id);
-                }
-                else
-                {
-                    //elog("Warning - found type id but id was of wrong type for {}", t.get_name().to_string());
-                }
-            }
-            else
-            {
-                constructor ctor = t.get_constructor();
-                for (auto & item : t.get_constructors())
-                {
-                    if (item.get_instantiated_type() == t)
-                        ctor = item;
-                }
-                extracted_value = ctor.invoke();
-            }
-            fromjson_recursively(extracted_value, json_value);
-        }
+        extracted_value = extract_value_from_obj(json_value, t);
+        fromjson_recursively(extracted_value, json_value);
     }
-
     return extracted_value;
 }
 
@@ -260,8 +269,8 @@ void fromjson_recursively(instance obj2, Value & json_object)
             break;
         }
         case kObjectType: {
-            variant var = prop.get_value(obj);
-            fromjson_recursively(var, json_value);
+            //variant var = prop.get_value(obj);
+            variant var = extract_value_from_obj(json_value, value_t);
             //dlog("Should be setting prop {} to {}", prop.get_name().to_string(), var.get_type().get_name().to_string());
             prop.set_value(obj, var);
             break;
