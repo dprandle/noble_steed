@@ -1,7 +1,7 @@
 #pragma once
 
-#include <noble_steed/core/system.h>
 #include <chrono>
+#include "system.h"
 
 extern const std::chrono::nanoseconds TIMESTEP;
 
@@ -11,7 +11,6 @@ namespace noble_steed
 {
 class Engine : public System
 {
-    RTTR_ENABLE(System)
   public:
     Engine();
 
@@ -25,7 +24,7 @@ class Engine : public System
 
     std::chrono::nanoseconds elapsed();
 
-    virtual void initialize(const Variant_Hash & init_params);
+    virtual void initialize(const Variant_Map & init_params);
 
     virtual void terminate();
 

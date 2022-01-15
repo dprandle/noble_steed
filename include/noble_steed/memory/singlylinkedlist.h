@@ -1,5 +1,4 @@
-#ifndef SINGLYLINKEDLIST_H
-#define SINGLYLINKEDLIST_H
+#pragma once
 
 template <class T>
 class SinglyLinkedList {
@@ -19,6 +18,3 @@ public:
 };
 
 #include "singlylinkedlistimpl.h"
-
-#endif /* SINGLYLINKEDLIST_H */
-

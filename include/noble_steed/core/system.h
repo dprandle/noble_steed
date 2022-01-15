@@ -1,13 +1,11 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/core/context_obj.h>
+#include "context_obj.h"
 
 namespace noble_steed
 {
 class System : public Context_Obj
 {
-    RTTR_ENABLE(Context_Obj)
   public:
     System();
 
@@ -17,7 +15,7 @@ class System : public Context_Obj
 
     virtual ~System();
 
-    virtual void initialize(const Variant_Hash & init_params);
+    virtual void initialize(const Variant_Map & init_params);
 
     virtual void terminate();
 

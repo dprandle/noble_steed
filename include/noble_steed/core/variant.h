@@ -3,18 +3,27 @@
 #include <variant>
 #include <typeinfo>
 #include <any>
+//#include <utility>
 
+#include "../container/list.h"
+#include "../container/vector.h"
+#include "../container/tuple.h"
+#include "../container/map.h"
+#include "../container/hash_set.h"
+#include "../container/hash_map.h"
+#include <memory>
+//#include "../container/pair.h"
 #include "common.h"
 
 namespace noble_steed
 {
 class Variant;
-struct Log_Level_Info;
 
 using Variant_Hash = Hash_Map<String, Variant>;
 using Variant_Map = Map<String, Variant>;
 using Variant_List = List<Variant>;
 using Variant_Vec = Vector<Variant>;
+using Variant_Map_Set = Hash_Set<Variant>;
 using Custom_Value = std::any;
 
 using Variant_Type = std::variant<double,
@@ -72,7 +81,6 @@ using Variant_Type = std::variant<double,
                                   String,
                                   String_Vector,
                                   String_List,
-                                  Variant_Hash,
                                   Variant_Map,
                                   Variant_List,
                                   Variant_Vec,
@@ -195,7 +203,7 @@ class Variant
 };
 
 template<class T>
-bool grab_param(const Variant_Hash & items, const String & name, T & to_fill)
+bool grab_param(const Variant_Map & items, const String & name, T & to_fill)
 {
     auto fiter = items.find(name);
     if (fiter != items.end() && fiter->second.is_type<T>())

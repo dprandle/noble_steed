@@ -1,5 +1,4 @@
-#ifndef FREELISTALLOCATOR_H
-#define FREELISTALLOCATOR_H
+#pragma once
 
 #include "allocator.h"
 #include "singlylinkedlist.h"
@@ -48,6 +47,3 @@ private:
     void FindBest(const std::size_t size, const std::size_t alignment, std::size_t& padding, Node*& previousNode, Node*& foundNode);
     void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t& padding, Node*& previousNode, Node*& foundNode);
 };
-
-#endif /* FREELISTALLOCATOR_H */
-

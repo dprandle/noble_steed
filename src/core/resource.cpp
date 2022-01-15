@@ -1,8 +1,8 @@
 #include <functional>
 
+#include <noble_steed/core/variant.h>
 #include <noble_steed/core/resource.h>
 #include <noble_steed/io/logger.h>
-#include <noble_steed/io/json_archive.h>
 #include <noble_steed/core/context.h>
 #include <noble_steed/io/filesystem.h>
 
@@ -45,49 +45,11 @@ bool Resource::save()
 // Save data to custom file path - no regards to naming, packages, or extensions.
 bool Resource::save(const String & custom_path)
 {
-    String str;
-
-    // Create directories if needed...
-    sizet pos = custom_path.find_last_of('/');
-    if (pos != String::npos)
-    {
-        String dir = custom_path.substr(0, pos);
-        if (!fs::is_directory(dir) && fs::create_directories(dir))
-        {
-            ilog("Created directory {} for {}", dir, custom_path);
-        }
-    }
-
-    std::ofstream file(custom_path);
-    if (file)
-    {
-        str = to_json();
-        file << str;
-        ilog("Saved {} in package {} to {}", name_, package_, custom_path);
-        return true;
-    }
-    else
-    {
-        wlog("Could not open file {}", custom_path);
-    }
     return false;
 }
 
 bool Resource::load(const String & custom_path)
 {
-    std::ifstream file(custom_path);
-    std::stringstream buffer;
-    if (file)
-    {
-        buffer << file.rdbuf();
-        from_json(buffer.str());
-        ilog("Loaded {} in package {} from {}", name_, package_, custom_path);
-        return true;
-    }
-    else
-    {
-        wlog("Could not open file {}", custom_path);
-    }
     return false;
 }
 
@@ -96,14 +58,12 @@ bool Resource::load()
     return load(get_relative_path());
 }
 
-void Resource::initialize(const Variant_Hash & init_params)
+void Resource::initialize(const Variant_Map & init_params)
 {
-    ilog("Initializing resource type {}", String(get_derived_info().m_type.get_name()));
 }
 
 void Resource::terminate()
 {
-    ilog("Terminating resource type {}", String(get_derived_info().m_type.get_name()));
 }
 
 String Resource::get_relative_path()
@@ -130,7 +90,7 @@ String Resource::get_subdir_dir()
 
 String Resource::get_subdir_path()
 {
-    String ext = ns_ctxt.get_resource_extension(get_derived_info().m_type);
+    String ext = ns_ctxt.get_resource_extension(typeid(*this));
     return name_ + ext;
 }
 
@@ -172,12 +132,10 @@ void Resource::set_name(const String & name)
 
     if (id_ != -1 && hashed_id != id_)
     {
-        String type_str(get_derived_info().m_type.get_name());
         bool do_change = true;
         change_id(id_, hashed_id, &do_change);
         if (do_change)
         {
-            dlog("{} name changed from {} to {}", type_str, name_, name);
             id_ = hashed_id;
             name_ = name;
         }
@@ -195,12 +153,10 @@ void Resource::set_package(const String & package_name)
     u32 hashed_id = str_hash(total_path);
     if (id_ != -1 && hashed_id != id_)
     {
-        String type_str(get_derived_info().m_type.get_name());
         bool do_change = true;
         change_id(id_, hashed_id, &do_change);
         if (do_change)
         {
-            dlog("{} package changed from {} to {}", type_str, package_, package_name);
             id_ = hashed_id;
             package_ = package_name;
         }
@@ -208,16 +164,3 @@ void Resource::set_package(const String & package_name)
 }
 
 } // namespace noble_steed
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<Resource>("noble_steed::Resource")
-        .property("name", &Resource::get_name, &Resource::set_name)
-        .property("package", &Resource::get_package, &Resource::set_package)
-        .property("display_name", &Resource::get_display_name, &Resource::set_display_name);
-}

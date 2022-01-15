@@ -19,12 +19,12 @@ int main()
     using namespace noble_steed;
 
     Application applic;
-    Variant_Hash init_params;
+    Variant_Map init_params;
+    ilog("STARTING BASIC WINDOW");
 
     //init_params[Init_Params::Window::ALWAS_ON_TOP] = true;
-    init_params[init_param_key::window::TITLE] = "Basic Window";
-    //init_params[init_param_key::renderer::SHADER_PROFILE] = "metal";
-//    init_params[init_param_key::renderer::SHADER_PROFILE] = "spirv";
+    init_params[init_param_key::window::TITLE] = String("Basic Window");
+    init_params[init_param_key::renderer::SHADER_PROFILE] = String("spirv");
 
     applic.initialize(init_params);
     auto rc = ns_ctxt.get_resource_cache();

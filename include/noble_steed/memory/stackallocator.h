@@ -1,5 +1,4 @@
-#ifndef STACKALLOCATOR_H
-#define STACKALLOCATOR_H
+#pragma once
 
 #include "allocator.h"
 
@@ -27,5 +26,3 @@ private:
     };
 
 };
-
-#endif /* STACKALLOCATOR_H */

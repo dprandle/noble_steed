@@ -1,16 +1,15 @@
 #pragma once
 
-#include <noble_steed/core/factory.h>
-#include <noble_steed/core/signal.h>
-#include <rttr/rttr_cast.h>
+#include "variant.h"
+#include "signal.h"
+#include "factory.h"
+#include "../container/hash_set.h"
 
 namespace noble_steed
 {
 #define ns_ctxt Context::inst()
 
 #define str_hash(arg) ns_ctxt.hash_str(arg)
-
-#define type_hash(arg) str_hash(arg.get_name().to_string())
 
 #define post_event(...) ns_ctxt.post_event_to_queues(__VA_ARGS__)
 
@@ -47,7 +46,7 @@ class Context
     Context();
     ~Context();
 
-    void initialize(const Variant_Hash & init_params = Variant_Hash());
+    void initialize(const Variant_Map & init_params = Variant_Map());
 
     void terminate();
 
@@ -60,8 +59,8 @@ class Context
     template<class T>
     T * raw_malloc(u32 element_count = 1)
     {
-        rttr::type type = rttr::type::get<T>();
-        T * mem_ptr = static_cast<T *>(malloc_(type, element_count));
+        type_index type = typeid(T);
+        T * mem_ptr = static_cast<T *>(malloc_(type, sizeof(T), element_count));
         return mem_ptr;
     }
 
@@ -107,53 +106,52 @@ class Context
     void raw_free(void * to_free);
 
     template<class Derived>
-    Pool_Factory<Derived> * register_pool_factory(const Variant_Hash & init_params, u16 alloc_quantity)
+    Pool_Factory<Derived> * register_pool_factory(const Variant_Map & init_params, u16 alloc_quantity)
     {
-        rttr::type t = rttr::type::get<Derived>();
-        u32 type_id = type_hash(t);
-        if (contains_factory(type_id))
+        type_index type_ind = typeid(Derived);
+        
+        if (contains_factory(type_ind))
             return nullptr;
 
-        PoolAllocator * alloc = create_pool_allocator_(t, alloc_quantity, init_params);
+        PoolAllocator * alloc = create_pool_allocator_(type_ind, sizeof(Derived), alloc_quantity, init_params);
         if (alloc == nullptr)
             return nullptr;
 
         Pool_Factory<Derived> * fac = malloc<Pool_Factory<Derived>>(alloc);
-        type_factories_[type_id] = fac;
+        type_factories_[type_ind] = fac;
         return fac;
     }
 
     template<class Derived>
     Free_List_Factory<Derived> * register_free_list_factory(FreeListAllocator * alloc)
     {
-        rttr::type t = rttr::type::get<Derived>();
-        u32 type_id = type_hash(t);
-        if (contains_factory(type_id))
+        type_index type_ind = typeid(Derived);
+        if (contains_factory(type_ind))
         {
             return nullptr;
         }
 
         Free_List_Factory<Derived> * fac = malloc<Free_List_Factory<Derived>>(alloc);
-        type_factories_[type_id] = fac;
+        type_factories_[type_ind] = fac;
         return fac;
     }
 
     template<class T>
-    Free_List_Factory<T> * register_system_type(const Variant_Hash & init_params)
+    Free_List_Factory<T> * register_system_type(const Variant_Map & init_params)
     {
         return register_free_list_factory<T>(&mem_free_list_);
     }
 
     template<class T>
-    Pool_Factory<T> * register_component_type(const Variant_Hash & init_params)
+    Pool_Factory<T> * register_component_type(const Variant_Map & init_params)
     {
         return register_pool_factory<T>(init_params, DEFAULT_COMP_ALLOC);
     }
 
     template<class T>
-    Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Hash & init_params)
+    Pool_Factory<T> * register_resource_type(const String & extension, const Variant_Map & init_params)
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         if (!set_resource_extension_(t, extension))
             return nullptr;
         auto ret = register_pool_factory<T>(init_params, DEFAULT_RES_ALLOC);
@@ -165,43 +163,37 @@ class Context
     template<class T>
     bool set_resource_extension(const String & extension)
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         return set_resource_extension_(t, extension);
     }
 
     template<class T>
     String get_resource_extension()
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         return get_resource_extension(t);
     }
 
-    String get_resource_extension(const rttr::type & resource_type);
+    String get_resource_extension(const type_index & resource_type);
 
-    u32 hash_str(const String & str);
+    String_Hash hash_str(const String & str);
 
-    u32 get_extension_resource_type(const String & extension);
+    type_index get_extension_resource_type(const String & extension);
 
-    Factory * get_factory(const rttr::type & obj_type);
-
-    Factory * get_factory(u32 fac_id);
+    Factory * get_factory(const type_index & obj_type);
 
     template<class T>
     Factory * get_factory()
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         return get_factory(t);
     }
 
-    bool contains_factory(u32 fac_id);
-
-    bool contains_factory(const rttr::type & obj_type);
+    bool contains_factory(const type_index & obj_type);
 
     static Context & inst();
 
-    PoolAllocator * get_pool_allocator(const rttr::type & type);
-
-    PoolAllocator * get_pool_allocator(u32 type_id);
+    PoolAllocator * get_pool_allocator(const type_index & type);
 
     void subscribe_to_event(Context_Obj * obj, const String & event);
 
@@ -215,39 +207,39 @@ class Context
 
     void post_event_to_queues(Event & event);
 
-    void post_event_to_queues(const String & event_name, const Variant_Hash & data = Variant_Hash());
+    void post_event_to_queues(const String & event_name, const Variant_Map & data = Variant_Map());
 
   private:
-    void * malloc_(const rttr::type & type, u32 elements);
+    void * malloc_(const type_index & type, sizet type_size, u32 elements);
 
-    void register_default_types_(const Variant_Hash & init_params);
+    void register_default_types_(const Variant_Map & init_params);
 
-    bool set_resource_extension_(const rttr::type & resource_type, const String & extension);
+    bool set_resource_extension_(const type_index & resource_type, const String & extension);
 
-    bool remove_resource_extension(const rttr::type & resource_type);
+    bool remove_resource_extension(const type_index & resource_type);
 
-    PoolAllocator * create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Hash & init_params);
+    PoolAllocator * create_pool_allocator_(const type_index & type, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params);
 
-    bool destroy_comp_allocator_(const rttr::type & type);
+    bool destroy_comp_allocator_(const type_index & type);
 
     FreeListAllocator mem_free_list_;
 
-    Hash_Map<u32, PoolAllocator *> pool_allocators_;
+    Hash_Map<type_index, PoolAllocator *> pool_allocators_;
 
     Hash_Map<void *, u32> array_alloc_sizes;
 
     // Key is hashed extension including the dot, and value is resource type id
-    Hash_Map<u32, u32> extension_resource_type_;
+    Hash_Map<String_Hash, type_index> extension_resource_type_;
 
-    Hash_Map<u32, String> resource_type_extension_;
+    Hash_Map<type_index, String> resource_type_extension_;
 
-    Hash_Map<u32, Factory *> type_factories_;
+    Hash_Map<type_index, Factory*> type_factories_;
 
     Logger * logger_;
 
     World * world_;
 
-    Hash_Map<u32, Hash_Set<Context_Obj *>> event_subscribers_;
+    Hash_Map<String_Hash, Hash_Set<Context_Obj *>> event_subscribers_;
 
     Resource_Cache * resource_cache_;
 

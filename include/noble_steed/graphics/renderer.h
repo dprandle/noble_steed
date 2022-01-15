@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bgfx/bgfx.h>
 #include "../core/system.h"
 
@@ -27,7 +29,6 @@ extern const String SHADER_BINARY_RELATIVE_SUBDIR;
 
 class Renderer : public System
 {
-    RTTR_ENABLE(System)
   public:
     Renderer();
 
@@ -39,7 +40,7 @@ class Renderer : public System
 
     void render_frame();
 
-    void initialize(const Variant_Hash & init_params);
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
   protected:

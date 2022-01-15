@@ -15,12 +15,12 @@ endif()
 
 target_link_libraries(${THIS_TARGET_NAME} ${TARGET_NAME})
 
-add_custom_target(deploy_${THIS_TARGET_NAME}_import ALL
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/import ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/import/${THIS_TARGET_NAME}
-  DEPENDS ${THIS_TARGET_NAME}
-  )
+# add_custom_target(deploy_${THIS_TARGET_NAME}_import ALL
+#   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/import ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/import/${THIS_TARGET_NAME}
+#   DEPENDS ${THIS_TARGET_NAME}
+#   )
 
-add_custom_target(deploy_${THIS_TARGET_NAME}_data ALL
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/${THIS_TARGET_NAME}
-  DEPENDS ${THIS_TARGET_NAME}
-  )
+# add_custom_target(deploy_${THIS_TARGET_NAME}_data ALL
+#   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/${THIS_TARGET_NAME}
+#   DEPENDS ${THIS_TARGET_NAME}
+#   )

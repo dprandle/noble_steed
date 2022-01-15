@@ -16,6 +16,7 @@ World_Chunk::World_Chunk(const World_Chunk & copy) : Resource(copy), ents_ptrs_(
 {
     sig_connect(ns_ctxt.get_world()->entity_id_change, this, &World_Chunk::on_ent_id_change);
     sig_connect(ns_ctxt.get_world()->entity_destroyed, this, &World_Chunk::on_ent_destroyed);
+    
     auto iter = copy.ents_.begin();
     while (iter != copy.ents_.end())
     {
@@ -42,7 +43,7 @@ World_Chunk::~World_Chunk()
     clear(true);
 }
 
-void World_Chunk::initialize(const Variant_Hash & init_params)
+void World_Chunk::initialize(const Variant_Map & init_params)
 {
     Resource::initialize(init_params);
 }
@@ -60,14 +61,8 @@ void World_Chunk::clear(bool remove_entities_from_world)
     ents_ptrs_.clear();
 }
 
-bool World_Chunk::add(Entity * to_add, const Variant_Hash & init_params)
+bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
 {
-    if (!to_add->is_owned_by_context())
-    {
-        wlog("Cannot add entity {} to world_chunk {} ({}) as it is not owned by context memory", to_add->get_name(), get_name(), get_display_name());
-        return false;
-    }
-
     auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
     {
@@ -79,7 +74,7 @@ bool World_Chunk::add(Entity * to_add, const Variant_Hash & init_params)
     return false;
 }
 
-Entity * World_Chunk::add(const Entity & copy, const Variant_Hash & init_params)
+Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
 {
     Entity * ent = ns_ctxt.get_world()->create(copy, init_params);
     if (add(ent, init_params))
@@ -89,7 +84,7 @@ Entity * World_Chunk::add(const Entity & copy, const Variant_Hash & init_params)
     return nullptr;
 }
 
-Entity * World_Chunk::add(const Variant_Hash & init_params)
+Entity * World_Chunk::add(const Variant_Map & init_params)
 {
     Entity * ent = ns_ctxt.get_world()->create(init_params);
     if (add(ent, init_params))
@@ -133,23 +128,6 @@ bool World_Chunk::remove(Entity * ent, bool remove_from_world)
     return ret;
 }
 
-void World_Chunk::pack_begin(JSON_Archive::Direction io_dir)
-{
-    if (io_dir == JSON_Archive::DIR_OUT)
-    {
-        auto iter = ents_.begin();
-        while (iter != ents_.end())
-        {
-            ents_ptrs_.push_back(iter->second);
-            ++iter;
-        }
-    }
-    else
-    {
-        clear(true);
-    }
-}
-
 void World_Chunk::on_ent_id_change(Tuple2<u32> ids)
 {
     Entity * old_ent = get(ids.x);
@@ -166,32 +144,4 @@ void World_Chunk::on_ent_destroyed(u32 id)
     ents_.erase(id);
 }
 
-void World_Chunk::pack_end(JSON_Archive::Direction io_dir)
-{
-    if (io_dir == JSON_Archive::DIR_OUT)
-    {
-        ents_ptrs_.clear();
-    }
-    else
-    {
-        auto iter = ents_ptrs_.begin();
-        while (iter != ents_ptrs_.end())
-        {
-            ents_[(*iter)->get_id()] = *iter;
-            ++iter;
-        }
-        ents_ptrs_.clear();
-    }
-}
-
 } // namespace noble_steed
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<World_Chunk>("noble_steed::World_Chunk").property("entities", &World_Chunk::ents_ptrs_);
-}

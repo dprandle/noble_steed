@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../core/common.h"
 #include "../core/variant.h"
-#include "../core/tuple.h"
-
 
 struct GLFWwindow;
 
@@ -15,13 +12,15 @@ class Window
     Window();
     ~Window();
 
-    bool initialize(const Variant_Hash & init_params);
+    bool initialize(const Variant_Map & init_params);
 
     void terminate();
 
     bool closed();
 
     void * get_native_window();
+
+    void * get_native_display();
 
     GLFWwindow * get_glfw_window();
 

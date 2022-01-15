@@ -1,3 +1,4 @@
+#include "noble_steed/core/variant.h"
 #include <noble_steed/io/input_map.h>
 #include <noble_steed/core/context.h>
 #include <GLFW/glfw3.h>
@@ -67,6 +68,7 @@ u32 Input_Context::remove_triggers(const Trigger_Condition & cond)
 
 Trigger_Range Input_Context::get_triggers(const Trigger_Condition & cond)
 {
+    
     return t_map_.equal_range(cond.lookup_key);
 }
 
@@ -119,26 +121,3 @@ bool Input_Map::rename_context(const String & old_name, const String & new_name)
 }
 
 } // namespace noble_steed
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<Trigger_Condition>("noble_steed::Trigger_Condition")
-        .property("input_code;", &Trigger_Condition::input_code)
-        .property("modifier_mask;", &Trigger_Condition::modifier_mask);
-
-    registration::class_<Input_Action_Trigger>("noble_steed::Input_Action_Trigger")
-        .property("name_hash", &Input_Action_Trigger::name_hash)
-        .property("trigger_state", &Input_Action_Trigger::trigger_state)
-        .property("condition", &Input_Action_Trigger::condition);
-
-    registration::class_<Input_Context>("noble_steed::Input_Context")
-        .property("t_map", &Input_Context::t_map_);
-
-    registration::class_<Input_Map>("noble_steed::Input_Map")
-        .property("context_map", &Input_Map::contexts_, registration::public_access);
-}

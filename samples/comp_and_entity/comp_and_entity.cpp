@@ -10,7 +10,6 @@ using namespace noble_steed;
 
 struct silly_system : public System
 {
-    RTTR_ENABLE(System)
   public:
     SLOT_OBJECT
     int poop;
@@ -24,35 +23,15 @@ struct silly_system : public System
 
 class silly_resource : public Resource
 {
-    RTTR_ENABLE(Resource)
   public:
     int scooby;
     int dooby;
-
-    // virtual void pack_unpack(JSON_Archive & ar)
-    // {
-    //     dlog("Calling in derived");
-    //     Resource::pack_unpack(ar);
-    // }
 };
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<silly_resource>("silly_resource")
-        .constructor<>()
-        .property("scooby", &silly_resource::scooby, registration::public_access)
-        .property("dooby", &silly_resource::dooby, registration::public_access);
-}
 
 int main()
 {
     Context ctxt;
-    Variant_Hash vm;
+    Variant_Map vm;
 
     ctxt.initialize(vm);
     ctxt.register_system_type<silly_system>(vm);

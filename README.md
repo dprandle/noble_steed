@@ -33,26 +33,6 @@ cd ..
 
 where you choose one option within the carrots - ie for linux could be linux-release64.
 
-### Build rttr
-
-The cmake config parameters to use are as follows:
-
-```js
-"BUILD_DOCUMENTATION":false,
-"BUILD_EXAMPLES":false,
-"BUILD_INSTALLER":false,
-"BUILD_PACKAGE":false,
-"BUILD_UNIT_TESTS":false
-```
-
-```sh
-cd rttr
-mkdir build && cd build
-cmake -DBUILD_UNIT_TESTS=false *etc etc from above* ..
-make -j
-cd ../../..
-```
-
 ### Build Noble_Steed
 
 The cmake config parameters to use are as follows:

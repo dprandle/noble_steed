@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <noble_steed/core/variant.h>
+
 #include <noble_steed/core/context.h>
 #include <noble_steed/io/logger.h>
 #include <noble_steed/core/application.h>
@@ -33,7 +35,7 @@ Application::~Application()
 {}
 
 // TODO Add vars window width, height, name
-void Application::initialize(const Variant_Hash & init_params)
+void Application::initialize(const Variant_Map & init_params)
 {
     // Create a GLFW window without an OpenGL context.
     glfwSetErrorCallback(glfw_error_callback);
@@ -77,6 +79,7 @@ int Application::exec()
 
     window_->terminate();
     delete window_;
+    
 
     glfwTerminate();
     return 0;

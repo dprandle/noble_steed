@@ -1,10 +1,7 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/core/signal.h>
-#include <rttr/rttr_cast.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/resource.h>
+#include "resource.h"
+#include "../container/hash_set.h"
 
 namespace noble_steed
 {
@@ -24,15 +21,15 @@ class Resource_Cache
     friend class Context;
 
   public:
-    void initialize(const Variant_Hash & init_params);
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 
     // add resource
     template<class ResType>
-    ResType * add(const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
+    ResType * add(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
-        rttr::type t = rttr::type::get<ResType>();
+        type_index t = typeid(ResType);
         Resource * res = add(t, name, package, init_params);
         if (res)
             return static_cast<ResType *>(res);
@@ -42,23 +39,20 @@ class Resource_Cache
     template<class ResType>
     ResType * add(const ResType & copy)
     {
-        rttr::type t = rttr::type::get<ResType>();
         Resource * res = add_from_(copy);
         if (res)
             return static_cast<ResType *>(res);
         return nullptr;
     }
 
-    Resource * add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params);
-
-    Resource * add(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params);
+    Resource * add(const type_index & resource_type, const String & name, const String & package, const Variant_Map & init_params);
 
     template<class ResType>
     ResType * get(u32 id)
     {
         Resource * res = get(id);
-        if (res)
-            return rttr::rttr_cast<ResType *>(res);
+        if (res && typeid(*res) == typeid(ResType))
+            return static_cast<ResType *>(res);
         return nullptr;
     }
 
@@ -66,8 +60,8 @@ class Resource_Cache
     ResType * get(const String & name, const String & package = String()) const
     {
         Resource * res = get(name, package);
-        if (res)
-            return rttr::rttr_cast<ResType *>(res);
+        if (res && typeid(*res) == typeid(ResType))
+            return static_cast<ResType *>(res);
         return nullptr;
     }
 
@@ -83,9 +77,9 @@ class Resource_Cache
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {
-            ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
-            if (cast != nullptr)
-                ret.push_back(cast);
+            Resource & r = *(iter->second);
+            if (typeid(ResType) == typeid(r))
+                ret.push_back(static_cast<ResType*>(iter->second));
             ++iter;
         }
         return ret;
@@ -101,12 +95,9 @@ class Resource_Cache
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {
-            if (iter->second->get_package() == package)
-            {
-                ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
-                if (cast != nullptr)
-                    ret.push_back(cast);
-            }
+            Resource & r = *(iter->second);
+            if ((iter->second->get_package() == package) && (typeid(ResType) == typeid(r)))
+                ret.push_back(static_cast<ResType*>(iter->second));
             ++iter;
         }
         return ret;
@@ -117,9 +108,9 @@ class Resource_Cache
     Vector<Resource *> get_all(String package) const;
 
     template<class ResType>
-    ResType * load(const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
+    ResType * load(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
-        rttr::type t = rttr::type::get<ResType>();
+        type_index t = typeid(ResType);
         Resource * res = load(t, name, package, init_params);
         if (res)
             return static_cast<ResType *>(res);
@@ -127,26 +118,22 @@ class Resource_Cache
     }
 
     template<class ResType>
-    ResType *
-    load(const String & custom_path, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash())
+    ResType * load(const String & custom_path, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
     {
-        rttr::type t = rttr::type::get<ResType>();
+        type_index t = typeid(ResType);
         Resource * res = load(t, name, package, custom_path, init_params);
         if (res)
-            return static_cast<ResType *>(res);
+            return static_cast<ResType*>(res);
         return nullptr;
     }
 
-    Resource *
-    load(const rttr::type & resource_type, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash());
+    Resource * load(const type_index & resource_type, const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map());
 
-    Resource * load(u32 type_id, const String & name, const String & package = String(), const Variant_Hash & init_params = Variant_Hash());
-
-    Resource * load(const rttr::type & resource_type,
+    Resource * load(const type_index & resource_type,
                     const String & custom_path,
                     const String & name,
                     const String & package = String(),
-                    const Variant_Hash & init_params = Variant_Hash());
+                    const Variant_Map & init_params = Variant_Map());
 
     bool remove(u32 id);
 
@@ -165,12 +152,11 @@ class Resource_Cache
     template<class ResType>
     void save_all() const
     {
-        ilog("Saving all {} resources!", rttr::type::get<ResType>().get_name().to_string());
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {
-            ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
-            if (cast != nullptr)
+            Resource & r = *(iter->second);
+            if (typeid(ResType) == typeid(r))
                 iter->second->save();
             ++iter;
         }
@@ -180,16 +166,12 @@ class Resource_Cache
     void save_all(String package) const
     {
         make_valid_package_name_(package);
-        ilog("Saving all {} resources in package {}!", rttr::type::get<ResType>().get_name().to_string(), package);
         auto iter = resources_.begin();
         while (iter != resources_.end())
         {
-            if (iter->second->get_package() == package)
-            {
-                ResType * cast = rttr::rttr_cast<ResType *>(iter->second);
-                if (cast != nullptr)
-                    iter->second->save();
-            }
+            Resource & r = *(iter->second);
+            if ((iter->second->get_package() == package) && (typeid(ResType) == typeid(r)))
+                iter->second->save();
             ++iter;
         }
     }
@@ -219,13 +201,13 @@ class Resource_Cache
 
     void on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change);
 
-    Resource * allocate_resource_(u32 type_id);
+    Resource * allocate_resource_(const type_index & type_ind);
 
-    Resource * allocate_resource_(u32 type_id, const Resource & copy);
+    Resource * allocate_resource_(const type_index & type_ind, const Resource & copy);
 
-    bool add_resource_(Resource * res, const String & name, const String & package, const Variant_Hash & init_params);
+    bool add_resource_(Resource * res, const String & name, const String & package, const Variant_Map & init_params);
 
-    void deallocate_resource_(Resource * res, u32 type_id);
+    void deallocate_resource_(Resource * res, const type_index & type_ind);
 
     void make_valid_package_name_(String & str) const;
 

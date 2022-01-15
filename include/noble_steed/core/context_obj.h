@@ -1,13 +1,10 @@
 #pragma once
 
-#include <rttr/type>
-#include <rttr/registration_friend>
-#include <noble_steed/io/json_archive.h>
-#include <noble_steed/core/signal.h>
-#include <noble_steed/container/array.h>
-#include <mutex>
-
+#include "signal.h"
+#include "../container/array.h"
 #include "variant.h"
+
+#include <mutex>
 
 namespace noble_steed
 {
@@ -15,11 +12,11 @@ namespace noble_steed
 struct Event
 {
     Event();
-    Event(const String & name, const Variant_Hash & data_=Variant_Hash());
-    Event(u32 id_, const Variant_Hash & data_=Variant_Hash());
+    Event(const String & name, const Variant_Map & data_=Variant_Map());
+    Event(u32 id_, const Variant_Map & data_=Variant_Map());
     u32 id;
     std::chrono::nanoseconds timestamp;
-    Variant_Hash data;
+    Variant_Map data;
 };
 
 struct Event_Buffer
@@ -55,14 +52,6 @@ class Context_Obj
 
     virtual ~Context_Obj();
 
-    virtual void pack_unpack(JSON_Archive & ar);
-
-    String to_json();
-
-    void from_json(const String & json_str);
-
-    bool is_owned_by_context();
-
     Context_Obj & operator=(Context_Obj rhs);
 
     void push_event(const Event & event);
@@ -75,17 +64,9 @@ class Context_Obj
   protected:
     void swap(Context_Obj & rhs);
 
-    virtual void pack_begin(JSON_Archive::Direction io_dir);
-
-    virtual void pack_end(JSON_Archive::Direction io_dir);
-
     Event_Buffer events_;
     std::mutex event_mutex_;
 
-    bool owned;
-
     SLOT_OBJECT
-    RTTR_ENABLE()
-    RTTR_REGISTRATION_FRIEND
 };
 } // namespace noble_steed

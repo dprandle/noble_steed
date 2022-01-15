@@ -1,10 +1,9 @@
 #pragma once
 
-#include "noble_steed/io/logger.h"
-#include "noble_steed/memory/freelistallocator.h"
-#include "noble_steed/memory/poolallocator.h"
-#include "noble_steed/core/common.h"
-#include "noble_steed/core/context_obj.h"
+#include "../io/logger.h"
+#include "../memory/freelistallocator.h"
+#include "../memory/poolallocator.h"
+#include "context_obj.h"
 
 namespace noble_steed
 {
@@ -53,18 +52,20 @@ class Pool_Factory : public Factory
 
     Derived_Type * create()
     {
-        rttr::type tp = rttr::type::get<Derived_Type>();
-        ilog("Allocating {0} bytes for {1} in pool allocator", tp.get_sizeof(), String(tp.get_name()));
-        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(tp.get_sizeof()));
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
+        ilog("Allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
+        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz));
         new (obj_ptr) Derived_Type();
         return obj_ptr;
     }
 
     Derived_Type * create(const Context_Obj & copy)
     {
-        rttr::type tp = rttr::type::get<Derived_Type>();
-        ilog("Allocating {0} bytes for {1} in pool allocator", tp.get_sizeof(), String(tp.get_name()));
-        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(tp.get_sizeof()));
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
+        ilog("Allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
+        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz));
         const Derived_Type & copy_cast = static_cast<const Derived_Type &>(copy);
         new (obj_ptr) Derived_Type(copy_cast);
         return obj_ptr;
@@ -72,9 +73,10 @@ class Pool_Factory : public Factory
 
     void destroy(Context_Obj * obj)
     {
-        rttr::type t = rttr::type::get<Derived_Type>();
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
         obj->~Context_Obj();
-        ilog("De-allocating {0} bytes for {1} in pool allocator", t.get_sizeof(), String(t.get_name()));
+        ilog("De-allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
         alloc_->Free(obj);
     }
 
@@ -91,24 +93,24 @@ class Free_List_Factory : public Factory
 
     Derived_Type * create()
     {
-        rttr::type tp = rttr::type::get<Derived_Type>();
-        sizet type_size = rttr::type::get<Derived_Type>().get_sizeof();
-        if (type_size < MIN_ALLOC_SIZE)
-            type_size = MIN_ALLOC_SIZE;
-        ilog("Allocating {0} bytes for {1} in free list allocator", type_size, String(tp.get_name()));
-        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(type_size, MIN_ALIGN_SIZE));
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
+        if (sz < MIN_ALLOC_SIZE)
+            sz = MIN_ALLOC_SIZE;
+        ilog("Allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
+        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz, MIN_ALIGN_SIZE));
         new (ptr) Derived_Type();
         return ptr;
     }
 
     Derived_Type * create(const Context_Obj & copy)
     {
-        rttr::type tp = rttr::type::get<Derived_Type>();
-        sizet type_size = rttr::type::get<Derived_Type>().get_sizeof();
-        if (type_size < MIN_ALLOC_SIZE)
-            type_size = MIN_ALLOC_SIZE;
-        ilog("Allocating {0} bytes for {1} in free list allocator", type_size, String(tp.get_name()));
-        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(type_size, MIN_ALIGN_SIZE));
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
+        if (sz < MIN_ALLOC_SIZE)
+            sz = MIN_ALLOC_SIZE;
+        ilog("Allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
+        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz, MIN_ALIGN_SIZE));
         const Derived_Type & copy_cast = static_cast<const Derived_Type &>(copy);
         new (ptr) Derived_Type(copy_cast);
         return ptr;
@@ -116,9 +118,10 @@ class Free_List_Factory : public Factory
 
     void destroy(Context_Obj * obj)
     {
-        rttr::type t = rttr::type::get<Derived_Type>();
+        type_index tp = typeid(Derived_Type);
+        sizet sz = sizeof(Derived_Type);
         obj->~Context_Obj();
-        ilog("De-allocating {0} bytes for {1} in free list allocator", t.get_sizeof(), String(t.get_name()));
+        ilog("De-allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
         alloc_->Free(obj);
     }
 

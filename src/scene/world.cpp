@@ -1,3 +1,4 @@
+#include <noble_steed/core/variant.h>
 #include <noble_steed/scene/world.h>
 #include <noble_steed/io/logger.h>
 #include <noble_steed/core/context.h>
@@ -18,7 +19,7 @@ World::~World()
     clear_systems();
 }
 
-void World::initialize(const Variant_Hash & init_params)
+void World::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing world");
     u16 alloc_amount = DEFAULT_ENTITY_ALLOC;
@@ -41,7 +42,7 @@ void World::terminate()
     clear_entities();
 }
 
-void World::add_default_systems(const Variant_Hash & init_params)
+void World::add_default_systems(const Variant_Map & init_params)
 {
     add_system<Engine>(init_params);
     add_system<Input_Translator>(init_params);
@@ -65,55 +66,46 @@ void World::clear_entities()
     rebuild_available_id_stack_();
 }
 
-System * World::add_system_(const rttr::type & sys_type, const Variant_Hash & init_params)
+System * World::add_system_(const type_index & sys_type, const Variant_Map & init_params)
 {
-    u32 id = type_hash(sys_type);
-    if (systems_.find(id) != systems_.end())
+    if (systems_.find(sys_type) != systems_.end())
     {
-        wlog("Cannot add system type {} as it already exits", String(sys_type.get_name()));
+        wlog("Cannot add system type {} as it already exits", sys_type.name());
         return nullptr;
     }
+
     auto fac = ns_ctxt.get_factory(sys_type);
     System * sys = fac->create_and_cast<System>();
     assert(sys != nullptr);
     sys->initialize(init_params);
-    systems_[id] = sys;
-    ilog("Added system {} to world", String(sys_type.get_name()));
+    systems_[sys_type] = sys;
+    ilog("Added system {} to world", sys_type.name());
     return sys;
 }
 
-System * World::get_system_(const rttr::type & sys_type)
+System * World::get_system_(const type_index & sys_type)
 {
-    auto fiter = systems_.find(type_hash(sys_type));
+    auto fiter = systems_.find(sys_type);
     if (fiter != systems_.end())
         return fiter->second;
     return nullptr;
 }
 
-void World::remove_system_(const rttr::type & sys_type)
+void World::remove_system_(const type_index & sys_type)
 {
-    remove_system_(type_hash(sys_type));
-}
-
-void World::remove_system_(u32 type_id)
-{
-    auto fac = ns_ctxt.get_factory(type_id);
-    auto fiter = systems_.find(type_id);
+    auto fac = ns_ctxt.get_factory(sys_type);
+    auto fiter = systems_.find(sys_type);
     if (fiter != systems_.end())
     {
         System * sys = fiter->second;
         sys->terminate();
         systems_.erase(fiter);
-        ilog("Removed {} system from world", String(sys->get_type().get_name()));
+        ilog("Removed {} system from world", sys_type.name());
         fac->destroy(sys);
-    }
-    else
-    {
-        wlog("Can't remove system because type id {} wasn't found", type_id);
     }
 }
 
-Entity * World::create(const Variant_Hash & init_params)
+Entity * World::create(const Variant_Map & init_params)
 {
     Entity * ent = nullptr;
     auto fac = ns_ctxt.get_factory<Entity>();
@@ -123,7 +115,7 @@ Entity * World::create(const Variant_Hash & init_params)
     return ent;
 }
 
-Entity * World::create(const Entity & copy, const Variant_Hash & init_params)
+Entity * World::create(const Entity & copy, const Variant_Map & init_params)
 {
     Entity * ent = nullptr;
     auto fac = ns_ctxt.get_factory<Entity>();
@@ -155,7 +147,7 @@ void World::rebuild_available_id_stack_()
     }
 }
 
-void World::add_entity_(Entity * to_add, const Variant_Hash & init_params)
+void World::add_entity_(Entity * to_add, const Variant_Map & init_params)
 {
     // Assign id to entity - if crashes here then ent is nullptr likely from insufficient memory block (up the size)
     if (!ent_id_stack_.empty())
@@ -190,8 +182,6 @@ void World::add_entity_(Entity * to_add, const Variant_Hash & init_params)
     };
 
     sig_connect(to_add->id_change, func);
-
-    to_add->owned = true;
     to_add->initialize(init_params);
 }
 
@@ -216,7 +206,7 @@ bool World::destroy(u32 id)
 void World::handle_entity_packed_in(Event & ev)
 {
     // Entity * ent = ev.data[events::entity::entity_packed_in::entity_ptr].get_value<Entity*>();
-    // add_entity_(ent, Variant_Hash());
+    // add_entity_(ent, Variant_Map());
 }
 
 bool World::destroy(Entity * ent)
@@ -262,12 +252,3 @@ bool World::destroy(Entity * ent)
     return true;
 }
 } // namespace noble_steed
-
-#include <rttr/registration>
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<World>("World");
-}

@@ -2,11 +2,10 @@
 #include <bgfx/bgfx.h>
 
 #include "../core/resource.h"
-#include "../core/common.h"
+#include "../container/vector.h"
 #include "../math/vec2.h"
 #include "../math/vec3.h"
 #include "../math/vec4.h"
-#include "../container/vector.h"
 
 
 BGFX_HANDLE(Index_Buffer_Handle)

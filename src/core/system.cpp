@@ -1,5 +1,6 @@
 #include <noble_steed/core/system.h>
 #include <noble_steed/io/logger.h>
+#include <noble_steed/core/variant.h>
 
 namespace noble_steed
 {
@@ -22,16 +23,14 @@ void System::swap(const System & rhs)
 System::~System()
 {}
 
-void System::initialize(const Variant_Hash & init_params)
+void System::initialize(const Variant_Map & init_params)
 {
-    rttr::type t = get_derived_info().m_type;
-    ilog("Initializing system with type {}", String(t.get_name()));
+    //ilog("Initializing system with type {}", String(t.get_name()));
 }
 
 void System::terminate()
 {
-    rttr::type t = get_derived_info().m_type;
-    ilog("Terminating system with type {}", String(t.get_name()));
+    //ilog("Terminating system with type {}", String(t.get_name()));
 }
 
 } // namespace noble_steed

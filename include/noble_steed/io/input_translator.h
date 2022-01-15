@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../core/common.h"
-#include "../core/tuple.h"
 #include "../core/system.h"
-#include "../container/vector.h"
 
 struct GLFWwindow;
 
@@ -83,7 +80,7 @@ class Input_Translator : public System
     Input_Translator();
     ~Input_Translator();
 
-    void initialize(const Variant_Hash & init_params);
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 
@@ -93,7 +90,7 @@ class Input_Translator : public System
     void update();
 
   private:
-    void send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Hash & other_params = Variant_Hash());
+    void send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Map & other_params = Variant_Map());
 
     bool _trigger_already_active(Input_Action_Trigger * trig);
 
@@ -117,8 +114,6 @@ class Input_Translator : public System
 
     dtup2 cur_mpos_;
     dtup2 prev_mpos_;
-
-    RTTR_ENABLE(System)
 };
 
 /* The unknown key */

@@ -8,7 +8,6 @@ set(PYTHON_MODULE_NAME Noble_Steed)
 # Some basica CMAKE values
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -27,7 +26,6 @@ set(GLM_DIR ${DEPENDENCY_DIR}/glm)
 set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
 set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
 set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
-set(RTTR_DIR ${DEPENDENCY_DIR}/rttr)
 set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
 
 # Set library source directory
@@ -42,9 +40,7 @@ set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
 set(GLM_INCLUDE_DIR ${GLM_DIR})
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
-set(RTTR_INCLUDE_DIR ${RTTR_DIR}/src)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
-set(RTTR_VERSION_INCLUDE_DIR ${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/src)
 set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -86,8 +82,6 @@ include_directories(
   ${BULLET_INCLUDE_DIR}
   ${SPDLOG_INCLUDE_DIR}
   ${PYBIND_INCLUDE_DIR}
-  ${RTTR_VERSION_INCLUDE_DIR}
-  ${RTTR_INCLUDE_DIR}
   ${ASSIMP_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
   )
@@ -110,11 +104,9 @@ elseif(APPLE)
     set(CMAKE_MACOSX_RPATH 1)
     
     # Set dependency library paths
-    set(BGFX_LIB_NAME libbgfx-shared-libRelease.dylib)
-    set(RTTR_LIB_NAME librttr_core_d.dylib)
+    set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.dylib)
     set(BGFX_BIN_DIR "${BGFX_DIR}/.build/osx64_clang/bin")
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
-    set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
     
     link_directories(/usr/local/lib)
     include_directories(/usr/local/include)    
@@ -123,7 +115,6 @@ elseif(APPLE)
         ${BGFX_LIB_PATH}  
         pybind11::embed
         glfw
-        ${RTTR_LIB_PATH}
         assimp
         Bullet2FileLoader
         Bullet3Dynamics
@@ -143,22 +134,15 @@ else()
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
     add_library(${TARGET_NAME} ${SRC_FILES})
     # Set dependency library paths
-    set(BGFX_LIB_NAME libbgfx-shared-libRelease.so)
-    if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
-      set(RTTR_LIB_NAME librttr_core_d.so)
-    else()
-      set(RTTR_LIB_NAME librttr_core.so)
-    endif()
+    set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
     set(BGFX_BIN_DIR "${BGFX_DIR}/.build/linux64_gcc/bin")
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
-    set(RTTR_LIB_PATH "${RTTR_DIR}/build/${CMAKE_BUILD_TYPE}/lib/${RTTR_LIB_NAME}")
   
     target_link_libraries(${TARGET_NAME}
     ${BGFX_LIB_PATH}
     #pybind11::pybind11
     pybind11::embed
     glfw
-    ${RTTR_LIB_PATH}
     assimp
     Bullet2FileLoader
     Bullet3Dynamics
@@ -180,11 +164,11 @@ else()
     )
 endif()
 
-configure_file(${BGFX_BIN_DIR}/shadercRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturecRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturevRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometrycRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryvRelease ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
+configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
 
 # Copy the shader lib source to the default shader lib directory in build folder
 add_custom_target(deploy_shader_lib ALL

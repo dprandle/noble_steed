@@ -1,3 +1,5 @@
+#include <noble_steed/core/variant.h>
+
 #include <noble_steed/core/context.h>
 #include <noble_steed/io/logger.h>
 #include <noble_steed/io/filesystem.h>
@@ -54,7 +56,7 @@ Context::~Context()
     mem_free_list_.Reset();
 }
 
-void Context::initialize(const Variant_Hash & init_params)
+void Context::initialize(const Variant_Map & init_params)
 {
     auto fiter = init_params.find(INIT_CWD_KEY);
     if (fiter != init_params.end())
@@ -151,23 +153,23 @@ void Context::raw_free(void * to_free)
     mem_free_list_.Free(to_free);
 }
 
-u32 Context::get_extension_resource_type(const String & extension)
+type_index Context::get_extension_resource_type(const String & extension)
 {
-    u32 hash_id = str_hash(extension);
+    String_Hash hash_id = str_hash(extension);
     auto fiter = extension_resource_type_.find(hash_id);
     if (fiter != extension_resource_type_.end())
         return fiter->second;
-    return INVALID_ID;
+    return INVALID_TYPE;
 }
 
-void * Context::malloc_(const rttr::type & type, u32 elements)
+void * Context::malloc_(const type_index & type_ind, sizet type_size, u32 elements)
 {
-    sizet type_size = type.get_sizeof() * elements;
     if (type_size < MIN_ALLOC_SIZE)
         type_size = MIN_ALLOC_SIZE;
     return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);
 }
-void Context::register_default_types_(const Variant_Hash & init_params)
+
+void Context::register_default_types_(const Variant_Map & init_params)
 {
     using namespace init_param_key::context;
 
@@ -193,7 +195,7 @@ void Context::register_default_types_(const Variant_Hash & init_params)
     register_component_type<Transform>(init_params);
 }
 
-bool Context::set_resource_extension_(const rttr::type & resource_type, const String & extension)
+bool Context::set_resource_extension_(const type_index & type_ind, const String & extension)
 {
     if (extension.empty() || extension.find_first_of('/') != String::npos || extension.find_first_of('\\') != String::npos)
     {
@@ -205,29 +207,28 @@ bool Context::set_resource_extension_(const rttr::type & resource_type, const St
     if (actual_extension[0] != '.')
         actual_extension = "." + actual_extension;
 
-    u32 type_id = type_hash(resource_type);
-    u32 ext_hash = str_hash(actual_extension);
-    resource_type_extension_[type_id] = actual_extension;
-    extension_resource_type_[ext_hash] = type_id;
-    ilog("Setting extension for resource type {} and id {} to {} ({})", resource_type.get_name().to_string(), type_id, actual_extension, ext_hash);
+    String_Hash ext_hash = str_hash(actual_extension);
+    resource_type_extension_[type_ind] = actual_extension;
+    //extension_resource_type_[ext_hash] = type_ind;
+    extension_resource_type_.emplace(ext_hash, type_ind);
+    ilog("Setting extension for resource type {} and id {} to {} ({})", type_ind.name(), type_ind.hash_code(), actual_extension, ext_hash);
     return true;
 }
 
-bool Context::remove_resource_extension(const rttr::type & resource_type)
+bool Context::remove_resource_extension(const type_index & type_ind)
 {
-    String extension = get_resource_extension(resource_type);
+    String extension = get_resource_extension(type_ind);
     if (extension.empty())
     {
-        wlog("Could not remove extension for resource type {} as no extension entry was found", resource_type.get_name().to_string());
+        wlog("Could not remove extension for resource type {} as no extension entry was found", type_ind.name());
         return false;
     }
 
-    u32 type_id = type_hash(resource_type);
     u32 ext_hash = str_hash(extension);
-    u32 cnt = resource_type_extension_.erase(type_id);
+    u32 cnt = resource_type_extension_.erase(type_ind);
     u32 cnt2 = extension_resource_type_.erase(ext_hash);
     assert(cnt == cnt2 && cnt == 1);
-    ilog("Successfully removed resource extension entry {} for type {}", extension, resource_type.get_name().to_string());
+    ilog("Successfully removed resource extension entry {} for type {}", extension, type_ind.name());
     return true;
 }
 
@@ -240,7 +241,7 @@ void Context::subscribe_to_event(Context_Obj * obj, u32 event_id)
 {
     event_subscribers_[event_id].insert(obj);
     sig_connect(obj->destroyed, this, &Context::unsubscribe_from_all);
-    ilog("Subscribed {} to event id {}", obj->get_derived_info().m_type.get_name().to_string(), event_id);
+    ilog("Subscribed {} to event id {}", typeid(*obj).name(), event_id);
 }
 
 void Context::unsubscribe_from_all(Context_Obj * obj)
@@ -251,7 +252,7 @@ void Context::unsubscribe_from_all(Context_Obj * obj)
         size_t cnt = iter->second.erase(obj);
         if (cnt)
         {
-            ilog("Unsubscribed {} from event id {}", obj->get_derived_info().m_type.get_name().to_string(), iter->first);
+            ilog("Unsubscribed {} from event id {}", typeid(*obj).name(), iter->first);
         }
         ++iter;
     }
@@ -270,7 +271,7 @@ void Context::unsubscribe_from_event(Context_Obj * obj, u32 event_id)
         size_t cnt = fiter->second.erase(obj);
         if (cnt)
         {
-            ilog("Unsubscribed {} from event id {}", obj->get_derived_info().m_type.get_name().to_string(), event_id);
+            ilog("Unsubscribed {} from event id {}", typeid(*obj).name(), event_id);
         }
     }
 }
@@ -290,61 +291,55 @@ void Context::post_event_to_queues(Event & event)
     }
 }
 
-void Context::post_event_to_queues(const String & event_name, const Variant_Hash & data)
+void Context::post_event_to_queues(const String & event_name, const Variant_Map & data)
 {
     Event ev(event_name, data);
     post_event_to_queues(ev);
 }
 
-String Context::get_resource_extension(const rttr::type & resource_type)
+String Context::get_resource_extension(const type_index & type_ind)
 {
     String ret;
-    u32 type_id = type_hash(resource_type);
-    auto fiter = resource_type_extension_.find(type_id);
+    auto fiter = resource_type_extension_.find(type_ind);
     if (fiter != resource_type_extension_.end())
         ret = fiter->second;
     return ret;
 }
 
-u32 Context::hash_str(const String & str)
+String_Hash Context::hash_str(const String & str)
 {
     return crc32(str.c_str(), str.size());
 }
 
-PoolAllocator * Context::create_pool_allocator_(const rttr::type & type, u16 alloc_amount_for_type, const Variant_Hash & init_params)
+PoolAllocator * Context::create_pool_allocator_(const type_index & type_ind, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params)
 {
-    sizet type_size = type.get_sizeof();
-
-    if (type_size < MIN_CHUNK_ALLOC_SIZE)
-        type_size = MIN_CHUNK_ALLOC_SIZE;
+    if (size_of_type < MIN_CHUNK_ALLOC_SIZE)
+        size_of_type = MIN_CHUNK_ALLOC_SIZE;
 
     // Grab the overriding alloc amount if its there
+    // TODO: Possibly add back in init param for alloc amount
     u16 alloc_amount = alloc_amount_for_type;
-    String type_str(type.get_name());
-    type_str += "_Alloc";
-    auto fiter = init_params.find(type_str);
-    if (fiter != init_params.end())
-    {
-        if (fiter->second.is_type<u16>())
-            alloc_amount = fiter->second.get_value<u16>();
-        else
-            wlog("Passed in value for key {} but value was of incorrect type", type_str);
-    }
+    // String type_str(type_ind.name());
+    // type_str += "_Alloc";
+    // auto fiter = init_params.find(type_str);
+    // if (fiter != init_params.end())
+    // {
+    //     if (fiter->second.is_type<u16>())
+    //         alloc_amount = fiter->second.get_value<u16>();
+    //     else
+    //         wlog("Passed in value for key {} but value was of incorrect type", type_str);
+    // }
 
-    PoolAllocator * pool_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * type_size, type_size);
-
+    PoolAllocator * pool_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * size_of_type, size_of_type);
     pool_alloc->Init();
-    u32 type_id = type_hash(type);
-    pool_allocators_.emplace(type_id, pool_alloc);
-    String str(type.get_name());
-    ilog("Creating {0} byte pool allocator for type {1} - enough for {2} instances", alloc_amount * type_size, str, alloc_amount);
+    pool_allocators_.emplace(type_ind, pool_alloc);
+    ilog("Creating {0} byte pool allocator for type {1} - enough for {2} instances", alloc_amount * size_of_type, type_ind.name(), alloc_amount);
     return pool_alloc;
 }
 
-bool Context::destroy_comp_allocator_(const rttr::type & type)
+bool Context::destroy_comp_allocator_(const type_index & type_ind)
 {
-    u32 type_id = type_hash(type);
-    auto fiter = pool_allocators_.find(type_id);
+    auto fiter = pool_allocators_.find(type_ind);
     if (fiter != pool_allocators_.end())
     {
         free(fiter->second);
@@ -354,55 +349,25 @@ bool Context::destroy_comp_allocator_(const rttr::type & type)
     return false;
 }
 
-PoolAllocator * Context::get_pool_allocator(const rttr::type & type)
+PoolAllocator * Context::get_pool_allocator(const type_index & type_ind)
 {
-    u32 type_id = type_hash(type);
-    return get_pool_allocator(type_id);
-}
-
-PoolAllocator * Context::get_pool_allocator(u32 type_id)
-{
-    auto fiter = pool_allocators_.find(type_id);
+    auto fiter = pool_allocators_.find(type_ind);
     if (fiter != pool_allocators_.end())
         return fiter->second;
     return nullptr;
 }
 
-Factory * Context::get_factory(const rttr::type & obj_type)
+Factory * Context::get_factory(const type_index & type_ind)
 {
-    u32 type_id = type_hash(obj_type);
-    return get_factory(type_id);
-}
-
-Factory * Context::get_factory(u32 fac_id)
-{
-    auto fiter = type_factories_.find(fac_id);
+    auto fiter = type_factories_.find(type_ind);
     if (fiter != type_factories_.end())
         return fiter->second;
     return nullptr;
 }
 
-bool Context::contains_factory(u32 fac_id)
+bool Context::contains_factory(const type_index & type_ind)
 {
-    return (get_factory(fac_id) != nullptr);
-}
-
-bool Context::contains_factory(const rttr::type & obj_type)
-{
-    return (get_factory(obj_type) != nullptr);
+    return (get_factory(type_ind) != nullptr);
 }
 
 } // namespace noble_steed
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<Context>("Context").constructor<>();
-    // .property("id_", &Component::initialize, registration::public_access)
-    // .property("terminate", &Component::terminate, registration::public_access)
-    // .property("owner_id", &Component::owner_id_, registration::private_access);
-}

@@ -2,8 +2,8 @@
 
 #include <bgfx/bgfx.h>
 
-#include "../core/common.h"
 #include "../core/resource.h"
+#include "../container/hash_set.h"
 
 namespace noble_steed
 {
@@ -25,7 +25,7 @@ class Shader : public Resource
     /// Meaning, if the renderer type is set to metal and glsl is passed in - this will crash. Shader will do what its told though and try.
     bool create_program(const String & output_relative_dir);
 
-    void initialize(const Variant_Hash & init_params);
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 
@@ -56,10 +56,6 @@ class Shader : public Resource
   protected:
     virtual void swap(Shader & rhs);
 
-    virtual void pack_begin(JSON_Archive::Direction io_dir);
-
-    virtual void pack_end(JSON_Archive::Direction io_dir);
-
   private:
     bool build_shader_(const String & rel_base_name,
                        const String & type,
@@ -75,9 +71,6 @@ class Shader : public Resource
     String varying_def_src_;
     String binary_extension_;
     Hash_Set<String> extra_include_dirs_;
-
-    RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(Resource)
 };
 
 } // namespace noble_steed

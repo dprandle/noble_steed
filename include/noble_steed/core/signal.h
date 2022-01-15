@@ -1,8 +1,7 @@
 #pragma once
 
-#include <noble_steed/container/vector.h>
-#include <noble_steed/core/common.h>
 #include <functional>
+#include "../container/vector.h"
 
 namespace noble_steed
 {
@@ -13,7 +12,7 @@ struct Slot_Base
 {
     virtual ~Slot_Base()
     {}
-    Router * router;
+    Router *router;
 };
 
 template<class... Args>
@@ -25,13 +24,13 @@ struct Slot : public Slot_Base
     ~Slot();
 
     virtual void call(Args...) = 0;
-    Signal<Args...> * connected_signal;
+    Signal<Args...> *connected_signal;
 };
 
 template<class... Args>
 struct Slot_Concrete_Lambda : public Slot<Args...>
 {
-    Slot_Concrete_Lambda(const std::function<void(Args...)> & func) : func_(func)
+    Slot_Concrete_Lambda(const std::function<void(Args...)> &func) : func_(func)
     {}
 
     void call(Args... args)
@@ -47,7 +46,7 @@ struct Slot_Concrete : public Slot<Args...>
 {
     typedef void (T::*mem_func_t)(Args...);
 
-    Slot_Concrete(T * inst_, mem_func_t func_) : inst(inst_), func(func_)
+    Slot_Concrete(T *inst_, mem_func_t func_) : inst(inst_), func(func_)
     {}
 
     void call(Args... args)
@@ -55,17 +54,19 @@ struct Slot_Concrete : public Slot<Args...>
         (inst->*func)(args...);
     }
 
-    T * inst;
+    T *inst;
     mem_func_t func;
 };
 
 template<class... Args>
 struct Signal
 {
-    Signal():con_slots() {}
-    
+    Signal() : con_slots()
+    {}
+
     // Do not copy signals!
-    Signal(const Signal<Args...> & copy):con_slots() {}
+    Signal(const Signal<Args...> &copy) : con_slots()
+    {}
 
     ~Signal()
     {
@@ -107,23 +108,23 @@ Slot<Args...>::~Slot()
 #define sig_disconnect router_.disconnect
 #define emit_sig
 
-void assist_delete(Slot_Base * del);
+void assist_delete(Slot_Base *del);
 
 class Router
 {
   public:
     Router();
 
-    Router(const Router & copy);
+    Router(const Router &copy);
 
     ~Router();
 
     void disconnect_all();
 
     template<class T, class... Args>
-    void connect(Signal<Args...> & sig, T * inst, void (T::*mf)(Args...))
+    void connect(Signal<Args...> &sig, T *inst, void (T::*mf)(Args...))
     {
-        Slot_Concrete<T, Args...> * slot_ptr = new Slot_Concrete<T, Args...>(inst, mf);
+        Slot_Concrete<T, Args...> *slot_ptr = new Slot_Concrete<T, Args...>(inst, mf);
         slot_ptr->connected_signal = &sig;
         slot_ptr->router = this;
         sig.con_slots.push_back(slot_ptr);
@@ -131,10 +132,10 @@ class Router
     }
 
     template<class LambdaType, class... Args>
-    void connect(Signal<Args...> & sig, const LambdaType & func)
+    void connect(Signal<Args...> &sig, const LambdaType &func)
     {
         std::function<void(Args...)> f = func;
-        Slot_Concrete_Lambda<Args...> * slot_ptr = new Slot_Concrete_Lambda<Args...>(f);
+        Slot_Concrete_Lambda<Args...> *slot_ptr = new Slot_Concrete_Lambda<Args...>(f);
         slot_ptr->connected_signal = &sig;
         slot_ptr->router = this;
         sig.con_slots.push_back(slot_ptr);
@@ -142,12 +143,12 @@ class Router
     }
 
     template<class... Args>
-    void disconnect(Signal<Args...> & sig)
+    void disconnect(Signal<Args...> &sig)
     {
         auto iter = con_slots.begin();
         while (iter != con_slots.end())
         {
-            Slot<Args...> * cast_down = dynamic_cast<Slot<Args...> *>(*iter);
+            Slot<Args...> *cast_down = dynamic_cast<Slot<Args...> *>(*iter);
             if (cast_down != nullptr && cast_down->connected_signal == &sig)
             {
                 delete *iter;
@@ -158,11 +159,26 @@ class Router
         }
     }
 
-    void remove_slot(Slot_Base * slot);
+    template<class... Args>
+    sizet connection_count(Signal<Args...> &sig)
+    {
+        sizet cnt = 0;
+        auto iter = con_slots.begin();
+        while (iter != con_slots.end())
+        {
+            Slot<Args...> *cast_down = dynamic_cast<Slot<Args...> *>(*iter);
+            if (cast_down && cast_down->connected_signal == &sig)
+                ++cnt;
+            ++iter;
+        }
+        return cnt;
+    }
 
-    sizet signals_connected_count();
+    void remove_slot(Slot_Base *slot);
+
+    sizet connection_count();
 
   private:
-    Vector<Slot_Base*> con_slots;
+    Vector<Slot_Base *> con_slots;
 };
 } // namespace noble_steed

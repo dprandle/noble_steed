@@ -1,5 +1,4 @@
-#ifndef CALLOCATOR_H
-#define CALLOCATOR_H
+#pragma once
 
 #include "allocator.h"
 
@@ -15,6 +14,3 @@ public:
 
 	virtual void Init() override;
 };
-
-#endif /* CALLOCATOR_H */
-

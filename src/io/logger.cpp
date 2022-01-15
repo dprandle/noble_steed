@@ -102,6 +102,7 @@ void Logger::add_logger(const String & logger_name, const Log_Level_Info & log_l
 
     auto logger = std::make_shared<spdlog::logger>(logger_name, multi_sink_list.begin(), multi_sink_list.end());
     logger->set_level(spdlog::level::trace);
+    logger->flush_on(spdlog::level::info);
 
     if (!pattern.empty())
         logger->set_pattern(pattern);
@@ -138,11 +139,11 @@ void Logger::remove_logger(const String & logger_name)
     }
 }
 
-void Logger::initialize(const Variant_Hash & init_params)
+void Logger::initialize(const Variant_Map & init_params)
 {
     Log_Level_Info def_inf;
     def_inf.console_debug_level = Logger::Debug;
-    def_inf.console_release_level = Logger::Off;
+    def_inf.console_release_level = Logger::Debug;
     def_inf.daily_file_debug_level = Logger::Off;
     def_inf.daily_file_release_level = Logger::Off;
     def_inf.per_exec_file_debug_level = Logger::Trace;

@@ -44,7 +44,7 @@ void Entity::clear()
         remove(comps_.begin()->second);
 }
 
-void Entity::initialize(const Variant_Hash & init_params)
+void Entity::initialize(const Variant_Map & init_params)
 {
     ilog("Initializing entity with name {} and id {}", name_, id_);
 }
@@ -100,7 +100,7 @@ u32 Entity::get_id()
     return id_;
 }
 
-Component * Entity::add(const rttr::type & comp_type, const Variant_Hash & init_params)
+Component * Entity::add(const type_index & comp_type, const Variant_Map & init_params)
 {
     Component * comp = allocate_comp_(comp_type);
     if (!add_component_(comp, comp_type, init_params))
@@ -114,9 +114,9 @@ Component * Entity::add(const rttr::type & comp_type, const Variant_Hash & init_
 Component * Entity::add(const Component & copy)
 {
     // Get derived info is non const likely because of the m_ptr returned with m_type
-    rttr::type t = const_cast<Component &>(copy).get_derived_info().m_type;
+    type_index t = typeid(copy);
     Component * comp = allocate_comp_(t, copy);
-    if (!add_component_(comp, t, Variant_Hash()))
+    if (!add_component_(comp, t, Variant_Map()))
     {
         deallocate_comp_(comp, t);
         return nullptr;
@@ -124,23 +124,23 @@ Component * Entity::add(const Component & copy)
     return comp;
 }
 
-Component * Entity::get(const rttr::type & type)
+Component * Entity::get(const type_index & type)
 {
-    auto fiter = comps_.find(type_hash(type));
+    auto fiter = comps_.find(type);
     if (fiter != comps_.end())
         return fiter->second;
     return nullptr;
 }
 
-bool Entity::has(const rttr::type & comp_type)
+bool Entity::has(const type_index & comp_type)
 {
     return get(comp_type) != nullptr;
 }
 
-Component * Entity::remove_component_(const rttr::type & type)
+Component * Entity::remove_component_(const type_index & type)
 {
     Component * ret = nullptr;
-    auto fiter = comps_.find(type_hash(type));
+    auto fiter = comps_.find(type);
     if (fiter != comps_.end())
     {
         ret = fiter->second;
@@ -150,14 +150,14 @@ Component * Entity::remove_component_(const rttr::type & type)
     else
     {
         wlog("Could not remove component type {} from entity {} (name:{}) as that type of component wasn't found",
-             String(type.get_name()),
+             type.name(),
              id_,
              name_);
     }
     return ret;
 }
 
-Component * Entity::allocate_comp_(const rttr::type & type)
+Component * Entity::allocate_comp_(const type_index & type)
 {
     auto fac = ns_ctxt.get_factory(type);
     assert(fac != nullptr);
@@ -166,7 +166,7 @@ Component * Entity::allocate_comp_(const rttr::type & type)
     return comp;
 }
 
-Component * Entity::allocate_comp_(const rttr::type & type, const Component & copy)
+Component * Entity::allocate_comp_(const type_index & type, const Component & copy)
 {
     auto fac = ns_ctxt.get_factory(type);
     assert(fac != nullptr);
@@ -175,9 +175,9 @@ Component * Entity::allocate_comp_(const rttr::type & type, const Component & co
     return comp;
 }
 
-bool Entity::add_component_(Component * comp, const rttr::type & comp_type, const Variant_Hash & init_params)
+bool Entity::add_component_(Component * comp, const type_index & comp_type, const Variant_Map & init_params)
 {
-    auto fiter = comps_.emplace(type_hash(comp_type), comp);
+    auto fiter = comps_.emplace(comp_type, comp);
     if (fiter.second)
     {
         comp->owner_id_ = id_;
@@ -187,21 +187,21 @@ bool Entity::add_component_(Component * comp, const rttr::type & comp_type, cons
     {
         wlog("Could not add component type {} to entity {} (name: {}) as the component "
              "already exists",
-             String(comp_type.get_name()),
+             comp_type.name(),
              id_,
              name_);
     }
     return fiter.second;
 }
 
-void Entity::deallocate_comp_(Component * comp, const rttr::type & comp_type)
+void Entity::deallocate_comp_(Component * comp, const type_index & comp_type)
 {
     assert(comp != nullptr);
     auto fac = ns_ctxt.get_factory(comp_type);
     fac->destroy(comp);
 }
 
-bool Entity::remove(const rttr::type & type)
+bool Entity::remove(const type_index & type)
 {
     Component * comp = remove_component_(type);
     if (comp == nullptr)
@@ -212,31 +212,7 @@ bool Entity::remove(const rttr::type & type)
 
 bool Entity::remove(Component * comp)
 {
-    return remove(comp->get_derived_info().m_type);
-}
-
-void Entity::pack_begin(JSON_Archive::Direction io_dir)
-{
-    if (io_dir == JSON_Archive::DIR_IN)
-    {
-        Event ev;
-        ev.id = events::entity::entity_packed_in::id;
-        ev.data[events::entity::entity_packed_in::entity_ptr] = this;
-        post_event(ev);
-    }
-}
-
-void Entity::pack_end(JSON_Archive::Direction io_dir)
-{
-    if (io_dir == JSON_Archive::DIR_IN)
-    {
-        auto comp_iter = comps_.begin();
-        while (comp_iter != comps_.end())
-        {
-            comp_iter->second->owner_id_ = id_;
-            ++comp_iter;
-        }
-    }
+    return remove(typeid(*comp));
 }
 
 namespace events
@@ -254,15 +230,3 @@ const String entity_ptr = "ent_ptr";
 } // namespace events
 
 } // namespace noble_steed
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-    registration::class_<Entity>("noble_steed::Entity")
-        .property("name", &Entity::get_name, &Entity::set_name, registration::public_access)
-        .property("id", &Entity::get_id, &Entity::set_id, registration::public_access)(metadata("NO_SERIALIZE", true))
-        .property("components", &Entity::comps_, registration::public_access);
-}

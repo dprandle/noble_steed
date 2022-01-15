@@ -2,15 +2,18 @@
 
 #include "../container/vector.h"
 #include "../container/stack.h"
+#include "../container/tuple.h"
 #include "../core/system.h"
-#include "../core/tuple.h"
 
 class PoolAllocator;
 
 #define ns_world ns_ctxt.get_world()
 
+/// Init params key to override the default entity allocation amount
+
 namespace noble_steed
 {
+const String ENTITY_ALLOC_KEY = "Entity_Alloc";
 class Component;
 class Entity;
 class System;
@@ -21,28 +24,28 @@ class World : public Context_Obj
     friend Variant construct_factory_type(u32 type_id);
 
   public:
-    void initialize(const Variant_Hash & init_params = Variant_Hash());
+    void initialize(const Variant_Map & init_params = Variant_Map());
 
     void terminate();
 
     template<class T>
-    T * add_system(const Variant_Hash & init_params = Variant_Hash())
+    T * add_system(const Variant_Map & init_params = Variant_Map())
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         return static_cast<T*>(add_system_(t,init_params));
     }
 
     template<class T>
     T * get_system()
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         return static_cast<T*>(get_system_(t));
     }
 
     template<class T>
     void remove_system()
     {
-        rttr::type t = rttr::type::get<T>();
+        type_index t = typeid(T);
         remove_system_(t);
     }
 
@@ -50,9 +53,9 @@ class World : public Context_Obj
 
     void clear_entities();
 
-    Entity * create(const Variant_Hash & init_params=Variant_Hash());
+    Entity * create(const Variant_Map & init_params=Variant_Map());
 
-    Entity * create(const Entity & copy, const Variant_Hash & init_params=Variant_Hash());
+    Entity * create(const Entity & copy, const Variant_Map & init_params=Variant_Map());
 
     bool contains(u32 id);
 
@@ -78,21 +81,19 @@ class World : public Context_Obj
 
     void handle_entity_packed_in(Event & ev);
 
-    void add_default_systems(const Variant_Hash & init_params);
+    void add_default_systems(const Variant_Map & init_params);
 
     void rebuild_available_id_stack_();
     
-    void add_entity_(Entity * to_add, const Variant_Hash & init_params);
+    void add_entity_(Entity * to_add, const Variant_Map & init_params);
     
-    System * add_system_(const rttr::type & sys_typ,const Variant_Hash & init_params);
+    System * add_system_(const type_index & sys_typ,const Variant_Map & init_params);
 
-    System * get_system_(const rttr::type & sys_type);
+    System * get_system_(const type_index & sys_type);
 
-    void remove_system_(const rttr::type & sys_type);
+    void remove_system_(const type_index & sys_type);
 
-    void remove_system_(u32 type_id);
-
-    Hash_Map<u64, System*> systems_;
+    Hash_Map<type_index, System*> systems_;
 
     Hash_Map<u32, Entity*> entity_ids_;
 

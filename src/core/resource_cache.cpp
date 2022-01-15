@@ -13,7 +13,7 @@ namespace resource_cache
 const String PACKAGE_DIRS = "Package_Dirs";
 const String CURRENT_PACKAGE = "Current_Package";
 } // namespace resource_cache
-} // namespace init_params
+} // namespace init_param_key
 
 Resource_Cache::Resource_Cache()
 {}
@@ -23,38 +23,18 @@ Resource_Cache::~Resource_Cache()
     clear();
 }
 
-void Resource_Cache::initialize(const Variant_Hash & init_params)
+void Resource_Cache::initialize(const Variant_Map &init_params)
 {
     ilog("Initializing resource cache");
     using namespace init_param_key::resource_cache;
 
     auto iter = init_params.find(PACKAGE_DIRS);
     if (iter != init_params.end())
-    {
-        if (iter->second.is_type<Vector<String>>())
-        {
-            // auto view = iter->second.create_sequential_view();
-            // for (int i = 0; i < view.get_size(); ++i)
-            //     load_package(view.get_value(i).to_string(), false);
-        }
-        else
-        {
-            //wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
-        }
-    }
+    {}
 
     iter = init_params.find(CURRENT_PACKAGE);
     if (iter != init_params.end())
-    {
-        if (iter->second.is_type<String>())
-        {
-            set_current_package(iter->second.get_value<String>());
-        }
-        else
-        {
-            //wlog("Passed in correct key {} but incorrect value type:{}", iter->first, String(iter->second.get_type().get_name()));
-        }
-    }
+    {}
 
     if (loaded_packages_.empty())
     {
@@ -69,30 +49,20 @@ void Resource_Cache::terminate()
     clear();
 }
 
-Resource * Resource_Cache::add(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params)
+Resource *Resource_Cache::add(const type_index &resource_type, const String &name, const String &package, const Variant_Map &init_params)
 {
-    return add(type_hash(resource_type), name, package, init_params);
-}
-
-Resource * Resource_Cache::add(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params)
-{
-    Resource * resource = allocate_resource_(type_id);
+    Resource *resource = allocate_resource_(resource_type);
     if (!add_resource_(resource, name, package, init_params))
     {
-        deallocate_resource_(resource, type_id);
+        deallocate_resource_(resource, resource_type);
         return nullptr;
     }
     return resource;
 }
 
-Resource * Resource_Cache::load(const rttr::type & resource_type, const String & name, const String & package, const Variant_Hash & init_params)
+Resource *Resource_Cache::load(const type_index &type_ind, const String &name, const String &package, const Variant_Map &init_params)
 {
-    return load(type_hash(resource_type), name, package, init_params);
-}
-
-Resource * Resource_Cache::load(u32 type_id, const String & name, const String & package, const Variant_Hash & init_params)
-{
-    Resource * res = add(type_id, name, package, init_params);
+    Resource *res = add(type_ind, name, package, init_params);
     if (res != nullptr && !res->load())
     {
         remove(res);
@@ -101,13 +71,10 @@ Resource * Resource_Cache::load(u32 type_id, const String & name, const String &
     return res;
 }
 
-Resource * Resource_Cache::load(const rttr::type & resource_type,
-                                const String & name,
-                                const String & package,
-                                const String & custom_path,
-                                const Variant_Hash & init_params)
+Resource *
+Resource_Cache::load(const type_index &type_ind, const String &name, const String &package, const String &custom_path, const Variant_Map &init_params)
 {
-    Resource * res = add(resource_type, name, package, init_params);
+    Resource *res = add(type_ind, name, package, init_params);
     if (res != nullptr && !res->load(custom_path))
     {
         remove(res);
@@ -116,17 +83,17 @@ Resource * Resource_Cache::load(const rttr::type & resource_type,
     return res;
 }
 
-bool Resource_Cache::save(const String & custom_path, u32 resource_id) const
+bool Resource_Cache::save(const String &custom_path, u32 resource_id) const
 {
-    Resource * res = get(resource_id);
+    Resource *res = get(resource_id);
     if (res != nullptr)
         return res->save(custom_path);
     return false;
 }
 
-bool Resource_Cache::save(const String & custom_path, const String & res_name, const String & res_package) const
+bool Resource_Cache::save(const String &custom_path, const String &res_name, const String &res_package) const
 {
-    Resource * res = get(res_name, res_package);
+    Resource *res = get(res_name, res_package);
     if (res != nullptr)
         return res->save(custom_path);
     return false;
@@ -134,34 +101,33 @@ bool Resource_Cache::save(const String & custom_path, const String & res_name, c
 
 bool Resource_Cache::save(u32 resource_id) const
 {
-    Resource * res = get(resource_id);
+    Resource *res = get(resource_id);
     if (res != nullptr)
         return res->save();
     return false;
 }
 
-bool Resource_Cache::save(const String & res_name, const String & res_package) const
+bool Resource_Cache::save(const String &res_name, const String &res_package) const
 {
-    Resource * res = get(res_name, res_package);
+    Resource *res = get(res_name, res_package);
     if (res != nullptr)
         return res->save();
     return false;
 }
 
-Resource * Resource_Cache::add_from_(const Resource & copy)
+Resource *Resource_Cache::add_from_(const Resource &copy)
 {
-    rttr::type t = const_cast<Resource &>(copy).get_derived_info().m_type;
-    u32 type_id = type_hash(t);
-    Resource * resource = allocate_resource_(type_id, copy);
-    if (!add_resource_(resource, resource->get_name(), resource->get_package(), Variant_Hash()))
+    type_index type_ind = typeid(copy);
+    Resource *resource = allocate_resource_(type_ind, copy);
+    if (!add_resource_(resource, resource->get_name(), resource->get_package(), Variant_Map()))
     {
-        deallocate_resource_(resource, type_id);
+        deallocate_resource_(resource, type_ind);
         return nullptr;
     }
     return resource;
 }
 
-Resource * Resource_Cache::get(const String & name, const String & package) const
+Resource *Resource_Cache::get(const String &name, const String &package) const
 {
     String actual_package(package);
     if (actual_package.empty())
@@ -177,7 +143,7 @@ Resource * Resource_Cache::get(const String & name, const String & package) cons
     return get(id);
 }
 
-Resource * Resource_Cache::get(u32 id) const
+Resource *Resource_Cache::get(u32 id) const
 {
     auto fiter = resources_.find(id);
     if (fiter != resources_.end())
@@ -219,14 +185,14 @@ Vector<Resource *> Resource_Cache::get_all(String package) const
 
 bool Resource_Cache::remove(u32 id)
 {
-    Resource * ret = nullptr;
+    Resource *ret = nullptr;
     auto fiter = resources_.find(id);
     if (fiter != resources_.end())
     {
         ret = fiter->second;
-        ret->terminate();
         fiter = resources_.erase(fiter);
-        deallocate_resource_(ret, type_hash(ret->get_derived_info().m_type));
+        ret->terminate();
+        deallocate_resource_(ret, typeid(*ret));
         return true;
     }
     else
@@ -236,7 +202,7 @@ bool Resource_Cache::remove(u32 id)
     }
 }
 
-bool Resource_Cache::remove(const String & name, const String & package)
+bool Resource_Cache::remove(const String &name, const String &package)
 {
     String actual_package(package);
     if (actual_package.empty())
@@ -252,12 +218,12 @@ bool Resource_Cache::remove(const String & name, const String & package)
     return remove(id);
 }
 
-bool Resource_Cache::remove(Resource * resource)
+bool Resource_Cache::remove(Resource *resource)
 {
     return remove(resource->get_id());
 }
 
-void Resource_Cache::make_valid_package_name_(String & str) const
+void Resource_Cache::make_valid_package_name_(String &str) const
 {
     if (str.find_last_of('/') != str.size() - 1)
     {
@@ -309,20 +275,20 @@ bool Resource_Cache::load_package(String package, bool make_current)
             obj_name.erase(np, package.size());
             np = obj_name.find(ext);
             obj_name.erase(np, ext.size());
-            u32 type_id = ns_ctxt.get_extension_resource_type(ext);
+            type_index type_ind = ns_ctxt.get_extension_resource_type(ext);
 
-            if (type_id == INVALID_ID)
+            if (type_ind == INVALID_TYPE)
             {
-                ilog("Skipping {} as the extension {} is not registered as a valid type",obj_name,ext);
+                ilog("Skipping {} as the extension {} is not registered as a valid type", obj_name, ext);
                 ++dir_path_iter;
                 continue;
             }
 
             dlog("Loading obj name: {}", obj_name);
             dlog("Loading extension: {}", ext);
-            dlog("Loading type id: {}", type_id);
+            dlog("Loading type id: {}", type_ind.name());
 
-            load(ns_ctxt.get_extension_resource_type(ext), obj_name, package);
+            load(type_ind, obj_name, package, Variant_Map());
             ++dir_path_iter;
         }
 
@@ -366,12 +332,12 @@ void Resource_Cache::clear()
         remove(resources_.begin()->first);
 }
 
-void Resource_Cache::on_resource_name_change_(u32 old_id, u32 new_id, bool * do_change)
+void Resource_Cache::on_resource_name_change_(u32 old_id, u32 new_id, bool *do_change)
 {
     auto fiter = resources_.find(old_id);
     if (fiter != resources_.end())
     {
-        Resource * res = fiter->second;
+        Resource *res = fiter->second;
         auto success = resources_.emplace(new_id, res);
         if (success.second)
         {
@@ -409,25 +375,25 @@ void Resource_Cache::set_current_package(String package)
     }
 }
 
-Resource * Resource_Cache::allocate_resource_(u32 type_id)
+Resource *Resource_Cache::allocate_resource_(const type_index &type_ind)
 {
-    auto fac = ns_ctxt.get_factory(type_id);
+    auto fac = ns_ctxt.get_factory(type_ind);
     assert(fac != nullptr);
-    Resource * res = fac->create_and_cast<Resource>();
+    Resource *res = fac->create_and_cast<Resource>();
     assert(res != nullptr);
     return res;
 }
 
-Resource * Resource_Cache::allocate_resource_(u32 type_id, const Resource & copy)
+Resource *Resource_Cache::allocate_resource_(const type_index &type_ind, const Resource &copy)
 {
-    auto fac = ns_ctxt.get_factory(type_id);
+    auto fac = ns_ctxt.get_factory(type_ind);
     assert(fac != nullptr);
-    Resource * res = fac->create_and_cast<Resource>(copy);
+    Resource *res = fac->create_and_cast<Resource>(copy);
     assert(res != nullptr);
     return res;
 }
 
-bool Resource_Cache::add_resource_(Resource * res, const String & name, const String & package, const Variant_Hash & init_params)
+bool Resource_Cache::add_resource_(Resource *res, const String &name, const String &package, const Variant_Map &init_params)
 {
     String actual_package(package);
     if (actual_package.empty())
@@ -447,23 +413,14 @@ bool Resource_Cache::add_resource_(Resource * res, const String & name, const St
     {
         sig_connect(res->change_id, this, &Resource_Cache::on_resource_name_change_);
         res->initialize(init_params);
-        res->owned = true;
-    }
-    else
-    {
-        wlog("Could not add resource type {} with name {} to package {} as the resource id "
-             "already exists",
-             String(res->get_derived_info().m_type.get_name()),
-             name,
-             actual_package);
     }
     return fiter.second;
 }
 
-void Resource_Cache::deallocate_resource_(Resource * res, u32 type_id)
+void Resource_Cache::deallocate_resource_(Resource *res, const type_index &type_ind)
 {
     assert(res != nullptr);
-    auto fac = ns_ctxt.get_factory(type_id);
+    auto fac = ns_ctxt.get_factory(type_ind);
     fac->destroy(res);
 }
 } // namespace noble_steed

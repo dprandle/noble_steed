@@ -11,7 +11,6 @@ using namespace noble_steed;
 
 class silly_resource_1 : public Resource
 {
-    RTTR_ENABLE(Resource)
   public:
     int scooby;
     int dooby;
@@ -19,7 +18,6 @@ class silly_resource_1 : public Resource
 
 class silly_resource_2 : public Resource
 {
-    RTTR_ENABLE(Resource)
   public:
     int channel;
     int tooby;
@@ -27,36 +25,15 @@ class silly_resource_2 : public Resource
 
 class silly_resource_3 : public Resource
 {
-    RTTR_ENABLE(Resource)
   public:
     int big_fat_lady;
     int channel_80;
 };
 
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-
-    registration::class_<silly_resource_1>("silly_resource_1")
-        .property("scooby", &silly_resource_1::scooby)
-        .property("dooby", &silly_resource_1::dooby);
-
-    registration::class_<silly_resource_2>("silly_resource_2")
-        .property("scooby", &silly_resource_2::channel)
-        .property("dooby", &silly_resource_2::tooby);
-
-    registration::class_<silly_resource_3>("silly_resource_3")
-        .property("scooby", &silly_resource_3::big_fat_lady)
-        .property("dooby", &silly_resource_3::channel_80);
-}
-
 int main()
 {
     Context ctxt;
-    Variant_Hash vm;
+    Variant_Map vm;
     String current_package = "data/best_package_ever";
     Vector<String> packages = {current_package};
     vm[init_param_key::resource_cache::PACKAGE_DIRS] = packages;

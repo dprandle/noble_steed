@@ -62,13 +62,13 @@ Input_Translator::Input_Translator()
 Input_Translator::~Input_Translator()
 {}
 
-void Input_Translator::initialize(const Variant_Hash & init_params)
+void Input_Translator::initialize(const Variant_Map & init_params)
 {
     System::initialize(init_params);
-    glfwSetKeyCallback(app.get_window()->get_glfw_window(), glfw_key_press_callback);
-    glfwSetMouseButtonCallback(app.get_window()->get_glfw_window(), glfw_mouse_button_callback);
-    glfwSetScrollCallback(app.get_window()->get_glfw_window(), glfw_scroll_callback);
-    glfwSetCursorPosCallback(app.get_window()->get_glfw_window(), glfw_cursor_pos_callback);
+    glfwSetKeyCallback(application.get_window()->get_glfw_window(), glfw_key_press_callback);
+    glfwSetMouseButtonCallback(application.get_window()->get_glfw_window(), glfw_mouse_button_callback);
+    glfwSetScrollCallback(application.get_window()->get_glfw_window(), glfw_scroll_callback);
+    glfwSetCursorPosCallback(application.get_window()->get_glfw_window(), glfw_cursor_pos_callback);
 
     subscribe_event_handler(events::key_press::id, this, &Input_Translator::handle_key_press);
     subscribe_event_handler(events::mouse_press::id, this, &Input_Translator::handle_mouse_press);
@@ -89,7 +89,7 @@ void Input_Translator::handle_key_press(Event & ev)
     send_event_for_trigger_action_(tc, action);
 }
 
-void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Hash & other_params)
+void Input_Translator::send_event_for_trigger_action_(const Trigger_Condition & tc, i8 action, const Variant_Map & other_params)
 {
     // Go through the context stack starting with the top.. send out the event for the first
     // matching one found and return
@@ -136,7 +136,7 @@ void Input_Translator::handle_scroll(Event & ev)
     i8 action = T_MOUSE_MOVE_OR_SCROLL;
     tc.input_code = MOUSE_SCROLL;
     tc.modifier_mask = ev.data[scroll::mods].get_value<i16>();
-    Variant_Hash params;
+    Variant_Map params;
     dtup2 nscroll;
     nscroll.x = ev.data[scroll::x_offset].get_value<double>();
     nscroll.y = ev.data[scroll::y_offset].get_value<double>();
@@ -150,7 +150,7 @@ void Input_Translator::handle_focus_change(Event & ev)
     i8 foc = ev.data[window::focus_change::focused].get_value<i8>();
     if (foc)
     {
-        cur_mpos_ = app.get_window()->get_cursor_pos();
+        cur_mpos_ = application.get_window()->get_cursor_pos();
         prev_mpos_ = cur_mpos_;
     }
 }
@@ -165,7 +165,7 @@ void Input_Translator::handle_mouse_movement(Event & ev)
     prev_mpos_ = cur_mpos_;
     cur_mpos_ = ev.data[cursor_moved::new_pos].get_value<dtup2>();
     dtup2 mdelta = cur_mpos_ - prev_mpos_;
-    Variant_Hash params;
+    Variant_Map params;
     params[trigger::mouse_delta] = mdelta;
     send_event_for_trigger_action_(tc, action, params);
 }

@@ -1,5 +1,4 @@
-#ifndef DOUBLYLINKEDLIST_H
-#define DOUBLYLINKEDLIST_H
+#pragma once
 
 template <class T>
 class DoublyLinkedList {
@@ -20,6 +19,3 @@ private:
 };
 
 #include "doublylinkedlistimpl.h"
-
-#endif /* DOUBLYLINKEDLIST_H */
-

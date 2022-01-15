@@ -1,5 +1,4 @@
-#ifndef LINEARALLOCATOR_H
-#define LINEARALLOCATOR_H
+#pragma once
 
 #include "allocator.h"
 
@@ -22,5 +21,3 @@ public:
 private:
 	LinearAllocator(LinearAllocator &linearAllocator);
 };
-
-#endif /* LINEARALLOCATOR_H */

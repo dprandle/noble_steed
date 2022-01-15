@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 class Utils {
 public:
@@ -29,5 +28,3 @@ public:
 		return padding;
 	}
 };
-
-#endif /* UTILS_H */

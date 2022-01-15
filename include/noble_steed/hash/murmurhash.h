@@ -1,5 +1,4 @@
-#ifndef MURMURHASH_H
-#define MURMURHASH_H
+#pragma once
 
 #define mmix(h,k) { k *= m; k ^= k >> r; k *= m; h *= m; h ^= k; }
 
@@ -89,5 +88,3 @@ void MurmurHash3_x86_128 ( const void * key, int len, uint32_t seed, void * out 
 void MurmurHash3_x64_128 ( const void * key, int len, uint32_t seed, void * out );
 
 //-----------------------------------------------------------------------------
-
-#endif

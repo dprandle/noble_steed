@@ -16,7 +16,7 @@ Shader::Shader(const Shader & copy) : Resource(copy)
 Shader::~Shader()
 {}
 
-void Shader::initialize(const Variant_Hash & init_params)
+void Shader::initialize(const Variant_Map & init_params)
 {
     Resource::initialize(init_params);
 }
@@ -217,24 +217,4 @@ void Shader::swap(Shader & rhs)
 {
     Resource::swap(rhs);
 }
-
-void Shader::pack_begin(JSON_Archive::Direction io_dir)
-{}
-
-void Shader::pack_end(JSON_Archive::Direction io_dir)
-{}
 } // namespace noble_steed
-
-
-#include <rttr/registration>
-
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    using namespace noble_steed;
-    registration::class_<Shader>("noble_steed::Shader")
-        .property("vertex_src", &Shader::get_vertex_source, &Shader::set_vertex_source, registration::public_access)
-        .property("fragment_src", &Shader::get_fragment_source, &Shader::set_fragment_source, registration::public_access)
-        .property("varying_def_src", &Shader::get_varying_defines, &Shader::set_varying_defines, registration::public_access)
-        .property("binary_extension", &Shader::get_binary_extension, &Shader::set_binary_extension, registration::public_access);
-}

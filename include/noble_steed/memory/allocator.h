@@ -1,5 +1,4 @@
-#ifndef ALLOCATOR_H
-#define ALLOCATOR_H
+#pragma once
 
 #include <cstddef> // size_t
 
@@ -21,6 +20,4 @@ public:
 
     friend class Benchmark;
 };
-
-#endif /* ALLOCATOR_H */
 

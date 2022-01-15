@@ -20,7 +20,7 @@ add_custom_target(deploy_${THIS_TARGET_NAME}_import ALL
  DEPENDS ${THIS_TARGET_NAME}
  )
 
-add_custom_target(deploy_${THIS_TARGET_NAME}_data ALL
- COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/${THIS_TARGET_NAME}
- DEPENDS ${THIS_TARGET_NAME}
- )
+# add_custom_target(deploy_${THIS_TARGET_NAME}_data ALL
+#  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/${THIS_TARGET_NAME}
+#  DEPENDS ${THIS_TARGET_NAME}
+#  )

@@ -5,6 +5,7 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 
+#include "noble_steed/core/variant.h"
 #include "noble_steed/core/application.h"
 #include "noble_steed/core/engine.h"
 #include "noble_steed/core/context.h"
@@ -15,7 +16,6 @@
 #include "noble_steed/graphics/renderer.h"
 #include "noble_steed/graphics/window.h"
 
-#include "noble_steed/io/json_archive.h"
 #include "noble_steed/io/input_map.h"
 #include "noble_steed/io/input_translator.h"
 
@@ -55,7 +55,7 @@ void Renderer::render_frame()
     bgfx::touch(0);
 }
 
-void Renderer::initialize(const Variant_Hash & init_params)
+void Renderer::initialize(const Variant_Map & init_params)
 {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     shader_platform_ = "windows";
@@ -72,7 +72,7 @@ void Renderer::initialize(const Variant_Hash & init_params)
 #endif
 #elif __linux__
     shader_platform_ = "linux";
-#elif __unix__ // all unices not caught above
+#elif __unix__ // all unixes not caught above
     shader_platform_ = "linux";
 #elif defined(_POSIX_VERSION)
     shader_platform_ = "linux";
@@ -88,7 +88,8 @@ void Renderer::initialize(const Variant_Hash & init_params)
     }
 
     shader_profile_ = "glsl";
-    if (!grab_param(init_params, init_param_key::renderer::SHADER_PROFILE, shader_profile_))
+    String pkey = init_param_key::renderer::SHADER_PROFILE;
+    if (!grab_param(init_params, pkey, shader_profile_))
     {
         ilog("No profile provided - using {} which is default", shader_profile_);
     }
@@ -99,12 +100,12 @@ void Renderer::initialize(const Variant_Hash & init_params)
         ilog("No shader binary directory provided - using default {}", shader_bin_rel_dir_);
     }
 
-    itup2 sz = app.get_window()->get_framebuffer_size();
+    itup2 sz = application.get_window()->get_framebuffer_size();
 
     /// This will be moved to the renderer eventually
-    bgfx::Init bgfx_init;
-
-    bgfx_init.platformData.nwh = app.get_window()->get_native_window();
+    bgfx::Init bgfx_init = {};
+    bgfx_init.platformData.nwh = application.get_window()->get_native_window();
+    bgfx_init.platformData.ndt = application.get_window()->get_native_display();
     if (shader_profile_ == "glsl")
     {
         bgfx_init.type = bgfx::RendererType::OpenGL;

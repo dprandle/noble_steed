@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common.h"
 #include "variant.h"
 
 namespace noble_steed
@@ -14,7 +13,7 @@ class Application
     Application();
     ~Application();
 
-    void initialize(const Variant_Hash & init_params = Variant_Hash());
+    void initialize(const Variant_Map & init_params = Variant_Map());
     void terminate();
 
     Window * get_window();
@@ -35,6 +34,6 @@ class Application
     static void glfw_error_callback(i32 error, const char * description);
 };
 
-#define app Application::inst()
+#define application Application::inst()
 
 } // namespace noble_steed

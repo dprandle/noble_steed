@@ -1,3 +1,4 @@
+#include <noble_steed/core/variant.h>
 #include <noble_steed/graphics/window.h>
 #include <noble_steed/core/context.h>
 
@@ -23,7 +24,7 @@ Window::Window() : window_(nullptr), close_window_(false)
 Window::~Window()
 {}
 
-bool Window::initialize(const Variant_Hash & init_params)
+bool Window::initialize(const Variant_Map & init_params)
 {
     using namespace init_param_key::window;
 
@@ -102,6 +103,11 @@ bool Window::initialize(const Variant_Hash & init_params)
 GLFWwindow * Window::get_glfw_window()
 {
     return window_;
+}
+
+void * Window::get_native_display()
+{
+    return glfwGetX11Display();
 }
 
 void Window::terminate()
@@ -261,43 +267,43 @@ namespace window
 namespace closed
 {
 const u32 id = str_hash("Window_Closed");
-} // namespace window_closed
+} // namespace closed
 
 namespace resized
 {
 const u32 id = str_hash("Window_Resized");
 const String new_size = "new_size";
-} // namespace window_resized
+} // namespace resized
 
 namespace focus_change
 {
 const u32 id = str_hash("Window_Focus_Change");
 const String focused = "focused";
-} // namespace window_focus_change
+} // namespace focus_change
 
 namespace iconified
 {
 const u32 id = str_hash("Window_Iconified");
 const String iconified = "iconified";
-} // namespace window_iconified
+} // namespace iconified
 
 namespace maximized
 {
 const u32 id = str_hash("Window_Maximized");
 const String maximized = "maximized";
-} // namespace window_maximized
+} // namespace maximized
 
 namespace moved
 {
 const u32 id = str_hash("Window_Moved");
 const String new_pos = "new_pos";
-} // namespace window_moved
+} // namespace moved
 
 namespace framebuffer_resized
 {
 const u32 id = str_hash("Framebuffer_Resized");
 const String new_size = "new_size";
 } // namespace framebuffer_resized
-}
+} // namespace window
 } // namespace events
 } // namespace noble_steed

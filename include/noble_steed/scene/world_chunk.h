@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../core/common.h"
-#include "../core/tuple.h"
 #include "../core/resource.h"
+#include "../container/tuple.h"
 
 namespace noble_steed
 {
@@ -19,15 +19,15 @@ class World_Chunk : public Resource
 
     ~World_Chunk();
 
-    void initialize(const Variant_Hash & init_params);
+    void initialize(const Variant_Map & init_params);
 
     void terminate();
 
-    bool add(Entity * to_add, const Variant_Hash & init_params = Variant_Hash());
+    bool add(Entity * to_add, const Variant_Map & init_params = Variant_Map());
 
-    Entity * add(const Variant_Hash & init_params = Variant_Hash());
+    Entity * add(const Variant_Map & init_params = Variant_Map());
 
-    Entity * add(const Entity & copy, const Variant_Hash & init_params = Variant_Hash());
+    Entity * add(const Entity & copy, const Variant_Map & init_params = Variant_Map());
 
     void clear(bool remove_entities_from_world);
 
@@ -42,10 +42,6 @@ class World_Chunk : public Resource
   protected:
     void swap(World_Chunk & rhs);
 
-    void pack_begin(JSON_Archive::Direction io_dir);
-
-    void pack_end(JSON_Archive::Direction io_dir);
-
   private:
     void on_ent_id_change(Tuple2<u32> ids);
 
@@ -53,8 +49,5 @@ class World_Chunk : public Resource
 
     Vector<Entity *> ents_ptrs_;
     Hash_Map<u32, Entity *> ents_;
-
-    RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(Resource)
 };
 } // namespace noble_steed

@@ -1,5 +1,4 @@
-#ifndef STACKLINKEDLIST_H
-#define STACKLINKEDLIST_H
+#pragma once
 
 template <class T>
 class StackLinkedList {
@@ -18,6 +17,4 @@ public:
 };
 
 #include "stacklinkedlistimpl.h"
-
-#endif /* STACKLINKEDLIST_H */
 

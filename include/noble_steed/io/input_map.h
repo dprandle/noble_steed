@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../core/common.h"
-#include "../core/tuple.h"
 #include "../core/resource.h"
-#include "../container/vector.h"
+#include "../container/hash_map.h"
+#include "../container/tuple.h"
 
 namespace noble_steed
 {
@@ -85,9 +84,6 @@ class Input_Map : public Resource
 
   private:
     Context_Map contexts_;
-
-    RTTR_REGISTRATION_FRIEND
-    RTTR_ENABLE(Resource)
 };
 
 } // namespace noble_steed
