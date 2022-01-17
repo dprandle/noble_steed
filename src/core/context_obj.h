@@ -1,10 +1,9 @@
 #pragma once
+#include <mutex>
 
 #include "signal.h"
 #include "../container/array.h"
 #include "variant.h"
-
-#include <mutex>
 
 namespace noble_steed
 {

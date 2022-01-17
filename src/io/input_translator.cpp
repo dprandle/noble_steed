@@ -1,13 +1,15 @@
-#include <noble_steed/io/input_translator.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/core/application.h>
-#include <noble_steed/graphics/window.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/core/engine.h>
-#include <noble_steed/scene/world.h>
-
 #include <GLFW/glfw3.h>
+
+#include "input_translator.h"
+#include "logger.h"
+#include "input_map.h"
+
+#include "../core/context.h"
+#include "../core/application.h"
+#include "../core/engine.h"
+#include "../graphics/window.h"
+#include "../scene/world.h"
+
 
 namespace noble_steed
 {

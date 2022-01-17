@@ -1,10 +1,10 @@
-#include <noble_steed/core/context.h>
-#include <noble_steed/scene/transform.h>
-#include <noble_steed/scene/entity.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/core/resource.h>
-#include <noble_steed/core/resource_cache.h>
-#include <noble_steed/scene/world_chunk.h>
+#include "core/context.h"
+#include "scene/transform.h"
+#include "scene/entity.h"
+#include "scene/world.h"
+#include "core/resource.h"
+#include "core/resource_cache.h"
+#include "scene/world_chunk.h"
 
 using namespace noble_steed;
 

@@ -1,5 +1,5 @@
-#include "noble_steed/memory/linearallocator.h"
-#include "noble_steed/memory/utils.h"  /* CalculatePadding */
+#include "linearallocator.h"
+#include "utils.h"  /* CalculatePadding */
 #include <stdlib.h>     /* malloc, free */
 #include <cassert>   /*assert		*/
 #include <algorithm>    // max

@@ -1,9 +1,12 @@
-#include <noble_steed/core/engine.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/graphics/window.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/io/input_translator.h>
+#include "engine.h"
+#include "context.h"
+
+#include "../graphics/window.h"
+
+#include "../scene/world.h"
+
+#include "../io/input_map.h"
+#include "../io/input_translator.h"
 
 const std::chrono::nanoseconds TIMESTEP(10000000); // 10 milliseconds
 

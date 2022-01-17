@@ -1,7 +1,3 @@
-#include <noble_steed/core/variant.h>
-#include <noble_steed/graphics/window.h>
-#include <noble_steed/core/context.h>
-
 #include <bx/bx.h>
 #include <bx/spscqueue.h>
 #include <bx/thread.h>
@@ -11,6 +7,12 @@
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+
+#include "window.h"
+
+#include "../core/variant.h"
+#include "../core/context.h"
+
 
 namespace noble_steed
 {

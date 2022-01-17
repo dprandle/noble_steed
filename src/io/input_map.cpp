@@ -1,7 +1,9 @@
-#include "noble_steed/core/variant.h"
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/core/context.h>
 #include <GLFW/glfw3.h>
+
+#include "input_map.h"
+
+#include "../core/variant.h"
+#include "../core/context.h"
 
 namespace noble_steed
 {

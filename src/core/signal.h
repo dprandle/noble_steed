@@ -1,6 +1,6 @@
 #pragma once
-
 #include <functional>
+
 #include "../container/vector.h"
 
 namespace noble_steed

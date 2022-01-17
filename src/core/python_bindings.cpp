@@ -1,6 +1,6 @@
 #include <pybind11/embed.h>
-#include <noble_steed/core/system.h>
-#include <noble_steed/core/context.h>
+#include "system.h"
+#include "context.h"
 
 // noble_steed::Context * get_global_context()
 // {

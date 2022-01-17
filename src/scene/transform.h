@@ -1,7 +1,7 @@
 #pragma once
 
-#include <noble_steed/scene/component.h>
-#include <noble_steed/math/vec4.h>
+#include "component.h"
+#include "../math/vec4.h"
 
 namespace noble_steed
 {

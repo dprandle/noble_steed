@@ -1,6 +1,7 @@
-#include <noble_steed/core/system.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/variant.h>
+#include "system.h"
+#include "variant.h"
+
+#include "../io/logger.h"
 
 namespace noble_steed
 {

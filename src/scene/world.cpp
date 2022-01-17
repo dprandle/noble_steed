@@ -1,12 +1,12 @@
-#include <noble_steed/core/variant.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/scene/entity.h>
-#include <noble_steed/scene/component.h>
-#include <noble_steed/core/engine.h>
-#include <noble_steed/io/input_translator.h>
-#include <noble_steed/graphics/renderer.h>
+#include "world.h"
+#include "entity.h"
+#include "component.h"
+#include "../core/variant.h"
+#include "../core/context.h"
+#include "../core/engine.h"
+#include "../io/logger.h"
+#include "../io/input_translator.h"
+#include "../graphics/renderer.h"
 
 namespace noble_steed
 {

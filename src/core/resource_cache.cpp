@@ -1,8 +1,8 @@
-#include <noble_steed/core/resource_cache.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/resource.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/io/filesystem.h>
+#include "resource_cache.h"
+#include "resource.h"
+#include "context.h"
+#include "..//io/logger.h"
+#include "..//io/filesystem.h"
 
 namespace noble_steed
 {

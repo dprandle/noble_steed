@@ -4,22 +4,18 @@
 #include <bx/debug.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
-
-#include "noble_steed/core/variant.h"
-#include "noble_steed/core/application.h"
-#include "noble_steed/core/engine.h"
-#include "noble_steed/core/context.h"
-#include "noble_steed/core/resource_cache.h"
-
-#include "noble_steed/graphics/mesh.h"
-#include "noble_steed/graphics/shader.h"
-#include "noble_steed/graphics/renderer.h"
-#include "noble_steed/graphics/window.h"
-
-#include "noble_steed/io/input_map.h"
-#include "noble_steed/io/input_translator.h"
-
-#include "noble_steed/scene/world.h"
+#include "mesh.h"
+#include "shader.h"
+#include "renderer.h"
+#include "window.h"
+#include "../core/variant.h"
+#include "../core/application.h"
+#include "../core/engine.h"
+#include "../core/context.h"
+#include "../core/resource_cache.h"
+#include "../io/input_map.h"
+#include "../io/input_translator.h"
+#include "../scene/world.h"
 
 namespace noble_steed
 {

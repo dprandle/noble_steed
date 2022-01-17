@@ -11,14 +11,13 @@
 #include <iostream>
 #include <sstream>
 
-#include <noble_steed/core/variant.h>
-
-#include <noble_steed/core/context.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/application.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/graphics/window.h>
-#include <noble_steed/core/engine.h>
+#include "application.h"
+#include "variant.h"
+#include "context.h"
+#include "engine.h"
+#include "../io/logger.h"
+#include "../scene/world.h"
+#include "../graphics/window.h"
 
 #include <pybind11/embed.h>
 

@@ -1,7 +1,7 @@
-#include "noble_steed/graphics/shader.h"
-#include "noble_steed/io/filesystem.h"
-#include "noble_steed/io/logger.h"
-#include "noble_steed/core/context.h"
+#include "shader.h"
+#include "../io/filesystem.h"
+#include "../io/logger.h"
+#include "../core/context.h"
 
 namespace noble_steed
 {

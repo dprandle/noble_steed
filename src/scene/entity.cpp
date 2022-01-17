@@ -1,8 +1,8 @@
-#include <noble_steed/scene/entity.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/scene/component.h>
+#include "entity.h"
+#include "world.h"
+#include "component.h"
+#include "../io/logger.h"
+#include "../core/context.h"
 
 namespace noble_steed
 {

@@ -1,4 +1,4 @@
-#include <noble_steed/core/signal.h>
+#include "signal.h"
 
 namespace noble_steed
 {

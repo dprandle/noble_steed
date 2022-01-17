@@ -32,7 +32,6 @@ set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
 # Set include directories
-set(NOBLE_STEED_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
 set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
 set(BX_INCLUDE_DIR ${BX_DIR}/include)
@@ -71,9 +70,9 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/memory/*.cpp
   )
 
+
 # Set project includes dir
 include_directories(
-  ${NOBLE_STEED_INCLUDE_DIR}
   ${BGFX_INCLUDE_DIR}
   ${BX_INCLUDE_DIR}
   ${BIMG_INCLUDE_DIR}
@@ -139,28 +138,33 @@ else()
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
   
     target_link_libraries(${TARGET_NAME}
-    ${BGFX_LIB_PATH}
-    #pybind11::pybind11
-    pybind11::embed
-    glfw
-    assimp
-    Bullet2FileLoader
-    Bullet3Dynamics
-    Bullet3OpenCL_clew
-    Bullet3Collision
-    BulletInverseDynamics
-    Bullet3Geometry
-    BulletSoftBody
-    BulletCollision
-    Bullet3Common
-    BulletDynamics
-    LinearMath
-    ${PYTHON_LIBRARIES}
-    spdlog
-    X11
-    GL
-    stdc++fs
-    pthread
+        ${BGFX_LIB_PATH}
+        #pybind11::pybind11
+        pybind11::embed
+        glfw
+        assimp
+        Bullet2FileLoader
+        Bullet3Dynamics
+        Bullet3OpenCL_clew
+        Bullet3Collision
+        BulletInverseDynamics
+        Bullet3Geometry
+        BulletSoftBody
+        BulletCollision
+        Bullet3Common
+        BulletDynamics
+        LinearMath
+        ${PYTHON_LIBRARIES}
+        spdlog
+        X11
+        GL
+        stdc++fs
+        pthread
+    )
+
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+        ${NOBLE_STEED_SRC_DIR}
     )
 endif()
 

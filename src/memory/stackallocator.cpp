@@ -1,5 +1,5 @@
-#include "noble_steed/memory/stackallocator.h"
-#include "noble_steed/memory/utils.h"  /* CalculatePadding */
+#include "stackallocator.h"
+#include "utils.h"  /* CalculatePadding */
 #include <stdlib.h>     /* malloc, free */
 #include <algorithm>    /* max */
 #ifdef _DEBUG

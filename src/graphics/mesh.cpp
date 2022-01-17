@@ -1,6 +1,6 @@
-#include "noble_steed/graphics/mesh.h"
-#include "noble_steed/io/logger.h"
-#include "noble_steed/core/variant.h"
+#include "mesh.h"
+#include "../io/logger.h"
+#include "../core/variant.h"
 
 namespace noble_steed
 {

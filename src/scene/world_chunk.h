@@ -50,4 +50,8 @@ class World_Chunk : public Resource
     Vector<Entity *> ents_ptrs_;
     Hash_Map<u32, Entity *> ents_;
 };
+
+
+
+
 } // namespace noble_steed

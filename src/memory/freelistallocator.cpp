@@ -1,5 +1,5 @@
-#include "noble_steed/memory/freelistallocator.h"
-#include "noble_steed/memory/utils.h"  /* CalculatePaddingWithHeader */
+#include "freelistallocator.h"
+#include "utils.h"  /* CalculatePaddingWithHeader */
 #include <stdlib.h>     /* malloc, free */
 #include <cassert>   /* assert		*/
 #include <limits>  /* limits_max */

@@ -1,18 +1,18 @@
 #include <bgfx/bgfx.h>
 
-#include "noble_steed/core/application.h"
-#include "noble_steed/graphics/window.h"
-#include "noble_steed/io/input_map.h"
-#include "noble_steed/io/input_translator.h"
-#include "noble_steed/core/resource_cache.h"
-#include "noble_steed/core/context.h"
-#include "noble_steed/scene/world.h"
-#include "noble_steed/graphics/renderer.h"
-#include "noble_steed/graphics/mesh.h"
+#include "core/application.h"
+#include "graphics/window.h"
+#include "io/input_map.h"
+#include "io/input_translator.h"
+#include "core/resource_cache.h"
+#include "core/context.h"
+#include "scene/world.h"
+#include "graphics/renderer.h"
+#include "graphics/mesh.h"
 
-#include "noble_steed/scene/world_chunk.h"
-#include "noble_steed/scene/world.h"
-#include "noble_steed/scene/entity.h"
+#include "scene/world_chunk.h"
+#include "scene/world.h"
+#include "scene/entity.h"
 
 int main()
 {

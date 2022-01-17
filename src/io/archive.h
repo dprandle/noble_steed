@@ -1,6 +1,6 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
+#include "../core/common.h"
 
 namespace noble_steed
 {

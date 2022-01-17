@@ -1,8 +1,8 @@
-#include <noble_steed/scene/world_chunk.h>
-#include <noble_steed/core/context.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/scene/transform.h>
-#include <noble_steed/scene/entity.h>
+#include "world_chunk.h"
+#include "world.h"
+#include "transform.h"
+#include "entity.h"
+#include "../core/context.h"
 
 namespace noble_steed
 {

@@ -1,23 +1,25 @@
-#include <noble_steed/core/variant.h>
+#include "variant.h"
+#include "context.h"
+#include "system.h"
+#include "resource_cache.h"
+#include "engine.h"
 
-#include <noble_steed/core/context.h>
-#include <noble_steed/io/logger.h>
-#include <noble_steed/io/filesystem.h>
-#include <noble_steed/core/system.h>
-#include <noble_steed/scene/entity.h>
-#include <noble_steed/scene/world.h>
-#include <noble_steed/core/resource_cache.h>
-#include <noble_steed/core/engine.h>
-#include <noble_steed/io/input_translator.h>
-#include <noble_steed/graphics/renderer.h>
+#include "../io/logger.h"
+#include "../io/filesystem.h"
+#include "../io/input_map.h"
+#include "../io/input_translator.h"
+
+#include "../scene/entity.h"
+#include "../scene/world.h"
+#include "../scene/transform.h"
+#include "../scene/world_chunk.h"
+
+#include "../graphics/renderer.h"
+#include "../graphics/shader.h"
+#include "../graphics/mesh.h"
 
 // Defualt types to register
-#include <noble_steed/scene/transform.h>
-#include <noble_steed/scene/world_chunk.h>
-#include <noble_steed/hash/crc32.h>
-#include <noble_steed/io/input_map.h>
-#include <noble_steed/graphics/shader.h>
-#include <noble_steed/graphics/mesh.h>
+#include "../hash/crc32.h"
 
 namespace noble_steed
 {

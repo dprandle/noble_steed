@@ -1,9 +1,11 @@
 #pragma once
 
+#include "context_obj.h"
+
 #include "../io/logger.h"
+
 #include "../memory/freelistallocator.h"
 #include "../memory/poolallocator.h"
-#include "context_obj.h"
 
 namespace noble_steed
 {

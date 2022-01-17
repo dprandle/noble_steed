@@ -1,7 +1,7 @@
 #pragma once
 
-#include <noble_steed/core/common.h>
-#include <noble_steed/core/context_obj.h>
+#include "../core/common.h"
+#include "../core/context_obj.h"
 
 namespace noble_steed
 {
