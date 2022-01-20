@@ -49,7 +49,7 @@ void Logger::add_logger(const String & logger_name, const Log_Level_Info & log_l
     daily_file_path += ".log";
     per_exec_file_path += ".log";
 
-#ifdef DEBUG_VERSION
+#ifdef DEBUG_BUILD
     if (log_level_inf.console_debug_level != Off)
     {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

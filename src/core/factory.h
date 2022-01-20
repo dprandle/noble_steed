@@ -4,17 +4,17 @@
 
 #include "../io/logger.h"
 
-#include "../memory/freelistallocator.h"
-#include "../memory/poolallocator.h"
+#include "../memory/free_list_allocator.h"
+#include "../memory/pool_allocator.h"
 
 namespace noble_steed
 {
 // The min alloc size was determined by running in debugger and seing what the min size was
-// required by the FreeListAllocator
+// required by the Free_List_Allocator
 const u8 MIN_ALLOC_SIZE = 16;
 
 // The min align size was determined by running in debugger and seing what the min size was
-// required by the FreeListAllocator
+// required by the Free_List_Allocator
 const u8 MIN_ALIGN_SIZE = 8;
 
 class Factory
@@ -49,7 +49,7 @@ template<class Derived_Type>
 class Pool_Factory : public Factory
 {
   public:
-    Pool_Factory(PoolAllocator * alloc) : alloc_(alloc), Factory()
+    Pool_Factory(Pool_Allocator * alloc) : alloc_(alloc), Factory()
     {}
 
     Derived_Type * create()
@@ -57,7 +57,7 @@ class Pool_Factory : public Factory
         type_index tp = typeid(Derived_Type);
         sizet sz = sizeof(Derived_Type);
         ilog("Allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
-        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz));
+        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->allocate(sz));
         new (obj_ptr) Derived_Type();
         return obj_ptr;
     }
@@ -67,7 +67,7 @@ class Pool_Factory : public Factory
         type_index tp = typeid(Derived_Type);
         sizet sz = sizeof(Derived_Type);
         ilog("Allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
-        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz));
+        Derived_Type * obj_ptr = static_cast<Derived_Type *>(alloc_->allocate(sz));
         const Derived_Type & copy_cast = static_cast<const Derived_Type &>(copy);
         new (obj_ptr) Derived_Type(copy_cast);
         return obj_ptr;
@@ -79,18 +79,18 @@ class Pool_Factory : public Factory
         sizet sz = sizeof(Derived_Type);
         obj->~Context_Obj();
         ilog("De-allocating {0} bytes for {1} in pool allocator", sz, String(tp.name()));
-        alloc_->Free(obj);
+        alloc_->free(obj);
     }
 
   private:
-    PoolAllocator * alloc_;
+    Pool_Allocator * alloc_;
 };
 
 template<class Derived_Type>
 class Free_List_Factory : public Factory
 {
   public:
-    Free_List_Factory(FreeListAllocator * alloc) : alloc_(alloc), Factory()
+    Free_List_Factory(Free_List_Allocator * alloc) : alloc_(alloc), Factory()
     {}
 
     Derived_Type * create()
@@ -100,7 +100,7 @@ class Free_List_Factory : public Factory
         if (sz < MIN_ALLOC_SIZE)
             sz = MIN_ALLOC_SIZE;
         ilog("Allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
-        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz, MIN_ALIGN_SIZE));
+        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->allocate(sz, MIN_ALIGN_SIZE));
         new (ptr) Derived_Type();
         return ptr;
     }
@@ -112,7 +112,7 @@ class Free_List_Factory : public Factory
         if (sz < MIN_ALLOC_SIZE)
             sz = MIN_ALLOC_SIZE;
         ilog("Allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
-        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->Allocate(sz, MIN_ALIGN_SIZE));
+        Derived_Type * ptr = static_cast<Derived_Type *>(alloc_->allocate(sz, MIN_ALIGN_SIZE));
         const Derived_Type & copy_cast = static_cast<const Derived_Type &>(copy);
         new (ptr) Derived_Type(copy_cast);
         return ptr;
@@ -124,10 +124,10 @@ class Free_List_Factory : public Factory
         sizet sz = sizeof(Derived_Type);
         obj->~Context_Obj();
         ilog("De-allocating {0} bytes for {1} in free list allocator", sz, String(tp.name()));
-        alloc_->Free(obj);
+        alloc_->free(obj);
     }
 
   private:
-    FreeListAllocator * alloc_;
+    Free_List_Allocator * alloc_;
 };
 } // namespace noble_steed

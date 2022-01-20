@@ -5,7 +5,7 @@
 #include "../container/tuple.h"
 #include "../core/system.h"
 
-class PoolAllocator;
+class Pool_Allocator;
 
 #define ns_world ns_ctxt.get_world()
 

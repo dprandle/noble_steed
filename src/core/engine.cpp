@@ -71,7 +71,7 @@ void Engine::initialize(const Variant_Map & init_params)
     lag_ = std::chrono::nanoseconds::zero();
 
     using namespace events;
-    subscribe_event_handler(window::closed::id, [=](Event & ev) { set_running(false); });
+    subscribe_event_handler(window::closed::id,[this](Event & ev) { this->set_running(false); });
 }
 
 void Engine::terminate()

@@ -6,7 +6,7 @@ set(TARGET_NAME noble_steed)
 set(PYTHON_MODULE_NAME Noble_Steed)
 
 # Some basica CMAKE values
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -27,9 +27,11 @@ set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
 set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
 set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
 set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
+set(GTEST_DIR ${DEPENDENCY_DIR}/googletest)
 
 # Set library source directory
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(NOBLE_STEED_TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
 
 # Set include directories
 set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
@@ -45,15 +47,14 @@ set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
-
 # Debug and release specific settings
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  add_definitions(-DDEBUG_VERSION)
+  add_definitions(-DDEBUG_BUILD)
   add_definitions(-DDBG_MACRO_NO_WARNING)
   add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 else()
   add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
-  add_definitions(-DRELEASE_VERSION)
+  add_definitions(-DRELEASE_BUILD)
   add_definitions(-DNDEBUG)
 endif()
 add_definitions(-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM)
@@ -70,6 +71,9 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/memory/*.cpp
   )
 
+file(GLOB TEST_FILES 
+  ${NOBLE_STEED_TEST_DIR}/*.cpp
+  )
 
 # Set project includes dir
 include_directories(
@@ -185,5 +189,12 @@ add_custom_target(deploy_shader_lib ALL
 # target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
 #   ${TARGET_NAME}
 # )
+enable_testing()
+set(INSTALL_GTEST OFF)
+add_subdirectory(${GTEST_DIR})
+add_executable(${TARGET_NAME}_tests ${TEST_FILES})
+target_link_libraries(${TARGET_NAME}_tests gtest ${TARGET_NAME})
+include(GoogleTest)
+gtest_discover_tests(${TARGET_NAME}_tests)
 
 add_subdirectory(samples)

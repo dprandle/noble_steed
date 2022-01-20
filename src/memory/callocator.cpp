@@ -1,25 +1,25 @@
 #include "callocator.h"
-#include <stdlib.h>     /* malloc, free */
+#include <stdlib.h> /* malloc, free */
 
-CAllocator::CAllocator()
-    : Allocator(0) {
+namespace noble_steed
+{
 
+CAllocator::CAllocator() : Allocator(0)
+{}
+
+void CAllocator::init()
+{}
+
+CAllocator::~CAllocator()
+{}
+
+void *CAllocator::allocate(sizet size, sizet alignment)
+{
+    return malloc(size);
 }
 
-void CAllocator::Init() {
-
+void CAllocator::free(void *ptr)
+{
+    ::free(ptr);
 }
-
-CAllocator::~CAllocator(){
-    
-}
-
-void* CAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
-	return malloc(size);
-}
-
-void CAllocator::Free(void* ptr) {
-	free(ptr);
-}
-
-
+} // namespace noble_steed

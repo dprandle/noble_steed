@@ -66,8 +66,8 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
     auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
     {
-        if (!to_add->has<Transform>())
-            to_add->add<Transform>(init_params);
+        // if (!to_add->has<Transform>())
+        //     to_add->add<Transform>(init_params);
 
         return true;
     }

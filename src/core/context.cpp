@@ -39,7 +39,7 @@ const String HEADLESS = "HEADLESS";
 } // namespace init_param_key
 
 Context::Context()
-    : mem_free_list_(100 * MB_SIZE, FreeListAllocator::FIND_FIRST),
+    : mem_free_list_(100 * MB_SIZE, Free_List_Allocator::FIND_FIRST),
       pool_allocators_(),
       array_alloc_sizes(),
       extension_resource_type_(),
@@ -50,12 +50,12 @@ Context::Context()
 {
     s_this_ = this;
     // Allocate memories
-    mem_free_list_.Init();
+    mem_free_list_.init();
 }
 
 Context::~Context()
 {
-    mem_free_list_.Reset();
+    mem_free_list_.reset();
 }
 
 void Context::initialize(const Variant_Map & init_params)
@@ -127,7 +127,7 @@ void Context::terminate()
         pool_allocators_.erase(pool_allocators_.begin());
     }
 
-    mem_free_list_.Reset();
+    mem_free_list_.reset();
 }
 
 Logger * Context::get_logger()
@@ -152,7 +152,7 @@ Context & Context::inst()
 
 void Context::raw_free(void * to_free)
 {
-    mem_free_list_.Free(to_free);
+    mem_free_list_.free(to_free);
 }
 
 type_index Context::get_extension_resource_type(const String & extension)
@@ -168,7 +168,7 @@ void * Context::malloc_(const type_index & type_ind, sizet type_size, u32 elemen
 {
     if (type_size < MIN_ALLOC_SIZE)
         type_size = MIN_ALLOC_SIZE;
-    return mem_free_list_.Allocate(type_size, MIN_ALIGN_SIZE);
+    return mem_free_list_.allocate(type_size, MIN_ALIGN_SIZE);
 }
 
 void Context::register_default_types_(const Variant_Map & init_params)
@@ -313,7 +313,7 @@ String_Hash Context::hash_str(const String & str)
     return crc32(str.c_str(), str.size());
 }
 
-PoolAllocator * Context::create_pool_allocator_(const type_index & type_ind, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params)
+Pool_Allocator * Context::create_pool_allocator_(const type_index & type_ind, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params)
 {
     if (size_of_type < MIN_CHUNK_ALLOC_SIZE)
         size_of_type = MIN_CHUNK_ALLOC_SIZE;
@@ -332,8 +332,8 @@ PoolAllocator * Context::create_pool_allocator_(const type_index & type_ind, siz
     //         wlog("Passed in value for key {} but value was of incorrect type", type_str);
     // }
 
-    PoolAllocator * pool_alloc = ns_ctxt.malloc<PoolAllocator>(alloc_amount * size_of_type, size_of_type);
-    pool_alloc->Init();
+    Pool_Allocator * pool_alloc = ns_ctxt.malloc<Pool_Allocator>(alloc_amount * size_of_type, size_of_type);
+    pool_alloc->init();
     pool_allocators_.emplace(type_ind, pool_alloc);
     ilog("Creating {0} byte pool allocator for type {1} - enough for {2} instances", alloc_amount * size_of_type, type_ind.name(), alloc_amount);
     return pool_alloc;
@@ -351,7 +351,7 @@ bool Context::destroy_comp_allocator_(const type_index & type_ind)
     return false;
 }
 
-PoolAllocator * Context::get_pool_allocator(const type_index & type_ind)
+Pool_Allocator * Context::get_pool_allocator(const type_index & type_ind)
 {
     auto fiter = pool_allocators_.find(type_ind);
     if (fiter != pool_allocators_.end())

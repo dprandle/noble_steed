@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "../core/common.h"
+#include "../core/basic_types.h"
 
 namespace noble_steed
 {

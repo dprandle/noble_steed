@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <typeindex>
+#include <memory>
 
 namespace noble_steed
 {
@@ -52,6 +53,17 @@ const u16 DEFAULT_ENTITY_ALLOC = 1000;
 #define set_bitmask(flag, bitmask) flag |= bitmask
 
 #define bgfx_valid_handle(handle) (handle != u16(-1))
+
+template<class T,class Deleter=std::default_delete<T>>
+using UPtr = std::unique_ptr<T, Deleter>;
+using std::make_unique;
+
+template<class T>
+using SPtr = std::shared_ptr<T>;
+using std::make_shared;
+
+template<class T>
+using WPtr = std::weak_ptr<T>;
 
 //MAKE_LOGGABLE_TEMPLATE(Tuple2);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/common.h"
+#include "../core/basic_types.h"
 #include "../core/resource.h"
 #include "../container/tuple.h"
 

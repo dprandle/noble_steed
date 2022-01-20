@@ -1,11 +1,14 @@
 #pragma once
 
 #include "../core/context_obj.h"
+#include "../core/handle.h"
+#include "../core/type_collection_db.h"
 
 namespace noble_steed
 {
-class Component;
+class Type_Collection_DB;
 class World;
+class Component;
 class Entity : public Context_Obj
 {
     template<class T>
@@ -13,30 +16,25 @@ class Entity : public Context_Obj
     friend class World;
 
   public:
-    Entity();
+    Entity(const SPtr<Type_Collection_DB> & comp_db=nullptr);
 
     Entity(const Entity & copy);
 
     ~Entity();
 
-    // add component
-    template<class CompType>
-    CompType * add(const Variant_Map & init_params = Variant_Map())
+    template<class CompT>
+    void add_comp(const CompT & copy)
     {
-        type_index t = typeid(CompType);
-        return static_cast<CompType *>(add(t));
+
     }
 
-    template<class CompType>
-    CompType * add(const CompType & copy)
+    template<class CompT,class... Args>
+    void add_comp(Args&&... args)
     {
-        type_index t = typeid(CompType);
-        return static_cast<CompType *>(add(t, copy));
+        auto col = _comp_db->get<CompT>();
+
     }
 
-    Component * add(const type_index & component_type, const Variant_Map & init_params = Variant_Map());
-
-    Component * add(const Component & copy);
 
     void clear();
 
@@ -99,6 +97,9 @@ class Entity : public Context_Obj
 
     Component * remove_component_(const type_index & type);
 
+    SPtr<Type_Collection_DB> _comp_db;
+    Type_Hash_Map<Handle_Base*> _comps;
+    
     u32 id_;
 
     String name_;

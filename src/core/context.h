@@ -113,7 +113,7 @@ class Context
         if (contains_factory(type_ind))
             return nullptr;
 
-        PoolAllocator * alloc = create_pool_allocator_(type_ind, sizeof(Derived), alloc_quantity, init_params);
+        Pool_Allocator * alloc = create_pool_allocator_(type_ind, sizeof(Derived), alloc_quantity, init_params);
         if (alloc == nullptr)
             return nullptr;
 
@@ -123,7 +123,7 @@ class Context
     }
 
     template<class Derived>
-    Free_List_Factory<Derived> * register_free_list_factory(FreeListAllocator * alloc)
+    Free_List_Factory<Derived> * register_free_list_factory(Free_List_Allocator * alloc)
     {
         type_index type_ind = typeid(Derived);
         if (contains_factory(type_ind))
@@ -193,7 +193,7 @@ class Context
 
     static Context & inst();
 
-    PoolAllocator * get_pool_allocator(const type_index & type);
+    Pool_Allocator * get_pool_allocator(const type_index & type);
 
     void subscribe_to_event(Context_Obj * obj, const String & event);
 
@@ -218,13 +218,13 @@ class Context
 
     bool remove_resource_extension(const type_index & resource_type);
 
-    PoolAllocator * create_pool_allocator_(const type_index & type, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params);
+    Pool_Allocator * create_pool_allocator_(const type_index & type, sizet size_of_type, u16 alloc_amount_for_type, const Variant_Map & init_params);
 
     bool destroy_comp_allocator_(const type_index & type);
 
-    FreeListAllocator mem_free_list_;
+    Free_List_Allocator mem_free_list_;
 
-    Hash_Map<type_index, PoolAllocator *> pool_allocators_;
+    Hash_Map<type_index, Pool_Allocator *> pool_allocators_;
 
     Hash_Map<void *, u32> array_alloc_sizes;
 

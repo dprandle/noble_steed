@@ -2,7 +2,7 @@
 
 #include <glm/vec2.hpp>
 
-#include "../core/common.h"
+#include "../core/basic_types.h"
 
 namespace noble_steed
 {

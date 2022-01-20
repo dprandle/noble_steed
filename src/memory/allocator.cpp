@@ -1,11 +1,17 @@
 #include "allocator.h"
-#include <cassert> //assert
 
-Allocator::Allocator(const std::size_t totalSize){
-    m_totalSize = totalSize;
-    m_used = 0;
+namespace noble_steed
+{
+
+Allocator::Allocator(const std::size_t totalSize)
+{
+    _total_size = totalSize;
+    _used = 0;
 }
 
-Allocator::~Allocator(){
-    m_totalSize = 0;
+Allocator::~Allocator()
+{
+    _total_size = 0;
 }
+
+} // namespace noble_steed

@@ -3,21 +3,18 @@
 #include "component.h"
 #include "../io/logger.h"
 #include "../core/context.h"
+#include "../core/type_collection_db.h"
 
 namespace noble_steed
 {
-Entity::Entity() : Context_Obj(), id_(0), name_(), comps_()
-{}
-
-Entity::Entity(const Entity & copy) : Context_Obj(copy), id_(0), name_(copy.name_)
+Entity::Entity(const SPtr<Type_Collection_DB> & comp_db) : Context_Obj(), _comp_db(comp_db), id_(0), name_(), comps_()
 {
-    auto iter = copy.comps_.begin();
-    while (iter != copy.comps_.end())
-    {
-        add(*iter->second);
-        ++iter;
-    }
+    if (!_comp_db)
+        _comp_db = make_shared<Type_Collection_DB>();
 }
+
+Entity::Entity(const Entity & copy) : Context_Obj(copy), _comp_db(copy._comp_db), id_(0), name_(copy.name_)
+{}
 
 Entity & Entity::operator=(Entity rhs)
 {
@@ -98,30 +95,6 @@ void Entity::set_id(u32 id)
 u32 Entity::get_id()
 {
     return id_;
-}
-
-Component * Entity::add(const type_index & comp_type, const Variant_Map & init_params)
-{
-    Component * comp = allocate_comp_(comp_type);
-    if (!add_component_(comp, comp_type, init_params))
-    {
-        deallocate_comp_(comp, comp_type);
-        return nullptr;
-    }
-    return comp;
-}
-
-Component * Entity::add(const Component & copy)
-{
-    // Get derived info is non const likely because of the m_ptr returned with m_type
-    type_index t = typeid(copy);
-    Component * comp = allocate_comp_(t, copy);
-    if (!add_component_(comp, t, Variant_Map()))
-    {
-        deallocate_comp_(comp, t);
-        return nullptr;
-    }
-    return comp;
 }
 
 Component * Entity::get(const type_index & type)
