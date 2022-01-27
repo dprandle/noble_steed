@@ -4,7 +4,8 @@
 
 struct GLFWwindow;
 
-namespace noble_steed
+namespace noble_steed::graphics
+
 {
 class Window
 {
@@ -12,17 +13,17 @@ class Window
     Window();
     ~Window();
 
-    bool initialize(const Variant_Map & init_params);
+    bool initialize(const Variant_Map &init_params);
 
     void terminate();
 
     bool closed();
 
-    void * get_native_window();
+    void *get_native_window();
 
-    void * get_native_display();
+    void *get_native_display();
 
-    GLFWwindow * get_glfw_window();
+    GLFWwindow *get_glfw_window();
 
     itup2 get_size();
 
@@ -33,21 +34,19 @@ class Window
     dtup2 get_cursor_pos();
 
   private:
-    GLFWwindow * window_;
+    GLFWwindow *window_;
     bool close_window_;
 
-    static void glfw_resize_window_callback(GLFWwindow * window, i32 width, i32 height);
-    static void glfw_focus_change_callback(GLFWwindow * window, i32 focused);
-    static void glfw_close_window_callback(GLFWwindow * window);
-    static void glfw_iconify_window_callback(GLFWwindow * window, i32 iconified);
-    static void glfw_maximize_window_callback(GLFWwindow * window, i32 maximized);
-    static void glfw_window_position_callback(GLFWwindow * window, i32 x_pos, i32 y_pos);
-    static void glfw_franebuffer_resized_callback(GLFWwindow * window, i32 width, i32 height);
+    static void glfw_resize_window_callback(GLFWwindow *window, i32 width, i32 height);
+    static void glfw_focus_change_callback(GLFWwindow *window, i32 focused);
+    static void glfw_close_window_callback(GLFWwindow *window);
+    static void glfw_iconify_window_callback(GLFWwindow *window, i32 iconified);
+    static void glfw_maximize_window_callback(GLFWwindow *window, i32 maximized);
+    static void glfw_window_position_callback(GLFWwindow *window, i32 x_pos, i32 y_pos);
+    static void glfw_franebuffer_resized_callback(GLFWwindow *window, i32 width, i32 height);
 };
 
-namespace init_param_key
-{
-namespace window
+namespace init_param_key::window
 {
 /// String - title of window - defaults to "New Window"
 extern const String TITLE;
@@ -80,66 +79,62 @@ extern const String FOCUSED;
 /// bool - Center the cursor on fullscreen windows - ignored for windowed mode windows - default is true
 extern const String CENTER_CURSOR;
 
-} // namespace window
-} // namespace init_param_key
+} // namespace init_param_key::window
 
 namespace events
 {
-namespace window
-{
-namespace closed
+namespace window::closed
 {
 extern const u32 id;
-} // namespace window_closed
+} // namespace window::closed
 
 /// This event is posted whenever the window is resized
-namespace resized
+namespace window::resized
 {
 extern const u32 id;
 /// itup2 - new screen size in screen coordinates
 extern const String new_size;
-} // namespace window_resized
+} // namespace window::resized
 
 /// This event is posted whenever the focus is gained or lost on the main window
-namespace focus_change
+namespace window::focus_change
 {
 extern const u32 id;
 /// i8 - 1 for window focused and 0 for not
 extern const String focused;
-} // namespace window_focus_change
+} // namespace window::focus_change
 
 /// This event is posted whenever the window is iconified or restored from iconified. Iconified basically means minimized.
-namespace iconified
+namespace window::iconified
 {
 extern const u32 id;
 /// i8 - 1 for window iconified and 0 for not
 extern const String iconified;
-} // namespace window_iconified
+} // namespace window::iconified
 
 /// This event is posted whenever the window is maximized or restored from maximized
-namespace maximized
+namespace window::maximized
 {
 extern const u32 id;
 /// i8 - 1 for window maximized and 0 for not
 extern const String maximized;
-} // namespace window_maximized
+} // namespace window::maximized
 
 /// This event is posted whenever the window is moved - this event is never posted in full screen mode
-namespace moved
+namespace window::moved
 {
 extern const u32 id;
 /// itup2 - new window position - upper left corner in screen coordinates
 extern const String new_pos;
-} // namespace window_moved
+} // namespace window::moved
 
 /// This event is posted whenever the framebuffer is resized (the main window default framebuffer)
-namespace framebuffer_resized
+namespace window::framebuffer_resized
 {
 extern const u32 id;
 /// itup2 - new framebuffer size in pixels
 extern const String new_size;
-} // namespace framebuffer_resized
-} // namespace window
+} // namespace window::framebuffer_resized
 } // namespace events
 
-} // namespace noble_steed
+} // namespace noble_steed::graphics

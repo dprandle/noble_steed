@@ -3,8 +3,9 @@
 #include "component.h"
 #include "../math/vec4.h"
 
-namespace noble_steed
+namespace noble_steed::scene
 {
+
 class Transform : public Component
 {
   public:
@@ -12,7 +13,8 @@ class Transform : public Component
     ~Transform();
 
   private:
-    vec4 position_;
+    math::vec4 position_;
     u16 dummy_;
 };
-} // namespace noble_steed
+
+} // namespace noble_steed::scene

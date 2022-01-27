@@ -29,7 +29,7 @@ void Logger::add_logger(const String & logger_name, const Log_Level_Info & log_l
     std::strftime(str, 20, format.c_str(), local_time);
 
     String cur_date = str;
-    String app_name = fs::executable_name();
+    String app_name = io::fs::executable_name();
     String per_exec_name("Most Recent");
 
     String daily_file_path;
@@ -154,7 +154,7 @@ void Logger::initialize(const Variant_Map & init_params)
         def_inf = fiter->second.get_custom_value<Log_Level_Info>();
 
     // Create dir if it doesn't exist
-    fs::create_directories(LOGS_FOLDER_PATH);
+    io::fs::create_directories(LOGS_FOLDER_PATH);
     add_logger("", def_inf);
 }
 

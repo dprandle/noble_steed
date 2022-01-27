@@ -5,24 +5,22 @@
 #include "../core/context.h"
 #include "../core/type_collection_db.h"
 
-namespace noble_steed
+namespace noble_steed::scene
 {
-Entity::Entity(const SPtr<Type_Collection_DB> & comp_db) : Context_Obj(), _comp_db(comp_db), id_(0), name_(), comps_()
-{
-    if (!_comp_db)
-        _comp_db = make_shared<Type_Collection_DB>();
-}
 
-Entity::Entity(const Entity & copy) : Context_Obj(copy), _comp_db(copy._comp_db), id_(0), name_(copy.name_)
+Entity::Entity() : Context_Obj(), id_(0), name_(), comps_()
 {}
 
-Entity & Entity::operator=(Entity rhs)
+Entity::Entity(const Entity &copy) : Context_Obj(copy), id_(0), name_(copy.name_)
+{}
+
+Entity &Entity::operator=(Entity rhs)
 {
     swap(rhs);
     return *this;
 }
 
-void Entity::swap(Entity & rhs)
+void Entity::swap(Entity &rhs)
 {
     Context_Obj::swap(rhs);
     std::swap(id_, rhs.id_);
@@ -41,7 +39,7 @@ void Entity::clear()
         remove(comps_.begin()->second);
 }
 
-void Entity::initialize(const Variant_Map & init_params)
+void Entity::initialize(const Variant_Map &init_params)
 {
     ilog("Initializing entity with name {} and id {}", name_, id_);
 }
@@ -52,13 +50,13 @@ void Entity::terminate()
     clear();
 }
 
-void Entity::set_name(const String & name)
+void Entity::set_name(const String &name)
 {
     dlog("Renaming entity with id {} from {} to {}", id_, name_, name);
     name_ = name;
 }
 
-const String & Entity::get_name()
+const String &Entity::get_name()
 {
     return name_;
 }
@@ -97,7 +95,7 @@ u32 Entity::get_id()
     return id_;
 }
 
-Component * Entity::get(const type_index & type)
+Component *Entity::get(const type_index &type)
 {
     auto fiter = comps_.find(type);
     if (fiter != comps_.end())
@@ -105,14 +103,14 @@ Component * Entity::get(const type_index & type)
     return nullptr;
 }
 
-bool Entity::has(const type_index & comp_type)
+bool Entity::has(const type_index &comp_type)
 {
     return get(comp_type) != nullptr;
 }
 
-Component * Entity::remove_component_(const type_index & type)
+Component *Entity::remove_component_(const type_index &type)
 {
-    Component * ret = nullptr;
+    Component *ret = nullptr;
     auto fiter = comps_.find(type);
     if (fiter != comps_.end())
     {
@@ -122,33 +120,22 @@ Component * Entity::remove_component_(const type_index & type)
     }
     else
     {
-        wlog("Could not remove component type {} from entity {} (name:{}) as that type of component wasn't found",
-             type.name(),
-             id_,
-             name_);
+        wlog("Could not remove component type {} from entity {} (name:{}) as that type of component wasn't found", type.name(), id_, name_);
     }
     return ret;
 }
 
-Component * Entity::allocate_comp_(const type_index & type)
+Component *Entity::allocate_comp_(const type_index &type)
 {
-    auto fac = ns_ctxt.get_factory(type);
-    assert(fac != nullptr);
-    Component * comp = fac->create_and_cast<Component>();
-    assert(comp != nullptr);
-    return comp;
+    return nullptr;
 }
 
-Component * Entity::allocate_comp_(const type_index & type, const Component & copy)
+Component *Entity::allocate_comp_(const type_index &type, const Component &copy)
 {
-    auto fac = ns_ctxt.get_factory(type);
-    assert(fac != nullptr);
-    Component * comp = fac->create_and_cast<Component>(copy);
-    assert(comp != nullptr);
-    return comp;
+    return nullptr;
 }
 
-bool Entity::add_component_(Component * comp, const type_index & comp_type, const Variant_Map & init_params)
+bool Entity::add_component_(Component *comp, const type_index &comp_type, const Variant_Map &init_params)
 {
     auto fiter = comps_.emplace(comp_type, comp);
     if (fiter.second)
@@ -167,39 +154,17 @@ bool Entity::add_component_(Component * comp, const type_index & comp_type, cons
     return fiter.second;
 }
 
-void Entity::deallocate_comp_(Component * comp, const type_index & comp_type)
-{
-    assert(comp != nullptr);
-    auto fac = ns_ctxt.get_factory(comp_type);
-    fac->destroy(comp);
-}
+void Entity::deallocate_comp_(Component *comp, const type_index &comp_type)
+{}
 
-bool Entity::remove(const type_index & type)
+bool Entity::remove(const type_index &type)
 {
-    Component * comp = remove_component_(type);
-    if (comp == nullptr)
-        return false;
-    deallocate_comp_(comp, type);
     return true;
 }
 
-bool Entity::remove(Component * comp)
+bool Entity::remove(Component *comp)
 {
     return remove(typeid(*comp));
 }
 
-namespace events
-{
-namespace entity
-{
-namespace entity_packed_in
-{
-const u32 id = str_hash("Entity_Packed_In");
-
-const String entity_ptr = "ent_ptr";
-} // namespace entity_packed_in
-
-} // namespace entity
-} // namespace events
-
-} // namespace noble_steed
+} // namespace noble_steed::scene

@@ -5,7 +5,11 @@
 namespace noble_steed
 {
 class Context;
+
+namespace graphics
+{
 class Window;
+}
 
 class Application
 {
@@ -13,25 +17,24 @@ class Application
     Application();
     ~Application();
 
-    void initialize(const Variant_Map & init_params = Variant_Map());
+    void initialize(const Variant_Map &init_params = Variant_Map());
     void terminate();
 
-    Window * get_window();
+    graphics::Window *get_window();
 
-    Context * get_context();
+    Context *get_context();
 
-    static Application & inst();
+    static Application &inst();
 
     int exec();
 
   private:
+    graphics::Window *window_;
+    Context *ctxt_;
 
-    Window * window_;
-    Context * ctxt_;
+    static Application *this_global_ptr;
 
-    static Application * this_global_ptr;
-
-    static void glfw_error_callback(i32 error, const char * description);
+    static void glfw_error_callback(i32 error, const char *description);
 };
 
 #define application Application::inst()

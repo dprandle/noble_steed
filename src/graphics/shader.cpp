@@ -3,20 +3,21 @@
 #include "../io/logger.h"
 #include "../core/context.h"
 
-namespace noble_steed
+namespace noble_steed::graphics
 {
+using namespace io;
 const String SHADER_LIB_LOCATION = "data/shader_lib";
 
 Shader::Shader() : Resource(), prog_handle_(), vertex_src_(), fragment_src_(), varying_def_src_(), binary_extension_(".shbin")
 {}
 
-Shader::Shader(const Shader & copy) : Resource(copy)
+Shader::Shader(const Shader &copy) : Resource(copy)
 {}
 
 Shader::~Shader()
 {}
 
-void Shader::initialize(const Variant_Map & init_params)
+void Shader::initialize(const Variant_Map &init_params)
 {
     Resource::initialize(init_params);
 }
@@ -26,7 +27,7 @@ void Shader::terminate()
     Resource::terminate();
 }
 
-bool Shader::compile(const String & platform, const String & shader_model_profile, const String & output_relative_dir)
+bool Shader::compile(const String &platform, const String &shader_model_profile, const String &output_relative_dir)
 {
     bool ret = false;
     String outdir(output_relative_dir);
@@ -37,7 +38,7 @@ bool Shader::compile(const String & platform, const String & shader_model_profil
     // First, create text files from each src string (if not empty)
     String containing_dir = get_relative_containing_dir_path();
     String varying_fname = containing_dir + "varying.def.sc";
-    if (!fs::write_string_to_file(varying_fname, varying_def_src_))
+    if (!io::fs::write_string_to_file(varying_fname, varying_def_src_))
     {
         wlog("Could not write varying def {} to file - file could not be opened", varying_fname);
         return ret;
@@ -51,7 +52,7 @@ bool Shader::compile(const String & platform, const String & shader_model_profil
     return ret;
 }
 
-bool Shader::load_shader_(const String & fname, bgfx::ShaderHandle & handle)
+bool Shader::load_shader_(const String &fname, bgfx::ShaderHandle &handle)
 {
     i8_Vector buf;
     if (!fs::read_file_to_buffer(fname, buf))
@@ -60,17 +61,17 @@ bool Shader::load_shader_(const String & fname, bgfx::ShaderHandle & handle)
         return false;
     }
     buf.push_back(0);
-    const bgfx::Memory * mem = bgfx::copy(buf.data(), buf.size());
+    const bgfx::Memory *mem = bgfx::copy(buf.data(), buf.size());
     handle = bgfx::createShader(mem);
     return true;
 }
 
-bool Shader::build_shader_(const String & containing_dir,
-                           const String & type,
-                           const String & source,
-                           const String & platform,
-                           const String & shader_model_profile,
-                           const String & output_relative_dir)
+bool Shader::build_shader_(const String &containing_dir,
+                           const String &type,
+                           const String &source,
+                           const String &platform,
+                           const String &shader_model_profile,
+                           const String &output_relative_dir)
 {
     String basename = get_basename() + "_" + type;
     String fname = containing_dir + basename + ".sc";
@@ -109,7 +110,7 @@ bool Shader::build_shader_(const String & containing_dir,
     return true;
 }
 
-bool Shader::create_program(const String & output_relative_dir)
+bool Shader::create_program(const String &output_relative_dir)
 {
     bool ret = true;
     String prefix = get_relative_containing_dir_path() + output_relative_dir + "/" + get_basename();
@@ -134,13 +135,13 @@ bool Shader::create_program(const String & output_relative_dir)
     return ret;
 }
 
-Shader & Shader::operator=(Shader rhs)
+Shader &Shader::operator=(Shader rhs)
 {
     swap(rhs);
     return *this;
 }
 
-bool Shader::set_vertex_source_from_file(const String & fname)
+bool Shader::set_vertex_source_from_file(const String &fname)
 {
     vertex_src_.clear();
     if (fs::read_file_to_string(fname, vertex_src_))
@@ -151,7 +152,7 @@ bool Shader::set_vertex_source_from_file(const String & fname)
     return false;
 }
 
-bool Shader::set_fragment_source_from_file(const String & fname)
+bool Shader::set_fragment_source_from_file(const String &fname)
 {
     fragment_src_.clear();
     if (fs::read_file_to_string(fname, fragment_src_))
@@ -162,7 +163,7 @@ bool Shader::set_fragment_source_from_file(const String & fname)
     return false;
 }
 
-bool Shader::set_varying_def_source_from_file(const String & fname)
+bool Shader::set_varying_def_source_from_file(const String &fname)
 {
     varying_def_src_.clear();
     if (fs::read_file_to_string(fname, varying_def_src_))
@@ -173,48 +174,49 @@ bool Shader::set_varying_def_source_from_file(const String & fname)
     return false;
 }
 
-const String & Shader::get_vertex_source()
+const String &Shader::get_vertex_source()
 {
     return vertex_src_;
 }
 
-const String & Shader::get_fragment_source()
+const String &Shader::get_fragment_source()
 {
     return fragment_src_;
 }
 
-const String & Shader::get_varying_defines()
+const String &Shader::get_varying_defines()
 {
     return varying_def_src_;
 }
 
-void Shader::set_vertex_source(const String & source)
+void Shader::set_vertex_source(const String &source)
 {
     vertex_src_ = source;
 }
 
-void Shader::set_fragment_source(const String & source)
+void Shader::set_fragment_source(const String &source)
 {
     fragment_src_ = source;
 }
 
-void Shader::set_varying_defines(const String & source)
+void Shader::set_varying_defines(const String &source)
 {
     varying_def_src_ = source;
 }
 
-void Shader::set_binary_extension(const String & ext)
+void Shader::set_binary_extension(const String &ext)
 {
     binary_extension_ = ext;
 }
 
-const String & Shader::get_binary_extension()
+const String &Shader::get_binary_extension()
 {
     return binary_extension_;
 }
 
-void Shader::swap(Shader & rhs)
+void Shader::swap(Shader &rhs)
 {
     Resource::swap(rhs);
 }
-} // namespace noble_steed
+
+} // namespace noble_steed::graphics

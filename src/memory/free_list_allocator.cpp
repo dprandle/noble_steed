@@ -6,33 +6,25 @@
 #include "free_list_allocator.h"
 #include "utils.h"
 
-namespace noble_steed
+namespace noble_steed::memory
 {
 
-Free_List_Allocator::Free_List_Allocator(sizet totalSize, const Placement_Policy pPolicy) : Allocator(totalSize)
+Free_List_Allocator::Free_List_Allocator(sizet total_size, const Placement_Policy p_policy, Mem_Resource_Base *upstream)
+    : Allocator(total_size, upstream), _p_policy(p_policy), _free_list()
 {
-    _p_policy = pPolicy;
+    do_reset();
 }
 
-void Free_List_Allocator::init()
+Free_List_Allocator::Free_List_Allocator(sizet total_size, const Placement_Policy p_policy)
+    : Allocator(total_size, get_default_resource()), _p_policy(p_policy), _free_list()
 {
-    if (_start_ptr != nullptr)
-    {
-        free(_start_ptr);
-        _start_ptr = nullptr;
-    }
-    _start_ptr = malloc(_total_size);
-
-    this->reset();
+    do_reset();
 }
 
 Free_List_Allocator::~Free_List_Allocator()
-{
-    free(_start_ptr);
-    _start_ptr = nullptr;
-}
+{}
 
-void *Free_List_Allocator::allocate(sizet size, sizet alignment)
+void *Free_List_Allocator::do_allocate(sizet size, sizet alignment)
 {
     sizet alloc_header_size = sizeof(Free_List_Allocator::Alloc_Header);
     assert("Allocation size must be bigger" && size >= sizeof(Node));
@@ -90,7 +82,7 @@ void Free_List_Allocator::find_first(sizet size, sizet alignment, sizet &padding
 
     while (it != nullptr)
     {
-        padding = mem_util::calc_padding_with_header((sizet)it, alignment, sizeof(Free_List_Allocator::Alloc_Header));
+        padding = util::calc_padding_with_header((sizet)it, alignment, sizeof(Free_List_Allocator::Alloc_Header));
         sizet required_space = size + padding;
         if (it->data.block_size >= required_space)
         {
@@ -111,7 +103,7 @@ void Free_List_Allocator::find_best(sizet size, sizet alignment, sizet &padding,
     Node *it = _free_list.head, *it_prev = nullptr;
     while (it != nullptr)
     {
-        padding = mem_util::calc_padding_with_header((sizet)it, alignment, sizeof(Free_List_Allocator::Alloc_Header));
+        padding = util::calc_padding_with_header((sizet)it, alignment, sizeof(Free_List_Allocator::Alloc_Header));
         sizet required_space = size + padding;
         if (it->data.block_size >= required_space && (it->data.block_size - required_space < smallest_diff))
         {
@@ -124,7 +116,7 @@ void Free_List_Allocator::find_best(sizet size, sizet alignment, sizet &padding,
     found_node = bestBlock;
 }
 
-void Free_List_Allocator::free(void *ptr)
+void Free_List_Allocator::do_deallocate(void *ptr, sizet bytes, sizet)
 {
     // Insert it in a sorted position by the address number
     sizet current_addr = (sizet)ptr;
@@ -133,6 +125,9 @@ void Free_List_Allocator::free(void *ptr)
 
     Node *free_node = (Node *)(header_addr);
     free_node->data.block_size = alloc_header->block_size + alloc_header->padding;
+
+    assert(bytes == free_node->data.block_size && "Trying to free different amount of mem than stored in block header");
+
     free_node->next = nullptr;
 
     Node *it = _free_list.head;
@@ -169,10 +164,8 @@ void Free_List_Allocator::coalescence(Node *prev_node, Node *free_node)
     }
 }
 
-void Free_List_Allocator::reset()
+void Free_List_Allocator::do_reset()
 {
-    _used = 0;
-    _peak = 0;
     Node *first_node = (Node *)_start_ptr;
     first_node->data.block_size = _total_size;
     first_node->next = nullptr;
@@ -180,4 +173,4 @@ void Free_List_Allocator::reset()
     _free_list.insert(nullptr, first_node);
 }
 
-} // namespace noble_steed
+} // namespace noble_steed::memory

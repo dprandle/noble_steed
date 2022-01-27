@@ -3,33 +3,28 @@
 #include "allocator.h"
 #include "../container/stack_linked_list.h"
 
-namespace noble_steed
+namespace noble_steed::memory
 {
-
 class Pool_Allocator : public Allocator
 {
   public:
     Pool_Allocator(sizet total_size, sizet chunk_size);
+    Pool_Allocator(sizet total_size, sizet chunk_size, Mem_Resource_Base *upstream);
+    ~Pool_Allocator();
 
-    virtual ~Pool_Allocator();
+  private:
+    void do_reset() override;
 
-    virtual void *allocate(sizet size, sizet alignment = 0) override;
+    void *do_allocate(sizet size, sizet alignment = 0) override;
 
-    virtual void free(void *ptr) override;
-
-    virtual void init() override;
-
-    virtual void reset();
-
-  protected:
+    void do_deallocate(void *ptr, sizet bytes, sizet alignment = 0) override;
+    
     struct Free_Header
     {};
 
     using Node = Stack_Linked_List<Free_Header>::Node;
 
-    void *_start_ptr = nullptr;
     sizet _chunk_size;
     Stack_Linked_List<Free_Header> _free_list;
 };
-
-} // namespace noble_steed
+} // namespace noble_steed::memory

@@ -1,13 +1,14 @@
 #include "context_obj.h"
 #include "context.h"
 #include "../io/logger.h"
+#include "string_hash.h"
 
 namespace noble_steed
 {
 Event::Event() : id(INVALID_ID), data()
 {}
 
-Event::Event(const String & name, const Variant_Map & data_) : id(str_hash(name)), data(data_)
+Event::Event(const String & name, const Variant_Map & data_) : id(Str_Hash(name)), data(data_)
 {}
 
 Event::Event(u32 id_, const Variant_Map & data_): id(id_), data(data_)

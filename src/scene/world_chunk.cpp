@@ -4,19 +4,20 @@
 #include "entity.h"
 #include "../core/context.h"
 
-namespace noble_steed
+namespace noble_steed::scene
 {
+
 World_Chunk::World_Chunk() : Resource()
 {
     sig_connect(ns_ctxt.get_world()->entity_id_change, this, &World_Chunk::on_ent_id_change);
     sig_connect(ns_ctxt.get_world()->entity_destroyed, this, &World_Chunk::on_ent_destroyed);
 }
 
-World_Chunk::World_Chunk(const World_Chunk & copy) : Resource(copy), ents_ptrs_(), ents_()
+World_Chunk::World_Chunk(const World_Chunk &copy) : Resource(copy), ents_ptrs_(), ents_()
 {
     sig_connect(ns_ctxt.get_world()->entity_id_change, this, &World_Chunk::on_ent_id_change);
     sig_connect(ns_ctxt.get_world()->entity_destroyed, this, &World_Chunk::on_ent_destroyed);
-    
+
     auto iter = copy.ents_.begin();
     while (iter != copy.ents_.end())
     {
@@ -25,13 +26,13 @@ World_Chunk::World_Chunk(const World_Chunk & copy) : Resource(copy), ents_ptrs_(
     }
 }
 
-World_Chunk & World_Chunk::operator=(World_Chunk rhs)
+World_Chunk &World_Chunk::operator=(World_Chunk rhs)
 {
     swap(rhs);
     return *this;
 }
 
-void World_Chunk::swap(World_Chunk & rhs)
+void World_Chunk::swap(World_Chunk &rhs)
 {
     Resource::swap(rhs);
     std::swap(ents_ptrs_, rhs.ents_ptrs_);
@@ -43,7 +44,7 @@ World_Chunk::~World_Chunk()
     clear(true);
 }
 
-void World_Chunk::initialize(const Variant_Map & init_params)
+void World_Chunk::initialize(const Variant_Map &init_params)
 {
     Resource::initialize(init_params);
 }
@@ -61,7 +62,7 @@ void World_Chunk::clear(bool remove_entities_from_world)
     ents_ptrs_.clear();
 }
 
-bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
+bool World_Chunk::add(Entity *to_add, const Variant_Map &init_params)
 {
     auto added = ents_.emplace(to_add->get_id(), to_add);
     if (added.second)
@@ -74,9 +75,9 @@ bool World_Chunk::add(Entity * to_add, const Variant_Map & init_params)
     return false;
 }
 
-Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
+Entity *World_Chunk::add(const Entity &copy, const Variant_Map &init_params)
 {
-    Entity * ent = ns_ctxt.get_world()->create(copy, init_params);
+    Entity *ent = ns_ctxt.get_world()->create(copy, init_params);
     if (add(ent, init_params))
         return ent;
     bool dest = ns_ctxt.get_world()->destroy(ent);
@@ -84,9 +85,9 @@ Entity * World_Chunk::add(const Entity & copy, const Variant_Map & init_params)
     return nullptr;
 }
 
-Entity * World_Chunk::add(const Variant_Map & init_params)
+Entity *World_Chunk::add(const Variant_Map &init_params)
 {
-    Entity * ent = ns_ctxt.get_world()->create(init_params);
+    Entity *ent = ns_ctxt.get_world()->create(init_params);
     if (add(ent, init_params))
         return ent;
     bool dest = ns_ctxt.get_world()->destroy(ent);
@@ -94,7 +95,7 @@ Entity * World_Chunk::add(const Variant_Map & init_params)
     return nullptr;
 }
 
-Entity * World_Chunk::get(u32 id)
+Entity *World_Chunk::get(u32 id)
 {
     auto fiter = ents_.find(id);
     if (fiter != ents_.end())
@@ -107,7 +108,7 @@ bool World_Chunk::remove(u32 id, bool remove_from_world)
     return remove(get(id), remove_from_world);
 }
 
-bool World_Chunk::remove(Entity * ent, bool remove_from_world)
+bool World_Chunk::remove(Entity *ent, bool remove_from_world)
 {
     if (ent == nullptr)
         return false;
@@ -130,7 +131,7 @@ bool World_Chunk::remove(Entity * ent, bool remove_from_world)
 
 void World_Chunk::on_ent_id_change(Tuple2<u32> ids)
 {
-    Entity * old_ent = get(ids.x);
+    Entity *old_ent = get(ids.x);
     if (old_ent != nullptr)
     {
         ents_.erase(old_ent->get_id());
@@ -144,4 +145,4 @@ void World_Chunk::on_ent_destroyed(u32 id)
     ents_.erase(id);
 }
 
-} // namespace noble_steed
+} // namespace noble_steed::scene

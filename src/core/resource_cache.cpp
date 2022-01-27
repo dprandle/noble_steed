@@ -1,8 +1,9 @@
 #include "resource_cache.h"
 #include "resource.h"
 #include "context.h"
-#include "..//io/logger.h"
-#include "..//io/filesystem.h"
+#include "../io/logger.h"
+#include "../io/filesystem.h"
+#include "../core/string_hash.h"
 
 namespace noble_steed
 {
@@ -139,7 +140,7 @@ Resource *Resource_Cache::get(const String &name, const String &package) const
     {
         wlog("Cannot load resource {} - no package passed in and no current package set", name);
     }
-    u32 id = str_hash(actual_package + name);
+    u32 id = Str_Hash(actual_package + name).value();
     return get(id);
 }
 
@@ -214,7 +215,7 @@ bool Resource_Cache::remove(const String &name, const String &package)
     {
         wlog("Cannot load resource {} - no package passed in and no current package set", name);
     }
-    u32 id = str_hash(package + name);
+    u32 id = Str_Hash(package + name).value();
     return remove(id);
 }
 
@@ -240,7 +241,7 @@ bool Resource_Cache::load_package(String package, bool make_current)
     {
         // Remove the final "/"
         String path_str = package.substr(0, package.size() - 1);
-        if (fs::is_directory(path_str) || fs::create_directories(path_str))
+        if (io::fs::is_directory(path_str) || io::fs::create_directories(path_str))
         {
             ilog("Successfully created or found package dir {}", package);
         }
@@ -254,41 +255,41 @@ bool Resource_Cache::load_package(String package, bool make_current)
         // Load all resources recursively in this directory!
         ilog("Trying to load all resources in {}", package);
 
-        fs::recursive_directory_iterator dir_path_iter(path_str);
-        while (dir_path_iter != fs::recursive_directory_iterator())
+        io::fs::Recursive_Dir_Iter dir_path_iter(path_str);
+        while (dir_path_iter != io::fs::Recursive_Dir_Iter())
         {
-            fs::path rel_path = dir_path_iter->path().relative_path();
-            fs::path fname = rel_path.filename();
-            // Skip hidden files and non regular files
-            if (fname.empty() || fname.string()[0] == '.' || !fs::is_regular_file(*dir_path_iter))
-            {
-                ++dir_path_iter;
-                continue;
-            }
+            // fs::path rel_path = dir_path_iter->path().relative_path();
+            // fs::path fname = rel_path.filename();
+            // // Skip hidden files and non regular files
+            // if (fname.empty() || fname.string()[0] == '.' || !fs::is_regular_file(*dir_path_iter))
+            // {
+            //     ++dir_path_iter;
+            //     continue;
+            // }
 
-            String obj_name = rel_path.string();
-            String ext = rel_path.extension().string();
+            // String obj_name = rel_path.string();
+            // String ext = rel_path.extension().string();
 
-            // Remove the extension from the file name, and the package prefix from the file name
-            // This results in the obj name being what is left
-            size_t np = obj_name.find(package);
-            obj_name.erase(np, package.size());
-            np = obj_name.find(ext);
-            obj_name.erase(np, ext.size());
-            type_index type_ind = ns_ctxt.get_extension_resource_type(ext);
+            // // Remove the extension from the file name, and the package prefix from the file name
+            // // This results in the obj name being what is left
+            // size_t np = obj_name.find(package);
+            // obj_name.erase(np, package.size());
+            // np = obj_name.find(ext);
+            // obj_name.erase(np, ext.size());
+            // type_index type_ind = 
 
-            if (type_ind == INVALID_TYPE)
-            {
-                ilog("Skipping {} as the extension {} is not registered as a valid type", obj_name, ext);
-                ++dir_path_iter;
-                continue;
-            }
+            // if (type_ind == INVALID_TYPE)
+            // {
+            //     ilog("Skipping {} as the extension {} is not registered as a valid type", obj_name, ext);
+            //     ++dir_path_iter;
+            //     continue;
+            // }
 
-            dlog("Loading obj name: {}", obj_name);
-            dlog("Loading extension: {}", ext);
-            dlog("Loading type id: {}", type_ind.name());
+            // dlog("Loading obj name: {}", obj_name);
+            // dlog("Loading extension: {}", ext);
+            // dlog("Loading type id: {}", type_ind.name());
 
-            load(type_ind, obj_name, package, Variant_Map());
+            // load(type_ind, obj_name, package, Variant_Map());
             ++dir_path_iter;
         }
 
@@ -377,50 +378,19 @@ void Resource_Cache::set_current_package(String package)
 
 Resource *Resource_Cache::allocate_resource_(const type_index &type_ind)
 {
-    auto fac = ns_ctxt.get_factory(type_ind);
-    assert(fac != nullptr);
-    Resource *res = fac->create_and_cast<Resource>();
-    assert(res != nullptr);
-    return res;
+    return nullptr;
 }
 
 Resource *Resource_Cache::allocate_resource_(const type_index &type_ind, const Resource &copy)
 {
-    auto fac = ns_ctxt.get_factory(type_ind);
-    assert(fac != nullptr);
-    Resource *res = fac->create_and_cast<Resource>(copy);
-    assert(res != nullptr);
-    return res;
+    return nullptr;
 }
 
 bool Resource_Cache::add_resource_(Resource *res, const String &name, const String &package, const Variant_Map &init_params)
 {
-    String actual_package(package);
-    if (actual_package.empty())
-        actual_package = current_package_;
-    else
-        make_valid_package_name_(actual_package);
-
-    if (actual_package.empty())
-    {
-        wlog("Cannot load resource {} - no package passed in and no current package set", name);
-    }
-
-    res->set_name(name);
-    res->set_package(actual_package);
-    auto fiter = resources_.emplace(res->get_id(), res);
-    if (fiter.second)
-    {
-        sig_connect(res->change_id, this, &Resource_Cache::on_resource_name_change_);
-        res->initialize(init_params);
-    }
-    return fiter.second;
+    return false;
 }
 
 void Resource_Cache::deallocate_resource_(Resource *res, const type_index &type_ind)
-{
-    assert(res != nullptr);
-    auto fac = ns_ctxt.get_factory(type_ind);
-    fac->destroy(res);
-}
+{}
 } // namespace noble_steed

@@ -6,8 +6,6 @@
 
 extern const std::chrono::nanoseconds TIMESTEP;
 
-#define ns_eng ns_ctxt.get_world()->get_system<Engine>()
-
 namespace noble_steed
 {
 class Engine : public System

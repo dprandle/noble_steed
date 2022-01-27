@@ -23,6 +23,8 @@
 
 namespace noble_steed
 {
+using namespace graphics;
+
 Application * Application::this_global_ptr = nullptr;
 
 Application::Application() : window_(nullptr), ctxt_(nullptr)
@@ -63,15 +65,15 @@ int Application::exec()
     // pybind11::object obj = pybind11::cast(&Context::inst());
     // m.attr("context") = obj;
     // dlog("Scooby");
-    Engine * eng = ns_eng;
-    eng->set_running(true);
+    // Engine * eng = ns_eng;
+    // eng->set_running(true);
     
     
-    while (eng->is_running())
-    {
-        glfwPollEvents();
-        eng->run_frame();
-    }
+    // while (eng->is_running())
+    // {
+    //     glfwPollEvents();
+    //     eng->run_frame();
+    // }
 
     ctxt_->terminate();
     delete ctxt_;
@@ -103,7 +105,7 @@ Context * Application::get_context()
 
 void Application::terminate()
 {
-    ns_eng->set_running(false);
+    //ns_eng->set_running(false);
 }
 
 void Application::glfw_error_callback(i32 error, const char * description)

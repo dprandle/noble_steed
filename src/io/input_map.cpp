@@ -4,11 +4,12 @@
 
 #include "../core/variant.h"
 #include "../core/context.h"
+#include "../core/string_hash.h"
 
 namespace noble_steed
 {
 Input_Action_Trigger::Input_Action_Trigger(const String & name, const Trigger_Condition & tcond, Trigger_State tstate):
-    name_hash(str_hash(name)), condition(tcond), trigger_state(tstate)
+    name_hash(Str_Hash(name).value()), condition(tcond), trigger_state(tstate)
 {
     if (tcond.input_code <= GLFW_MOUSE_BUTTON_LAST)
         trigger_state = T_MOUSE_MOVE_OR_SCROLL;
@@ -90,7 +91,7 @@ Input_Map & Input_Map::operator=(Input_Map rhs)
 
 Input_Context * Input_Map::add_context(const String & name, const Input_Context & to_add)
 {
-    auto ret = contexts_.emplace(str_hash(name), to_add);
+    auto ret = contexts_.emplace(Str_Hash(name).value(), to_add);
     if (ret.second)
         return &ret.first->second;
     return nullptr;
@@ -98,7 +99,7 @@ Input_Context * Input_Map::add_context(const String & name, const Input_Context 
 
 Input_Context * Input_Map::get_context(const String & name)
 {
-    auto iter = contexts_.find(str_hash(name));
+    auto iter = contexts_.find(Str_Hash(name).value());
     if (iter != contexts_.end())
         return &iter->second;
     return nullptr;
@@ -106,7 +107,7 @@ Input_Context * Input_Map::get_context(const String & name)
 
 bool Input_Map::remove_context(const String & name)
 {
-    u32 id = str_hash(name);
+    u32 id = Str_Hash(name).value();
     auto count = contexts_.erase(id);
     return count > 0;
 }

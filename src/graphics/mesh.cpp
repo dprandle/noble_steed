@@ -2,8 +2,9 @@
 #include "../io/logger.h"
 #include "../core/variant.h"
 
-namespace noble_steed
+namespace noble_steed::graphics
 {
+
 Vertex_Buffer::Vertex_Buffer() : handle(bgfx::kInvalidHandle), name(), flags(0), layout(), data(nullptr), data_size(0), dynamic(false)
 {}
 
@@ -125,9 +126,9 @@ void Index_Buffer::free()
 }
 
 template<class T>
-void create_if_needed(Vertex_Buffer_Data<T> & buf,
-                      Vector<Vertex_Buffer> & buffers,
-                      const String & name,
+void create_if_needed(Vertex_Buffer_Data<T> &buf,
+                      Vector<Vertex_Buffer> &buffers,
+                      const String &name,
                       bgfx::Attrib::Enum attrib,
                       u8 elements,
                       bgfx::AttribType::Enum att_type,
@@ -150,7 +151,7 @@ void create_if_needed(Vertex_Buffer_Data<T> & buf,
     }
 }
 
-void Vertex_Data::create_buffers(const String & name_prefix)
+void Vertex_Data::create_buffers(const String &name_prefix)
 {
     create_if_needed(positions, buffers, name_prefix + ".verts.positions", bgfx::Attrib::Position, 3, bgfx::AttribType::Float);
     create_if_needed(normals, buffers, name_prefix + ".verts.normals", bgfx::Attrib::Normal, 3, bgfx::AttribType::Float);
@@ -225,7 +226,7 @@ void Vertex_Data::destroy_buffers()
     }
 }
 
-void Index_Data::create_buffers(const String & name_prefix)
+void Index_Data::create_buffers(const String &name_prefix)
 {
     buffers.resize(COUNT);
     buffers[TRIANGLES].name = name_prefix + ".indices.triangles";
@@ -309,14 +310,14 @@ void Submesh::destroy_buffers()
     index_buffers.destroy_buffers();
 }
 
-Submesh * Mesh::get_submesh(u32 index)
+Submesh *Mesh::get_submesh(u32 index)
 {
     if (index > submeshes_.size())
         return nullptr;
     return &submeshes_[index];
 }
 
-Submesh * Mesh::add_submesh(u32 & sub_ind, const Submesh & copy)
+Submesh *Mesh::add_submesh(u32 &sub_ind, const Submesh &copy)
 {
     sub_ind = submeshes_.size();
     submeshes_.push_back(copy);
@@ -345,4 +346,4 @@ u32 Mesh::submesh_count()
     return submeshes_.size();
 }
 
-} // namespace noble_steed
+} // namespace noble_steed::graphics

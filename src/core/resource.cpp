@@ -3,6 +3,7 @@
 #include "variant.h"
 #include "resource.h"
 #include "context.h"
+#include "string_hash.h"
 
 #include "../io/logger.h"
 #include "../io/filesystem.h"
@@ -74,7 +75,7 @@ String Resource::get_relative_path()
 
 String Resource::get_basename()
 {
-    fs::path pth = get_filename();
+    io::fs::Path pth = get_filename();
     return pth.stem();
 }
 
@@ -85,19 +86,18 @@ String Resource::get_relative_containing_dir_path()
 
 String Resource::get_subdir_dir()
 {
-    fs::path pth = get_subdir_path();
+    io::fs::Path pth = get_subdir_path();
     return pth.remove_filename();
 }
 
 String Resource::get_subdir_path()
 {
-    String ext = ns_ctxt.get_resource_extension(typeid(*this));
-    return name_ + ext;
+    return "";
 }
 
 String Resource::get_filename()
 {
-    fs::path pth = get_subdir_path();
+    io::fs::Path pth = get_subdir_path();
     return pth.filename();
 }
 
@@ -129,7 +129,7 @@ const String & Resource::get_display_name()
 void Resource::set_name(const String & name)
 {
     String total_path = package_ + name;
-    u32 hashed_id = str_hash(total_path);
+    u32 hashed_id = Str_Hash(total_path).value();
 
     if (id_ != -1 && hashed_id != id_)
     {
@@ -151,7 +151,7 @@ void Resource::set_display_name(const String & disp_name)
 void Resource::set_package(const String & package_name)
 {
     String total_path = package_name + name_;
-    u32 hashed_id = str_hash(total_path);
+    u32 hashed_id = Str_Hash(total_path).value();
     if (id_ != -1 && hashed_id != id_)
     {
         bool do_change = true;

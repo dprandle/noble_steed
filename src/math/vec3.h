@@ -2,7 +2,7 @@
 
 #include <glm/vec3.hpp>
 
-namespace noble_steed
+namespace noble_steed::math
 {
 using vec3 = glm::vec3;
 using ivec3 = glm::ivec3;

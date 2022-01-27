@@ -3,8 +3,9 @@
 #include "../core/basic_types.h"
 #include "../core/context_obj.h"
 
-namespace noble_steed
+namespace noble_steed::scene
 {
+
 class Component : public Context_Obj
 {
     friend class Entity;
@@ -12,20 +13,21 @@ class Component : public Context_Obj
   public:
     Component();
 
-    Component(const Component & copy);
+    Component(const Component &copy);
 
     virtual ~Component();
 
-    virtual void initialize(const Variant_Map & init_params);
+    virtual void initialize(const Variant_Map &init_params);
 
     virtual void terminate();
 
-    Component & operator=(Component rhs);
+    Component &operator=(Component rhs);
 
   protected:
-    virtual void swap(Component & rhs);
+    virtual void swap(Component &rhs);
 
   private:
     u32 owner_id_;
 };
-} // namespace noble_steed
+
+} // namespace noble_steed::scene

@@ -4,10 +4,12 @@
 #include <bx/debug.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+
 #include "mesh.h"
 #include "shader.h"
 #include "renderer.h"
 #include "window.h"
+
 #include "../core/variant.h"
 #include "../core/application.h"
 #include "../core/engine.h"
@@ -15,28 +17,28 @@
 #include "../core/resource_cache.h"
 #include "../io/input_map.h"
 #include "../io/input_translator.h"
+#include "../io/logger.h"
+
 #include "../scene/world.h"
 
-namespace noble_steed
+namespace noble_steed::graphics
 {
+
 // Initialization parameters for the renderer
-namespace init_param_key
-{
-namespace renderer
+namespace init_param_key::renderer
 {
 const String SHADER_PLATFROM = "shdr_platform";
 const String SHADER_PROFILE = "shdr_profile";
 const String SHADER_BINARY_RELATIVE_SUBDIR = "shdr_bin_rel_dir";
-} // namespace renderer
-} // namespace init_param_key
+} // namespace init_param_key::renderer
 
 Renderer::Renderer()
 {}
 
-Renderer::Renderer(const Renderer & copy) : System(copy)
+Renderer::Renderer(const Renderer &copy) : System(copy)
 {}
 
-Renderer & Renderer::operator=(Renderer rhs)
+Renderer &Renderer::operator=(Renderer rhs)
 {
     swap(rhs);
     return *this;
@@ -51,7 +53,7 @@ void Renderer::render_frame()
     bgfx::touch(0);
 }
 
-void Renderer::initialize(const Variant_Map & init_params)
+void Renderer::initialize(const Variant_Map &init_params)
 {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     shader_platform_ = "windows";
@@ -139,10 +141,10 @@ void Renderer::initialize(const Variant_Map & init_params)
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
     bgfx::setViewRect(0, 0, 0, sz.w, sz.h);
 
-    sig_connect(ns_eng->render, this, &Renderer::render_frame);
-    sig_connect(ns_eng->update, [&]() { process_events(); });
-    subscribe_event_handler(str_hash("load_and_compile_shader"), this, &Renderer::compile_shader);
-    subscribe_event_handler(events::window::framebuffer_resized::id, this, &Renderer::handle_framebuffer_resize);
+    // sig_connect(ns_eng->render, this, &Renderer::render_frame);
+    // sig_connect(ns_eng->update, [&]() { process_events(); });
+    // subscribe_event_handler(str_hash("load_and_compile_shader"), this, &Renderer::compile_shader);
+    // subscribe_event_handler(events::window::framebuffer_resized::id, this, &Renderer::handle_framebuffer_resize);
 }
 
 void Renderer::terminate()
@@ -151,14 +153,14 @@ void Renderer::terminate()
     bgfx::shutdown();
 }
 
-void Renderer::swap(const Renderer & rhs)
+void Renderer::swap(const Renderer &rhs)
 {
     System::swap(rhs);
 }
 
-void Renderer::compile_shader(Event & ev)
+void Renderer::compile_shader(Event &ev)
 {
-    Resource_Cache * rc = ns_ctxt.get_resource_cache();
+    Resource_Cache *rc = ns_ctxt.get_resource_cache();
     auto shdr = rc->add<Shader>("shaders/simple", "data/core");
     if (!shdr)
         shdr = rc->get<Shader>("shaders/simple", "data/core");
@@ -170,11 +172,11 @@ void Renderer::compile_shader(Event & ev)
     shdr->create_program(shader_bin_rel_dir_);
 }
 
-void Renderer::handle_framebuffer_resize(Event & ev)
+void Renderer::handle_framebuffer_resize(Event &ev)
 {
     // itup2 new_size = ev.data[events::window::framebuffer_resized::new_size].get_value<itup2>();
     // bgfx::reset(new_size.w,new_size.h);
     // bgfx::setViewRect(0, 0, 0, new_size.w, new_size.h);
 }
 
-} // namespace noble_steed
+} // namespace noble_steed::graphics

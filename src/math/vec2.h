@@ -4,7 +4,7 @@
 
 #include "../core/basic_types.h"
 
-namespace noble_steed
+namespace noble_steed::math
 {
 using vec2 = glm::vec2;
 using ivec2 = glm::ivec2;

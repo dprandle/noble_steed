@@ -3,12 +3,11 @@
 #include "allocator.h"
 #include "../container/singly_linked_list.h"
 
-namespace noble_steed
+namespace noble_steed::memory
 {
 
 class Free_List_Allocator : public Allocator
 {
-  protected:
     struct Free_Header
     {
         sizet block_size;
@@ -28,24 +27,18 @@ class Free_List_Allocator : public Allocator
         FIND_BEST
     };
 
+    Free_List_Allocator(sizet total_size, Placement_Policy p_policy, Mem_Resource_Base *upstream);
     Free_List_Allocator(sizet total_size, Placement_Policy p_policy);
-
-    virtual ~Free_List_Allocator();
-
-    virtual void *allocate(sizet size, sizet alignment = 0) override;
-
-    virtual void free(void *ptr) override;
-
-    virtual void init() override;
-
-    virtual void reset();
-
-  protected:
-    void *_start_ptr = nullptr;
-    Placement_Policy _p_policy;
-    Singly_Linked_List<Free_Header> _free_list;
+    ~Free_List_Allocator();
 
   private:
+    void do_reset() override;
+
+    // TODO: Maybe this aligment should not default to 0?
+    void *do_allocate(sizet size, sizet alignment = 0) override;
+
+    void do_deallocate(void *ptr, sizet bytes, sizet alignment = 0) override;
+
     void coalescence(Node *prev_block, Node *free_block);
 
     void find(sizet size, sizet alignment, sizet &padding, Node *&previous_node, Node *&found_node);
@@ -54,6 +47,8 @@ class Free_List_Allocator : public Allocator
 
     void find_first(sizet size, sizet alignment, sizet &padding, Node *&previous_node, Node *&found_node);
 
+    Placement_Policy _p_policy;
+    Singly_Linked_List<Free_Header> _free_list;
 };
 
-} // namespace noble_steed
+} // namespace noble_steed::memory

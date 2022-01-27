@@ -1,8 +1,7 @@
 #include "utils.h"
-namespace noble_steed
+namespace noble_steed::memory::util
 {
-namespace mem_util
-{
+
 sizet calc_padding(sizet base_addr, sizet alignment)
 {
     sizet multiplier = (base_addr / alignment) + 1;
@@ -35,5 +34,4 @@ sizet calc_padding_with_header(sizet base_addr, sizet alignment, sizet header_si
     return padding;
 }
 
-} // namespace mem_util
 }

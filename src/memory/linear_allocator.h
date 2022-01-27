@@ -2,27 +2,25 @@
 
 #include "allocator.h"
 
-namespace noble_steed
+namespace noble_steed::memory
 {
 
 class Linear_Allocator : public Allocator
 {
   public:
+    Linear_Allocator(sizet total_size, Mem_Resource_Base *upstream);
     Linear_Allocator(sizet total_size);
+    ~Linear_Allocator();
 
-    virtual ~Linear_Allocator();
+  private:
+    void do_reset() override;
 
-    virtual void *allocate(sizet size, sizet alignment = 0) override;
+    void *do_allocate(sizet size, sizet alignment = 0) override;
 
-    virtual void free(void *ptr) override;
+    /// NO op for this type of allocator - all memory released on destroy
+    void do_deallocate(void *, sizet, sizet) override;
 
-    virtual void init() override;
-
-    virtual void reset();
-
-  protected:
-    void *_start_ptr = nullptr;
     sizet _offset;
 };
 
-} // namespace noble_steed
+} // namespace noble_steed::memory

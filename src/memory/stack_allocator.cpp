@@ -4,32 +4,23 @@
 #include "stack_allocator.h"
 #include "utils.h"
 
-namespace noble_steed
+namespace noble_steed::memory
 {
 
-Stack_Allocator::Stack_Allocator(sizet total_size) : Allocator(total_size)
+Stack_Allocator::Stack_Allocator(sizet total_size, Mem_Resource_Base *upstream): Allocator(total_size, upstream), _offset(0)
 {}
 
-void Stack_Allocator::init()
-{
-    if (_start_ptr != nullptr)
-        free(_start_ptr);
-
-    _start_ptr = malloc(_total_size);
-    _offset = 0;
-}
+Stack_Allocator::Stack_Allocator(sizet total_size) : Allocator(total_size, get_default_resource()), _offset(0)
+{}
 
 Stack_Allocator::~Stack_Allocator()
-{
-    free(_start_ptr);
-    _start_ptr = nullptr;
-}
+{}
 
-void *Stack_Allocator::allocate(sizet size, sizet alignment)
+void *Stack_Allocator::do_allocate(sizet size, sizet alignment)
 {
     sizet current_addr = (sizet)_start_ptr + _offset;
 
-    char padding = mem_util::calc_padding_with_header(current_addr, alignment, sizeof(Alloc_Header));
+    char padding = util::calc_padding_with_header(current_addr, alignment, sizeof(Alloc_Header));
 
     if (_offset + padding + size > _total_size)
         return nullptr;
@@ -49,7 +40,7 @@ void *Stack_Allocator::allocate(sizet size, sizet alignment)
     return (void *)next_addr;
 }
 
-void Stack_Allocator::free(void *ptr)
+void Stack_Allocator::do_deallocate(void *ptr, sizet, sizet)
 {
     // Move offset back to clear address
     sizet current_addr = (sizet)ptr;
@@ -60,11 +51,9 @@ void Stack_Allocator::free(void *ptr)
     _used = _offset;
 }
 
-void Stack_Allocator::reset()
+void Stack_Allocator::do_reset()
 {
     _offset = 0;
-    _used = 0;
-    _peak = 0;
 }
 
-} // namespace noble_steed
+} // namespace noble_steed::memory

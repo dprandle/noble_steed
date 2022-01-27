@@ -7,6 +7,7 @@
 #include "../core/context.h"
 #include "../core/application.h"
 #include "../core/engine.h"
+#include "../core/string_hash.h"
 #include "../graphics/window.h"
 #include "../scene/world.h"
 
@@ -17,7 +18,7 @@ namespace events
 {
 namespace key_press
 {
-const u32 id = str_hash("Key_Press");
+const u32 id = Str_Hash("Key_Press").value();
 const String key = "key";
 const String scancode = "scancode";
 const String action = "action";
@@ -26,7 +27,7 @@ const String mods = "mods";
 
 namespace mouse_press
 {
-const u32 id = str_hash("Mouse_Press");
+const u32 id = Str_Hash("Mouse_Press").value();
 const String button = "button";
 const String action = "action";
 const String mods = "mods";
@@ -34,7 +35,7 @@ const String mods = "mods";
 
 namespace scroll
 {
-const u32 id = str_hash("Scroll");
+const u32 id = Str_Hash("Scroll").value();
 const String x_offset = "x_offset"; // double
 const String y_offset = "y_offset"; // double
 const String mods = "mods";
@@ -42,7 +43,7 @@ const String mods = "mods";
 
 namespace cursor_moved
 {
-const u32 id = str_hash("Cursor_Moved");
+const u32 id = Str_Hash("Cursor_Moved").value();
 const String mods = "mods";
 const String new_pos = "new_pos";
 } // namespace cursor_moved
@@ -77,7 +78,7 @@ void Input_Translator::initialize(const Variant_Map & init_params)
     subscribe_event_handler(events::scroll::id, this, &Input_Translator::handle_scroll);
     subscribe_event_handler(events::cursor_moved::id, this, &Input_Translator::handle_mouse_movement);
 
-    sig_connect(ns_eng->update, this, &Input_Translator::update);
+    //sig_connect(ns_eng->update, this, &Input_Translator::update);
 }
 
 void Input_Translator::handle_key_press(Event & ev)
@@ -148,7 +149,7 @@ void Input_Translator::handle_scroll(Event & ev)
 
 void Input_Translator::handle_focus_change(Event & ev)
 {
-    using namespace events;
+    using namespace graphics::events;
     i8 foc = ev.data[window::focus_change::focused].get_value<i8>();
     if (foc)
     {

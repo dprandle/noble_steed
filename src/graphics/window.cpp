@@ -12,11 +12,13 @@
 
 #include "../core/variant.h"
 #include "../core/context.h"
+#include "../core/context_obj.h"
+#include "../core/string_hash.h"
 
-
-namespace noble_steed
+namespace noble_steed::graphics
 {
-Window * win = nullptr;
+
+Window *win = nullptr;
 
 Window::Window() : window_(nullptr), close_window_(false)
 {
@@ -26,12 +28,12 @@ Window::Window() : window_(nullptr), close_window_(false)
 Window::~Window()
 {}
 
-bool Window::initialize(const Variant_Map & init_params)
+bool Window::initialize(const Variant_Map &init_params)
 {
     using namespace init_param_key::window;
 
-    GLFWmonitor * monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
     itup2 default_size(mode->width, mode->height);
 
     //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -102,12 +104,12 @@ bool Window::initialize(const Variant_Map & init_params)
     return true;
 }
 
-GLFWwindow * Window::get_glfw_window()
+GLFWwindow *Window::get_glfw_window()
 {
     return window_;
 }
 
-void * Window::get_native_display()
+void *Window::get_native_display()
 {
     return glfwGetX11Display();
 }
@@ -152,7 +154,7 @@ dtup2 Window::get_cursor_pos()
     return ret;
 }
 
-void * Window::get_native_window()
+void *Window::get_native_window()
 {
 #ifdef PLATFORM_OSX
     return glfwGetCocoaWindow(window_);
@@ -162,7 +164,7 @@ void * Window::get_native_window()
     return nullptr;
 }
 
-void Window::glfw_resize_window_callback(GLFWwindow * window, i32 width, i32 height)
+void Window::glfw_resize_window_callback(GLFWwindow *window, i32 width, i32 height)
 {
     using namespace events;
     Event ev;
@@ -171,7 +173,7 @@ void Window::glfw_resize_window_callback(GLFWwindow * window, i32 width, i32 hei
     post_event(ev);
 }
 
-void Window::glfw_focus_change_callback(GLFWwindow * window, i32 focused)
+void Window::glfw_focus_change_callback(GLFWwindow *window, i32 focused)
 {
     using namespace events;
     Event ev;
@@ -180,7 +182,7 @@ void Window::glfw_focus_change_callback(GLFWwindow * window, i32 focused)
     post_event(ev);
 }
 
-void Window::glfw_close_window_callback(GLFWwindow * window)
+void Window::glfw_close_window_callback(GLFWwindow *window)
 {
     using namespace events;
     Event ev;
@@ -188,7 +190,7 @@ void Window::glfw_close_window_callback(GLFWwindow * window)
     post_event(ev);
 }
 
-void Window::glfw_iconify_window_callback(GLFWwindow * window, i32 iconified)
+void Window::glfw_iconify_window_callback(GLFWwindow *window, i32 iconified)
 {
     using namespace events;
     Event ev;
@@ -197,7 +199,7 @@ void Window::glfw_iconify_window_callback(GLFWwindow * window, i32 iconified)
     post_event(ev);
 }
 
-void Window::glfw_maximize_window_callback(GLFWwindow * window, i32 maximized)
+void Window::glfw_maximize_window_callback(GLFWwindow *window, i32 maximized)
 {
     using namespace events;
     Event ev;
@@ -206,7 +208,7 @@ void Window::glfw_maximize_window_callback(GLFWwindow * window, i32 maximized)
     post_event(ev);
 }
 
-void Window::glfw_window_position_callback(GLFWwindow * window, i32 x_pos, i32 y_pos)
+void Window::glfw_window_position_callback(GLFWwindow *window, i32 x_pos, i32 y_pos)
 {
     using namespace events;
     Event ev;
@@ -215,7 +217,7 @@ void Window::glfw_window_position_callback(GLFWwindow * window, i32 x_pos, i32 y
     post_event(ev);
 }
 
-void Window::glfw_franebuffer_resized_callback(GLFWwindow * window, i32 width, i32 height)
+void Window::glfw_franebuffer_resized_callback(GLFWwindow *window, i32 width, i32 height)
 {
     using namespace events;
     Event ev;
@@ -224,9 +226,7 @@ void Window::glfw_franebuffer_resized_callback(GLFWwindow * window, i32 width, i
     post_event(ev);
 }
 
-namespace init_param_key
-{
-namespace window
+namespace init_param_key::window
 {
 /// String - title of window - defaults to "New Window"
 const String TITLE = "TITLE";
@@ -259,53 +259,49 @@ const String FOCUSED = "FOCUSED";
 /// bool - Center the cursor on fullscreen windows - ignored for windowed mode windows - default is true
 const String CENTER_CURSOR = "CENTER_CURSOR";
 
-} // namespace window
-} // namespace init_param_key
+} // namespace init_param_key::window
 
 namespace events
 {
-namespace window
+namespace window::closed
 {
-namespace closed
-{
-const u32 id = str_hash("Window_Closed");
-} // namespace closed
+const u32 id = Str_Hash("Window_Closed").value();
+} // namespace window::closed
 
-namespace resized
+namespace window::resized
 {
-const u32 id = str_hash("Window_Resized");
+const u32 id = Str_Hash("Window_Resized").value();
 const String new_size = "new_size";
-} // namespace resized
+} // namespace window::resized
 
-namespace focus_change
+namespace window::focus_change
 {
-const u32 id = str_hash("Window_Focus_Change");
+const u32 id = Str_Hash("Window_Focus_Change").value();
 const String focused = "focused";
-} // namespace focus_change
+} // namespace window::focus_change
 
-namespace iconified
+namespace window::iconified
 {
-const u32 id = str_hash("Window_Iconified");
+const u32 id = Str_Hash("Window_Iconified").value();
 const String iconified = "iconified";
-} // namespace iconified
+} // namespace window::iconified
 
-namespace maximized
+namespace window::maximized
 {
-const u32 id = str_hash("Window_Maximized");
+const u32 id = Str_Hash("Window_Maximized").value();
 const String maximized = "maximized";
-} // namespace maximized
+} // namespace window::maximized
 
-namespace moved
+namespace window::moved
 {
-const u32 id = str_hash("Window_Moved");
+const u32 id = Str_Hash("Window_Moved").value();
 const String new_pos = "new_pos";
-} // namespace moved
+} // namespace window::moved
 
-namespace framebuffer_resized
+namespace window::framebuffer_resized
 {
-const u32 id = str_hash("Framebuffer_Resized");
+const u32 id = Str_Hash("Framebuffer_Resized").value();
 const String new_size = "new_size";
-} // namespace framebuffer_resized
-} // namespace window
+} // namespace window::framebuffer_resized
 } // namespace events
-} // namespace noble_steed
+} // namespace noble_steed::graphics
