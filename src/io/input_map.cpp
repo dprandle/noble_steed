@@ -8,26 +8,19 @@
 
 namespace noble_steed
 {
-Input_Action_Trigger::Input_Action_Trigger(const String & name, const Trigger_Condition & tcond, Trigger_State tstate):
-    name_hash(Str_Hash(name).value()), condition(tcond), trigger_state(tstate)
+Input_Action_Trigger::Input_Action_Trigger(const Str_Hash &name, const Trigger_Condition &tcond, Trigger_State tstate)
+    : name_hash(name), condition(tcond), trigger_state(tstate)
 {
     if (tcond.input_code <= GLFW_MOUSE_BUTTON_LAST)
         trigger_state = T_MOUSE_MOVE_OR_SCROLL;
 }
 
-Input_Action_Trigger::Input_Action_Trigger(u32 nm_hash, const Trigger_Condition & tcond, Trigger_State tstate):
-    name_hash(nm_hash), condition(tcond), trigger_state(tstate)
-{
-    if (tcond.input_code <= GLFW_MOUSE_BUTTON_LAST)
-        trigger_state = T_MOUSE_MOVE_OR_SCROLL;
-}
-
-bool Input_Action_Trigger::operator==(const Input_Action_Trigger & rhs) const
+bool Input_Action_Trigger::operator==(const Input_Action_Trigger &rhs) const
 {
     return (name_hash == rhs.name_hash && condition == rhs.condition && trigger_state == rhs.trigger_state);
 }
 
-bool Input_Context::add_trigger(const Input_Action_Trigger & trigger)
+bool Input_Context::add_trigger(const Input_Action_Trigger &trigger)
 {
     // Make sure we have no absolute duplicates (not allowed due to stacking contexts)
     Trigger_Range tr = get_triggers(trigger.condition);
@@ -42,7 +35,7 @@ bool Input_Context::add_trigger(const Input_Action_Trigger & trigger)
     return true;
 }
 
-bool Input_Context::remove_trigger(const Input_Action_Trigger & trigger)
+bool Input_Context::remove_trigger(const Input_Action_Trigger &trigger)
 {
     auto iter = t_map_.begin();
     while (iter != t_map_.end())
@@ -57,7 +50,7 @@ bool Input_Context::remove_trigger(const Input_Action_Trigger & trigger)
     return false;
 }
 
-u32 Input_Context::remove_triggers(const Trigger_Condition & cond)
+u32 Input_Context::remove_triggers(const Trigger_Condition &cond)
 {
     u32 ret = 0;
     Trigger_Range tr = get_triggers(cond);
@@ -69,52 +62,50 @@ u32 Input_Context::remove_triggers(const Trigger_Condition & cond)
     return ret;
 }
 
-Trigger_Range Input_Context::get_triggers(const Trigger_Condition & cond)
+Trigger_Range Input_Context::get_triggers(const Trigger_Condition &cond)
 {
-    
     return t_map_.equal_range(cond.lookup_key);
 }
 
 Input_Map::Input_Map()
 {}
 
-Input_Map::Input_Map(const Input_Map & copy_)
+Input_Map::Input_Map(const Input_Map &copy_)
 {}
 
 Input_Map::~Input_Map()
 {}
 
-Input_Map & Input_Map::operator=(Input_Map rhs)
+Input_Map &Input_Map::operator=(Input_Map rhs)
 {
     return *this;
 }
 
-Input_Context * Input_Map::add_context(const String & name, const Input_Context & to_add)
+Input_Context *Input_Map::add_context(const Str_Hash &name, const Input_Context &to_add)
 {
-    auto ret = contexts_.emplace(Str_Hash(name).value(), to_add);
+    auto ret = contexts_.emplace(name, to_add);
     if (ret.second)
         return &ret.first->second;
     return nullptr;
 }
 
-Input_Context * Input_Map::get_context(const String & name)
+Input_Context *Input_Map::get_context(const Str_Hash &name)
 {
-    auto iter = contexts_.find(Str_Hash(name).value());
+    auto iter = contexts_.find(name);
     if (iter != contexts_.end())
         return &iter->second;
     return nullptr;
 }
 
-bool Input_Map::remove_context(const String & name)
+bool Input_Map::remove_context(const Str_Hash &name)
 {
-    u32 id = Str_Hash(name).value();
-    auto count = contexts_.erase(id);
+    auto count = contexts_.erase(name);
     return count > 0;
 }
 
-bool Input_Map::rename_context(const String & old_name, const String & new_name)
+bool Input_Map::rename_context(const Str_Hash &old_name, const Str_Hash &new_name)
 {
-    Input_Context * old_ic = get_context(old_name);
+    Input_Context *old_ic = get_context(old_name);
     if (!old_ic)
         return false;
 

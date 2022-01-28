@@ -5,13 +5,10 @@
 
 namespace noble_steed
 {
-Event::Event() : id(INVALID_ID), data()
+Event::Event() : id(), data()
 {}
 
-Event::Event(const String & name, const Variant_Map & data_) : id(Str_Hash(name)), data(data_)
-{}
-
-Event::Event(u32 id_, const Variant_Map & data_): id(id_), data(data_)
+Event::Event(const Str_Hash &id_, const Variant_Map & data_): id(id_), data(data_)
 {}
 
 void Event_Buffer::push(const Event & event)

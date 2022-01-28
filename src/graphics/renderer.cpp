@@ -53,8 +53,10 @@ void Renderer::render_frame()
     bgfx::touch(0);
 }
 
-void Renderer::initialize(const Variant_Map &init_params)
+void Renderer::initialize(const SPtr<Window> & window, const Variant_Map &init_params)
 {
+    _window = window;
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     shader_platform_ = "windows";
 #elif __APPLE__
@@ -98,12 +100,12 @@ void Renderer::initialize(const Variant_Map &init_params)
         ilog("No shader binary directory provided - using default {}", shader_bin_rel_dir_);
     }
 
-    itup2 sz = application.get_window()->get_framebuffer_size();
+    itup2 sz = _window->get_framebuffer_size();
 
     /// This will be moved to the renderer eventually
     bgfx::Init bgfx_init = {};
-    bgfx_init.platformData.nwh = application.get_window()->get_native_window();
-    bgfx_init.platformData.ndt = application.get_window()->get_native_display();
+    bgfx_init.platformData.nwh = _window->get_native_window();
+    bgfx_init.platformData.ndt = _window->get_native_display();
     if (shader_profile_ == "glsl")
     {
         bgfx_init.type = bgfx::RendererType::OpenGL;

@@ -12,24 +12,15 @@ class Application
     Application();
     ~Application();
 
-    void initialize(const Variant_Map &init_params = Variant_Map());
-    void terminate();
-
-    Window *get_window();
-
     Context *get_context();
 
     static Application &inst();
 
-    int exec();
+    int exec(const SPtr<Window> &window, const Variant_Map &init_params);
 
   private:
-    Window *window_;
-    Context *ctxt_;
-
+    UPtr<Context> ctxt_;
     static Application *this_global_ptr;
-
-    static void glfw_error_callback(i32 error, const char *description);
 };
 
 #define application Application::inst()

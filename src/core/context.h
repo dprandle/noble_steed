@@ -36,6 +36,7 @@ extern const String HEADLESS;
 
 class World;
 class Logger;
+class Window;
 class Resource_Cache;
 class Resource;
 class Component;
@@ -48,7 +49,7 @@ class Context
     Context();
     ~Context();
 
-    void initialize(const Variant_Map & init_params = Variant_Map());
+    bool initialize(const SPtr<Window> & window, const Variant_Map & init_params = Variant_Map());
 
     void terminate();
 
@@ -76,6 +77,7 @@ class Context
 
   private:
     Free_List_Allocator _main_alloc;
+    SPtr<Window> _window;
     Logger * logger_;
     World * world_;
     Hash_Map<String_Hash, Hash_Set<Context_Obj *>> event_subscribers_;

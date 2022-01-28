@@ -25,7 +25,7 @@ namespace noble_steed
 {
 Application * Application::this_global_ptr = nullptr;
 
-Application::Application() : window_(nullptr), ctxt_(nullptr)
+Application::Application() : ctxt_(make_unique<Context>())
 {
     this_global_ptr = this;
 }
@@ -33,31 +33,16 @@ Application::Application() : window_(nullptr), ctxt_(nullptr)
 Application::~Application()
 {}
 
-// TODO Add vars window width, height, name
-void Application::initialize(const Variant_Map & init_params)
-{
-    // Create a GLFW window without an OpenGL context.
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-    {
-        return;
-    }    
-
-    window_ = new Window;
-    if (!window_->initialize(init_params))
-        return;
-
-    ctxt_ = new Context;
-    ctxt_->initialize(init_params);
-}
-
 Application & Application::inst()
 {
     return *this_global_ptr;
 }
 
-int Application::exec()
+int Application::exec(const SPtr<Window> & window, const Variant_Map & init_params)
 {
+    if (!ctxt_->initialize(window, init_params))
+        return -1;
+    
     // pybind11::scoped_interpreter guard{};
     // auto m = pybind11::module::import("Noble_Steed");
     // pybind11::object obj = pybind11::cast(&Context::inst());
@@ -74,13 +59,6 @@ int Application::exec()
     // }
 
     ctxt_->terminate();
-    delete ctxt_;
-
-    window_->terminate();
-    delete window_;
-    
-
-    glfwTerminate();
     return 0;
 
     // pybind11::exec(R"(
@@ -91,24 +69,9 @@ int Application::exec()
     // ctxt.sys_.log_internal();
 }
 
-Window * Application::get_window()
-{
-    return window_;
-}
-
 Context * Application::get_context()
 {
-    return ctxt_;
-}
-
-void Application::terminate()
-{
-    //ns_eng->set_running(false);
-}
-
-void Application::glfw_error_callback(i32 error, const char * description)
-{
-    elog("GLFW Error {}",description);
+    return ctxt_.get();
 }
 
 } // namespace noble_steed

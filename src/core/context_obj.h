@@ -11,9 +11,8 @@ namespace noble_steed
 struct Event
 {
     Event();
-    Event(const String & name, const Variant_Map & data_=Variant_Map());
-    Event(u32 id_, const Variant_Map & data_=Variant_Map());
-    u32 id;
+    Event(const Str_Hash & id_, const Variant_Map & data_=Variant_Map());
+    Str_Hash id;
     std::chrono::nanoseconds timestamp;
     Variant_Map data;
 };

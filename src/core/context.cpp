@@ -17,6 +17,7 @@
 #include "../graphics/renderer.h"
 #include "../graphics/shader.h"
 #include "../graphics/mesh.h"
+#include "../graphics/window.h"
 
 namespace noble_steed
 {
@@ -24,7 +25,7 @@ namespace noble_steed
 Context * Context::s_this_ = nullptr;
 const uint8_t MIN_CHUNK_ALLOC_SIZE = 8;
 const String INIT_CWD_KEY = "cwd";
-const u32 INVALID_ID = static_cast<u32>(-1);
+
 /// Command line tools used by engine location (directory)
 const String COMMAND_LINE_TOOLS_DIR = "tools";
 
@@ -48,8 +49,12 @@ Context::Context()
 Context::~Context()
 {}
 
-void Context::initialize(const Variant_Map & init_params)
+bool Context::initialize(const SPtr<Window> & window, const Variant_Map & init_params)
 {
+    _window = window;
+    if (!_window->initialize(init_params))
+        return false;
+
     auto fiter = init_params.find(INIT_CWD_KEY);
     if (fiter != init_params.end())
     {
@@ -83,6 +88,8 @@ void Context::initialize(const Variant_Map & init_params)
     // Do rest of initialization
     resource_cache_->initialize(init_params);
     world_->initialize(init_params);
+
+    return true;
 }
 
 void Context::terminate()

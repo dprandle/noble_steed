@@ -1,10 +1,10 @@
 #pragma once
 
-#include <bgfx/bgfx.h>
 #include "../core/system.h"
 
 namespace noble_steed
 {
+class Window;
 
 /// Initialization parameters for the renderer
 namespace init_param_key::renderer
@@ -36,7 +36,7 @@ class Renderer : public System
 
     void render_frame();
 
-    void initialize(const Variant_Map &init_params);
+    void initialize(const SPtr<Window> & window, const Variant_Map &init_params);
 
     void terminate();
 
@@ -50,6 +50,7 @@ class Renderer : public System
     void swap(const Renderer &rhs);
 
   private:
+    SPtr<Window> _window;
     String shader_platform_;
     String shader_profile_;
     String shader_bin_rel_dir_;

@@ -49,57 +49,34 @@ void Logger::add_logger(const String & logger_name, const Log_Level_Info & log_l
     daily_file_path += ".log";
     per_exec_file_path += ".log";
 
+
 #ifdef DEBUG_BUILD
-    if (log_level_inf.console_debug_level != Off)
+    bool make_console = log_level_inf.console_debug_level != Off;
+    bool make_daily_file = log_level_inf.daily_file_debug_level != Off;
+    bool make_per_exec_file = log_level_inf.per_exec_file_debug_level != Off;
+#else
+    bool make_console = log_level_inf.console_release_level != Off;
+    bool make_daily_file = log_level_inf.daily_file_release_level != Off;
+    bool make_per_exec_file = log_level_inf.per_exec_file_release_level != Off;
+#endif
+    if (make_console)
     {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         console_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.console_debug_level));
         multi_sink_list.push_back(console_sink);
     }
-
-    if (log_level_inf.daily_file_debug_level != Off)
+    if (make_daily_file)
     {
         auto daily_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(daily_file_path, false);
         daily_file_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.daily_file_debug_level));
         multi_sink_list.push_back(daily_file_sink);
     }
-
-    if (log_level_inf.per_exec_file_debug_level != Off)
+    if (make_per_exec_file)
     {
         auto per_exec_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(per_exec_file_path, true);
         per_exec_file_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.per_exec_file_debug_level));
         multi_sink_list.push_back(per_exec_file_sink);
     }
-#else
-    if (log_level_inf.console_release_level != Off)
-    {
-        auto console_sink_deleter = [](spdlog::sinks::stdout_color_sink_mt * sink) { ns_ctxt.free(sink); };
-        std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink(ns_ctxt.malloc<spdlog::sinks::stdout_color_sink_mt>(),
-                                                                          console_sink_deleter);
-        console_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.console_release_level));
-        multi_sink_list.push_back(console_sink);
-    }
-
-    if (log_level_inf.daily_file_release_level != Off)
-    {
-        auto file_sink_deleter = [](spdlog::sinks::basic_file_sink_mt * sink) { ns_ctxt.free(sink); };
-        std::shared_ptr<spdlog::sinks::basic_file_sink_mt> daily_file_sink(ns_ctxt.malloc<spdlog::sinks::basic_file_sink_mt>(daily_file_path, false),
-                                                                           file_sink_deleter);
-        daily_file_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.daily_file_release_level));
-        multi_sink_list.push_back(daily_file_sink);
-    }
-
-    if (log_level_inf.per_exec_file_release_level != Off)
-    {
-        auto file_sink_deleter = [](spdlog::sinks::basic_file_sink_mt * sink) { ns_ctxt.free(sink); };
-        std::shared_ptr<spdlog::sinks::basic_file_sink_mt> per_exec_file_sink(
-            ns_ctxt.malloc<spdlog::sinks::basic_file_sink_mt>(per_exec_file_path, true), file_sink_deleter);
-        per_exec_file_sink->set_level(static_cast<spdlog::level::level_enum>(log_level_inf.per_exec_file_release_level));
-
-        multi_sink_list.push_back(per_exec_file_sink);
-    }
-#endif
-
     auto logger = std::make_shared<spdlog::logger>(logger_name, multi_sink_list.begin(), multi_sink_list.end());
     logger->set_level(spdlog::level::trace);
     logger->flush_on(spdlog::level::info);

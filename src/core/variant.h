@@ -11,6 +11,7 @@
 #include "../container/map.h"
 #include "../container/hash_set.h"
 #include "../container/hash_map.h"
+#include "../core/string_hash.h"
 
 #include <memory>
 #include "basic_types.h"
@@ -19,8 +20,8 @@ namespace noble_steed
 {
 class Variant;
 
-using Variant_Hash = Hash_Map<String, Variant>;
-using Variant_Map = Map<String, Variant>;
+using Variant_Hash = Hash_Map<Str_Hash, Variant>;
+using Variant_Map = Map<Str_Hash, Variant>;
 using Variant_List = List<Variant>;
 using Variant_Vec = Vector<Variant>;
 using Variant_Map_Set = Hash_Set<Variant>;
@@ -203,7 +204,7 @@ class Variant
 };
 
 template<class T>
-bool grab_param(const Variant_Map & items, const String & name, T & to_fill)
+bool grab_param(const Variant_Map & items, const Str_Hash & name, T & to_fill)
 {
     auto fiter = items.find(name);
     if (fiter != items.end() && fiter->second.is_type<T>())

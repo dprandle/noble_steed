@@ -2,82 +2,64 @@
 
 #include "../core/variant.h"
 
-struct GLFWwindow;
-
 namespace noble_steed
-
 {
+
 class Window
 {
   public:
     Window();
-    ~Window();
+    virtual ~Window();
 
-    bool initialize(const Variant_Map &init_params);
+    virtual bool initialize(const Variant_Map &init_params) = 0;
 
-    void terminate();
+    virtual void terminate() = 0;
 
-    bool closed();
+    virtual void *get_native_window() = 0;
 
-    void *get_native_window();
+    virtual void *get_native_display() = 0;
 
-    void *get_native_display();
+    virtual itup2 get_size() = 0;
 
-    GLFWwindow *get_glfw_window();
+    virtual itup2 get_framebuffer_size() = 0;
 
-    itup2 get_size();
-
-    itup2 get_framebuffer_size();
+    virtual dtup2 get_cursor_pos() = 0;
 
     dtup2 get_normalized_cursor_pos();
-
-    dtup2 get_cursor_pos();
-
-  private:
-    GLFWwindow *window_;
-    bool close_window_;
-
-    static void glfw_resize_window_callback(GLFWwindow *window, i32 width, i32 height);
-    static void glfw_focus_change_callback(GLFWwindow *window, i32 focused);
-    static void glfw_close_window_callback(GLFWwindow *window);
-    static void glfw_iconify_window_callback(GLFWwindow *window, i32 iconified);
-    static void glfw_maximize_window_callback(GLFWwindow *window, i32 maximized);
-    static void glfw_window_position_callback(GLFWwindow *window, i32 x_pos, i32 y_pos);
-    static void glfw_franebuffer_resized_callback(GLFWwindow *window, i32 width, i32 height);
 };
 
 namespace init_param_key::window
 {
 /// String - title of window - defaults to "New Window"
-extern const String TITLE;
+extern const Str_Hash TITLE;
 
 /// Bool - Should the window be fullscreen or not? If not specified will default to false
-extern const String FULLSCREEN;
+extern const Str_Hash FULLSCREEN;
 
 /// itup2 - Size of window in screen coordinates.. if not provided then for fullscreen will be default video mode size, for windowed
 /// it will be half of that.
-extern const String SIZE;
+extern const Str_Hash SIZE;
 
 /// bool - Specify whether the windowed mode window will be visible on creation - ignored for fullscreen windows - default is true
-extern const String VISIBLE;
+extern const Str_Hash VISIBLE;
 
 /// bool - Specify whether the windowed mode window should have border and normal close/title bar/etc - ignored for full screen windows - default is true
-extern const String DECORATED;
+extern const Str_Hash DECORATED;
 
 /// bool - Maximize window on first creation - ignored for full screen windows - defualt is false
-extern const String MAXIMIZE;
+extern const Str_Hash MAXIMIZE;
 
 /// bool - Always show this window on top of others - ignored for full screen windows - default is false
-extern const String ALWAS_ON_TOP;
+extern const Str_Hash ALWAS_ON_TOP;
 
 /// bool - Auto iconify fullscreen window when it looses focus - ignored for windowed mode windows - default is true
-extern const String FULLSCREEN_AUTO_ICONIFY;
+extern const Str_Hash FULLSCREEN_AUTO_ICONIFY;
 
 /// bool - Focus this window when first created - ignored for full screen and hidden windows - default is true
-extern const String FOCUSED;
+extern const Str_Hash FOCUSED;
 
 /// bool - Center the cursor on fullscreen windows - ignored for windowed mode windows - default is true
-extern const String CENTER_CURSOR;
+extern const Str_Hash CENTER_CURSOR;
 
 } // namespace init_param_key::window
 
@@ -85,60 +67,103 @@ namespace events::window
 {
 namespace closed
 {
-extern const u32 id;
+extern const Str_Hash id;
 } // namespace closed
 
 /// This event is posted whenever the window is resized
 namespace resized
 {
-extern const u32 id;
+extern const Str_Hash id;
 /// itup2 - new screen size in screen coordinates
-extern const String new_size;
+extern const Str_Hash new_size;
 } // namespace resized
 
 /// This event is posted whenever the focus is gained or lost on the main window
 namespace focus_change
 {
-extern const u32 id;
+extern const Str_Hash id;
 /// i8 - 1 for window focused and 0 for not
-extern const String focused;
+extern const Str_Hash focused;
+/// dtup2 - new cursor position in screen coordinates
+extern const Str_Hash new_pos;
 } // namespace focus_change
 
 /// This event is posted whenever the window is iconified or restored from iconified. Iconified basically means minimized.
 namespace iconified
 {
-extern const u32 id;
+extern const Str_Hash id;
 /// i8 - 1 for window iconified and 0 for not
-extern const String iconified;
+extern const Str_Hash iconified;
 } // namespace iconified
 
 /// This event is posted whenever the window is maximized or restored from maximized
 namespace maximized
 {
-extern const u32 id;
+extern const Str_Hash id;
 /// i8 - 1 for window maximized and 0 for not
-extern const String maximized;
+extern const Str_Hash maximized;
 } // namespace maximized
 
 /// This event is posted whenever the window is moved - this event is never posted in full screen mode
 namespace moved
 {
-
-extern const u32 id;
+extern const Str_Hash id;
 /// itup2 - new window position - upper left corner in screen coordinates
-extern const String new_pos;
-
+extern const Str_Hash new_pos;
 } // namespace moved
 
 /// This event is posted whenever the framebuffer is resized (the main window default framebuffer)
 namespace framebuffer_resized
 {
-
-extern const u32 id;
+extern const Str_Hash id;
 /// itup2 - new framebuffer size in pixels
-extern const String new_size;
-
+extern const Str_Hash new_size;
 } // namespace framebuffer_resized
+
+namespace key_press
+{
+extern const Str_Hash id;
+/// i16 - key code (KEY_BLA)
+extern const Str_Hash key;
+/// i16 - os specific scancode
+extern const Str_Hash scancode;
+/// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
+extern const Str_Hash action;
+/// i16 - bitmask of all keyboard modifiers
+extern const Str_Hash mods;
+} // namespace key_press
+
+namespace mouse_press
+{
+extern const Str_Hash id;
+/// i16 - mouse button code (MOUSE_BUTTON_BLA)
+extern const Str_Hash button;
+/// i8 - action is either Trigget_State::T_PRESS or Trigger_State::T_RELEASE
+extern const Str_Hash action;
+/// i16 - bitmask of all keyboard modifiers
+extern const Str_Hash mods;
+} // namespace mouse_press
+
+namespace scroll
+{
+extern const Str_Hash id;
+/// i16 - bitmask of all keyboard modifiers
+extern const Str_Hash mods;
+/// double - scroll amount in x direction - this will be zero in normal cases
+extern const Str_Hash x_offset;
+/// double - scroll amount in vertical - this is the var of interest
+extern const Str_Hash y_offset;
+} // namespace scroll
+
+/// This event is posted whenever the cursor is moved with the window having focus.
+namespace cursor_moved
+{
+extern const Str_Hash id;
+/// i16 - bitmask of all keyboard modifiers
+extern const Str_Hash mods;
+/// dtup2 - new cursor position in screen coordinates
+extern const Str_Hash new_pos;
+} // namespace cursor_moved
 
 } // namespace events::window
 
