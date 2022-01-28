@@ -2,7 +2,7 @@
 
 #include "allocator.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 
 class Stack_Allocator : public Allocator

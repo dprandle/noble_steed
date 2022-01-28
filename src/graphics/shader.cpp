@@ -3,9 +3,8 @@
 #include "../io/logger.h"
 #include "../core/context.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
-using namespace io;
 const String SHADER_LIB_LOCATION = "data/shader_lib";
 
 Shader::Shader() : Resource(), prog_handle_(), vertex_src_(), fragment_src_(), varying_def_src_(), binary_extension_(".shbin")
@@ -38,7 +37,7 @@ bool Shader::compile(const String &platform, const String &shader_model_profile,
     // First, create text files from each src string (if not empty)
     String containing_dir = get_relative_containing_dir_path();
     String varying_fname = containing_dir + "varying.def.sc";
-    if (!io::fs::write_string_to_file(varying_fname, varying_def_src_))
+    if (!fs::write_string_to_file(varying_fname, varying_def_src_))
     {
         wlog("Could not write varying def {} to file - file could not be opened", varying_fname);
         return ret;
@@ -219,4 +218,4 @@ void Shader::swap(Shader &rhs)
     Resource::swap(rhs);
 }
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

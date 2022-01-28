@@ -3,7 +3,7 @@
 #include <bgfx/bgfx.h>
 #include "../core/system.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 /// Initialization parameters for the renderer
@@ -55,4 +55,4 @@ class Renderer : public System
     String shader_bin_rel_dir_;
 };
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

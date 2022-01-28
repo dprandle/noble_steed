@@ -5,12 +5,7 @@
 namespace noble_steed
 {
 class Context;
-
-namespace graphics
-{
 class Window;
-}
-
 class Application
 {
   public:
@@ -20,7 +15,7 @@ class Application
     void initialize(const Variant_Map &init_params = Variant_Map());
     void terminate();
 
-    graphics::Window *get_window();
+    Window *get_window();
 
     Context *get_context();
 
@@ -29,7 +24,7 @@ class Application
     int exec();
 
   private:
-    graphics::Window *window_;
+    Window *window_;
     Context *ctxt_;
 
     static Application *this_global_ptr;

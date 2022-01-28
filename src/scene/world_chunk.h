@@ -4,7 +4,7 @@
 #include "../core/resource.h"
 #include "../container/tuple.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 class Entity;
@@ -53,4 +53,4 @@ class World_Chunk : public Resource
     Hash_Map<u32, Entity *> ents_;
 };
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

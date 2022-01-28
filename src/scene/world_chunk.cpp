@@ -4,7 +4,7 @@
 #include "entity.h"
 #include "../core/context.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 World_Chunk::World_Chunk() : Resource()
@@ -145,4 +145,4 @@ void World_Chunk::on_ent_destroyed(u32 id)
     ents_.erase(id);
 }
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

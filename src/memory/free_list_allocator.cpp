@@ -6,7 +6,7 @@
 #include "free_list_allocator.h"
 #include "utils.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 
 Free_List_Allocator::Free_List_Allocator(sizet total_size, const Placement_Policy p_policy, Mem_Resource_Base *upstream)
@@ -173,4 +173,4 @@ void Free_List_Allocator::do_reset()
     _free_list.insert(nullptr, first_node);
 }
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

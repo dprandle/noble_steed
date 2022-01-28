@@ -23,8 +23,6 @@
 
 namespace noble_steed
 {
-using namespace graphics;
-
 Application * Application::this_global_ptr = nullptr;
 
 Application::Application() : window_(nullptr), ctxt_(nullptr)

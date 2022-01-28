@@ -21,7 +21,7 @@
 
 #include "../scene/world.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 // Initialization parameters for the renderer
@@ -179,4 +179,4 @@ void Renderer::handle_framebuffer_resize(Event &ev)
     // bgfx::setViewRect(0, 0, 0, new_size.w, new_size.h);
 }
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

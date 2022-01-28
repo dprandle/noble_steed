@@ -2,7 +2,7 @@
 #include "../io/logger.h"
 #include "../core/variant.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 Vertex_Buffer::Vertex_Buffer() : handle(bgfx::kInvalidHandle), name(), flags(0), layout(), data(nullptr), data_size(0), dynamic(false)
@@ -346,4 +346,4 @@ u32 Mesh::submesh_count()
     return submeshes_.size();
 }
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

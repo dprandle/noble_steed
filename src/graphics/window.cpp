@@ -15,7 +15,7 @@
 #include "../core/context_obj.h"
 #include "../core/string_hash.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 Window *win = nullptr;
@@ -261,47 +261,49 @@ const String CENTER_CURSOR = "CENTER_CURSOR";
 
 } // namespace init_param_key::window
 
-namespace events
+namespace events::window
 {
-namespace window::closed
+namespace closed
 {
 const u32 id = Str_Hash("Window_Closed").value();
-} // namespace window::closed
+} // namespace closed
 
-namespace window::resized
+namespace resized
 {
 const u32 id = Str_Hash("Window_Resized").value();
 const String new_size = "new_size";
-} // namespace window::resized
+} // namespace resized
 
-namespace window::focus_change
+namespace focus_change
 {
 const u32 id = Str_Hash("Window_Focus_Change").value();
 const String focused = "focused";
-} // namespace window::focus_change
+} // namespace focus_change
 
-namespace window::iconified
+namespace iconified
 {
 const u32 id = Str_Hash("Window_Iconified").value();
 const String iconified = "iconified";
-} // namespace window::iconified
+} // namespace iconified
 
-namespace window::maximized
+namespace maximized
 {
 const u32 id = Str_Hash("Window_Maximized").value();
 const String maximized = "maximized";
-} // namespace window::maximized
+} // namespace maximized
 
-namespace window::moved
+namespace moved
 {
 const u32 id = Str_Hash("Window_Moved").value();
 const String new_pos = "new_pos";
-} // namespace window::moved
+} // namespace moved
 
-namespace window::framebuffer_resized
+namespace framebuffer_resized
 {
 const u32 id = Str_Hash("Framebuffer_Resized").value();
 const String new_size = "new_size";
-} // namespace window::framebuffer_resized
-} // namespace events
-} // namespace noble_steed::graphics
+} // namespace framebuffer_resized
+
+} // namespace events::window
+
+} // namespace noble_steed

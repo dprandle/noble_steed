@@ -1,9 +1,9 @@
 #pragma once
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 class Material
 {};
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

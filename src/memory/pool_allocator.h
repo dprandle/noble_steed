@@ -3,7 +3,7 @@
 #include "allocator.h"
 #include "../container/stack_linked_list.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 class Pool_Allocator : public Allocator
 {
@@ -27,4 +27,4 @@ class Pool_Allocator : public Allocator
     sizet _chunk_size;
     Stack_Linked_List<Free_Header> _free_list;
 };
-} // namespace noble_steed::memory
+} // namespace noble_steed

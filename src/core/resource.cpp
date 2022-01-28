@@ -75,7 +75,7 @@ String Resource::get_relative_path()
 
 String Resource::get_basename()
 {
-    io::fs::Path pth = get_filename();
+    fs::Path pth = get_filename();
     return pth.stem();
 }
 
@@ -86,7 +86,7 @@ String Resource::get_relative_containing_dir_path()
 
 String Resource::get_subdir_dir()
 {
-    io::fs::Path pth = get_subdir_path();
+    fs::Path pth = get_subdir_path();
     return pth.remove_filename();
 }
 
@@ -97,7 +97,7 @@ String Resource::get_subdir_path()
 
 String Resource::get_filename()
 {
-    io::fs::Path pth = get_subdir_path();
+    fs::Path pth = get_subdir_path();
     return pth.filename();
 }
 

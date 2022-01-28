@@ -3,7 +3,7 @@
 #include <memory_resource>
 #include "../core/basic_types.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 using Mem_Resource_Base = std::pmr::memory_resource;
 Mem_Resource_Base * get_default_resource();

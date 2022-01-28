@@ -149,7 +149,7 @@ void Input_Translator::handle_scroll(Event & ev)
 
 void Input_Translator::handle_focus_change(Event & ev)
 {
-    using namespace graphics::events;
+    using namespace events;
     i8 foc = ev.data[window::focus_change::focused].get_value<i8>();
     if (foc)
     {

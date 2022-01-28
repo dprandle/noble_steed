@@ -3,7 +3,7 @@
 #include "../io/logger.h"
 #include "../core/context.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 Component::Component() : Context_Obj(), owner_id_(0)
@@ -33,4 +33,4 @@ void Component::initialize(const Variant_Map &init_params)
 void Component::terminate()
 {}
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

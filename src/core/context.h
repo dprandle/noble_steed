@@ -2,6 +2,7 @@
 
 #include "variant.h"
 #include "signal.h"
+
 #include "../container/hash_set.h"
 
 #include "../memory/free_list_allocator.h"
@@ -33,17 +34,14 @@ extern const String HEADLESS;
 } // namespace context
 } // namespace init_param_key
 
-namespace scene
-{
 class World;
-}
-
 class Logger;
 class Resource_Cache;
 class Resource;
 class Component;
 class Context_Obj;
 struct Event;
+
 class Context
 {
   public:
@@ -56,7 +54,7 @@ class Context
 
     Logger * get_logger();
 
-    scene::World * get_world();
+    World * get_world();
 
     Resource_Cache * get_resource_cache();
 
@@ -77,9 +75,9 @@ class Context
     void post_event_to_queues(const String & event_name, const Variant_Map & data = Variant_Map());
 
   private:
-    memory::Free_List_Allocator _main_alloc;
+    Free_List_Allocator _main_alloc;
     Logger * logger_;
-    scene::World * world_;
+    World * world_;
     Hash_Map<String_Hash, Hash_Set<Context_Obj *>> event_subscribers_;
     Resource_Cache * resource_cache_;
     static Context * s_this_;

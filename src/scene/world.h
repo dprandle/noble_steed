@@ -11,7 +11,7 @@ class Pool_Allocator;
 
 /// Init params key to override the default entity allocation amount
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 const String ENTITY_ALLOC_KEY = "Entity_Alloc";
@@ -74,4 +74,4 @@ class World : public Context_Obj
     SLOT_OBJECT
 };
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

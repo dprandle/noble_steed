@@ -5,7 +5,7 @@
 #include "../core/resource.h"
 #include "../container/hash_set.h"
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 class Shader : public Resource
@@ -74,4 +74,4 @@ class Shader : public Resource
     Hash_Set<String> extra_include_dirs_;
 };
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

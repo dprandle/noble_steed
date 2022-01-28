@@ -8,7 +8,7 @@
 #include "../io/input_translator.h"
 #include "../graphics/renderer.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 World::World() : ent_ptrs_(), ent_id_stack_(), ent_current_id_(0)
@@ -91,4 +91,4 @@ bool World::destroy(Entity *ent)
 {
     return false;
 }
-} // namespace noble_steed::scene
+} // namespace noble_steed

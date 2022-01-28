@@ -241,7 +241,7 @@ bool Resource_Cache::load_package(String package, bool make_current)
     {
         // Remove the final "/"
         String path_str = package.substr(0, package.size() - 1);
-        if (io::fs::is_directory(path_str) || io::fs::create_directories(path_str))
+        if (fs::is_directory(path_str) || fs::create_directories(path_str))
         {
             ilog("Successfully created or found package dir {}", package);
         }
@@ -255,8 +255,8 @@ bool Resource_Cache::load_package(String package, bool make_current)
         // Load all resources recursively in this directory!
         ilog("Trying to load all resources in {}", package);
 
-        io::fs::Recursive_Dir_Iter dir_path_iter(path_str);
-        while (dir_path_iter != io::fs::Recursive_Dir_Iter())
+        fs::Recursive_Dir_Iter dir_path_iter(path_str);
+        while (dir_path_iter != fs::Recursive_Dir_Iter())
         {
             // fs::path rel_path = dir_path_iter->path().relative_path();
             // fs::path fname = rel_path.filename();

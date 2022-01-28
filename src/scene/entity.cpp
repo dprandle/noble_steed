@@ -5,7 +5,7 @@
 #include "../core/context.h"
 #include "../core/type_collection_db.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 Entity::Entity() : Context_Obj(), id_(0), name_(), comps_()
@@ -167,4 +167,4 @@ bool Entity::remove(Component *comp)
     return remove(typeid(*comp));
 }
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

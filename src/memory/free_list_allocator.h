@@ -3,7 +3,7 @@
 #include "allocator.h"
 #include "../container/singly_linked_list.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 
 class Free_List_Allocator : public Allocator
@@ -51,4 +51,4 @@ class Free_List_Allocator : public Allocator
     Singly_Linked_List<Free_Header> _free_list;
 };
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

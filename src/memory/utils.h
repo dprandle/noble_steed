@@ -1,7 +1,7 @@
 #pragma once
 #include "../core/basic_types.h"
 
-namespace noble_steed::memory::util
+namespace noble_steed::util
 {
 
 sizet calc_padding(sizet base_addr, sizet alignment);

@@ -3,7 +3,7 @@
 
 #include "pool_allocator.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 
 Pool_Allocator::Pool_Allocator(sizet total_size, sizet chunk_size, Mem_Resource_Base *upstream)
@@ -52,4 +52,4 @@ void Pool_Allocator::do_reset()
     }
 }
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

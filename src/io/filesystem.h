@@ -6,7 +6,7 @@
 #include "../container/string.h"
 #include "../container/vector.h"
 
-namespace noble_steed::io::fs
+namespace noble_steed::fs
 {
 using Path = std::filesystem::path;
 using Error_Code = std::error_code;

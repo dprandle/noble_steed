@@ -2,7 +2,7 @@
 
 #include "allocator.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 
 class Linear_Allocator : public Allocator
@@ -23,4 +23,4 @@ class Linear_Allocator : public Allocator
     sizet _offset;
 };
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

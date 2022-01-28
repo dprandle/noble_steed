@@ -3,7 +3,7 @@
 #include "../core/basic_types.h"
 #include "../core/context_obj.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 class Component : public Context_Obj
@@ -30,4 +30,4 @@ class Component : public Context_Obj
     u32 owner_id_;
 };
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

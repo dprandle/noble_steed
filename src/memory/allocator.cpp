@@ -1,6 +1,6 @@
 #include "allocator.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 Mem_Resource_Base *get_default_resource()
 {
@@ -36,4 +36,4 @@ bool Allocator::do_is_equal(const Mem_Resource_Base &rhs) const noexcept
     return false;
 }
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

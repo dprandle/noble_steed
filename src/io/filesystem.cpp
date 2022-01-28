@@ -9,7 +9,7 @@
 #include <mach-o/dyld.h>
 #endif
 
-namespace noble_steed::io::fs
+namespace noble_steed::fs
 {
 const u32 MAX_PATH = 200;
 

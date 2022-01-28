@@ -4,7 +4,7 @@
 #include "../core/handle.h"
 #include "../core/type_collection_db.h"
 
-namespace noble_steed::scene
+namespace noble_steed
 {
 
 struct Comp_Base
@@ -104,4 +104,4 @@ class Entity : public Context_Obj
     Hash_Map<type_index, Component *> comps_;
 };
 
-} // namespace noble_steed::scene
+} // namespace noble_steed

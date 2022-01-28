@@ -5,7 +5,7 @@
 #include "linear_allocator.h"
 #include "utils.h"
 
-namespace noble_steed::memory
+namespace noble_steed
 {
 Linear_Allocator::Linear_Allocator(sizet total_size, Mem_Resource_Base *upstream) : Allocator(total_size, upstream), _offset(0)
 {}
@@ -46,4 +46,4 @@ void Linear_Allocator::do_reset()
     _offset = 0;
 }
 
-} // namespace noble_steed::memory
+} // namespace noble_steed

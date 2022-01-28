@@ -9,7 +9,7 @@
 
 BGFX_HANDLE(Index_Buffer_Handle)
 
-namespace noble_steed::graphics
+namespace noble_steed
 {
 
 enum Index_Buffer_Type
@@ -84,8 +84,8 @@ struct Bone_Weight
 {
     Bone_Weight();
 
-    math::uvec4 indices;
-    math::vec4 weights;
+    uvec4 indices;
+    vec4 weights;
 };
 
 template<class T>
@@ -117,13 +117,13 @@ struct Vertex_Data
 
     Vector<Vertex_Buffer> buffers;
 
-    Vertex_Buffer_Data<math::vec3> positions;
-    Vertex_Buffer_Data<math::vec3> normals;
-    Vertex_Buffer_Data<math::vec3> tangents;
-    Vertex_Buffer_Data<math::vec3> bitangents;
+    Vertex_Buffer_Data<vec3> positions;
+    Vertex_Buffer_Data<vec3> normals;
+    Vertex_Buffer_Data<vec3> tangents;
+    Vertex_Buffer_Data<vec3> bitangents;
     Vertex_Buffer_Data<Bone_Weight> bone_weights;
-    Vertex_Buffer_Data<math::u8vec4> colors0;
-    Vertex_Buffer_Data<math::vec2> tex_coords_0;
+    Vertex_Buffer_Data<u8vec4> colors0;
+    Vertex_Buffer_Data<vec2> tex_coords_0;
 };
 
 struct Index_Data
@@ -190,4 +190,4 @@ class Mesh : public Resource
     Vertex_Data shared_vert_data_;
 };
 
-} // namespace noble_steed::graphics
+} // namespace noble_steed

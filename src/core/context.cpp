@@ -36,8 +36,6 @@ const String HEADLESS = "HEADLESS";
 } // namespace context
 } // namespace init_param_key
 
-using namespace memory;
-
 Context::Context()
     : _main_alloc(MB_SIZE * 4, Free_List_Allocator::FIND_FIRST),
       logger_(nullptr),
@@ -58,9 +56,9 @@ void Context::initialize(const Variant_Map & init_params)
         if (fiter->second.is_type<String>())
         {
             String val = fiter->second.get_value<String>();
-            if (io::fs::exists(val))
+            if (fs::exists(val))
             {
-                io::fs::current_path(val);
+                fs::current_path(val);
             }
             else
             {
@@ -74,13 +72,13 @@ void Context::initialize(const Variant_Map & init_params)
     }
 
     // Create log directory
-    io::fs::create_directory("logs");
+    fs::create_directory("logs");
 
     // Initialize logger before other stuff so logging works
     logger_ = static_cast<Logger*>(_main_alloc.allocate(sizeof(Logger)));
     logger_->initialize(init_params);
     resource_cache_ = static_cast<Resource_Cache*>(_main_alloc.allocate(sizeof(Resource_Cache)));
-    world_ = static_cast<scene::World*>(_main_alloc.allocate(sizeof(scene::World)));
+    world_ = static_cast<World*>(_main_alloc.allocate(sizeof(World)));
 
     // Do rest of initialization
     resource_cache_->initialize(init_params);
@@ -109,7 +107,7 @@ Logger * Context::get_logger()
     return logger_;
 }
 
-scene::World * Context::get_world()
+World * Context::get_world()
 {
     return world_;
 }
