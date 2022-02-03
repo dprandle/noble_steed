@@ -50,6 +50,8 @@ set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
+add_definitions(-DBX_CONFIG_DEBUG)
+
 # Debug and release specific settings
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   add_definitions(-DDEBUG_BUILD)

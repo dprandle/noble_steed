@@ -26,7 +26,7 @@ float lerp(u32 low, u32 high, u32 middle)
 
 float random_float(float high, float low)
 {
-    return low + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (high - low)));
+    return low + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / (high - low));
 }
 
 } // namespace noble_steed

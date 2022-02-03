@@ -45,7 +45,7 @@ int main()
 
     // Application applic;
     // Variant_Map init_params;
-    // ilog("STARTING BASIC WINDOW");
+    // ilog("STARTING BASIC WINDOW");c
 
     // //init_params[Init_Params::Window::ALWAS_ON_TOP] = true;
     // init_params[init_param_key::window::TITLE] = String("Basic Window");
