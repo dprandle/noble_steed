@@ -29,66 +29,6 @@ template<class T>
 struct nsmat4;
 
 template<class T>
-struct nsvec2;
-
-template<class T>
-nsvec2<T> abs(const nsvec2<T> &vec_);
-
-template<class T>
-nsvec2<T> ceil(const nsvec2<T> &vec_);
-
-template<class T>
-nsvec2<T> clamp(const nsvec2<T> &vec_, const T &min_, const T &max_);
-
-template<class T>
-T distance(const nsvec2<T> &lvec_, const nsvec2<T> &rvec_);
-
-template<class T>
-T dot(const nsvec2<T> &lhs_, const nsvec2<T> &rhs_);
-
-template<class T>
-nsvec2<T> floor(const nsvec2<T> &vec_);
-
-template<class T>
-nsvec2<T> fract(const nsvec2<T> &vec_);
-
-template<class T>
-T length(const nsvec2<T> &vec_);
-
-template<class T, class T2>
-nsvec2<T> lerp(const nsvec2<T> &lhs_, const nsvec2<T> &rhs_, T2 scaling_factor_);
-
-template<class T>
-nsvec2<T> min(const nsvec2<T> &lhs_, const nsvec2<T> &rhs_);
-
-template<class T>
-nsvec2<T> max(const nsvec2<T> &lhs_, const nsvec2<T> &rhs_);
-
-template<class T>
-nsvec2<T> normalize(const nsvec2<T> &rhs_);
-
-template<class T>
-nsvec2<T> project(const nsvec2<T> &a, const nsvec2<T> &b);
-
-template<class T>
-nsvec2<T> project_plane(const nsvec2<T> &a, const nsvec2<T> &normal_);
-
-template<class T>
-nsvec2<T> reflect(const nsvec2<T> &incident_, const nsvec2<T> &normal_);
-
-template<class T>
-nsvec2<T> round(const nsvec2<T> &vec_);
-
-template<class T>
-nsvec2<T> scaling2d_vec(const nsmat2<T> &transform2d_);
-
-template<class T>
-nsvec2<T> scaling2d_vec(const nsmat3<T> &transform2d_);
-
-template<class T>
-nsvec2<T> translation2d_vec(const nsmat3<T> &transform2d_);
-
-template<class T>
 struct nsvec2
 {
     template<class T2>

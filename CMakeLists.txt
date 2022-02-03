@@ -1,6 +1,9 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 project(noble_steed)
+
+set(CMAKE_POLICY_DEFAULT_CMP0072 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 set(TARGET_NAME noble_steed)
 set(PYTHON_MODULE_NAME Noble_Steed)

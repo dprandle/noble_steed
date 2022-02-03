@@ -5,8 +5,10 @@
 template<class T>
 struct nsvec4
 {
-    nsvec4(const nsvec4<T> &copy_) : x(copy_.x), y(copy_.y), z(copy_.z), w(copy_.w)
-    {}
+    nsvec4(const nsvec4<T> &copy_) = default;
+
+    nsvec4(nsvec4<T> &&rhs) = default;
+    
     nsvec4(const T &val = static_cast<T>(0)) : x(val), y(val), z(val), w(val)
     {}
     nsvec4(const T &x_, const T &y_, const T &z_ = static_cast<T>(0), const T &w_ = static_cast<T>(0)) : x(x_), y(y_), z(z_), w(w_)
@@ -351,36 +353,40 @@ struct nsvec4
         return ret;
     }
 
-    nsvec4<T> operator%(const nsvec4<T> &rhs_) const // component wise scalar product
+    /// Component-wise scalar product
+    nsvec4<T> operator%(const nsvec4<T> &rhs_) const
     {
         return nsvec4<T>(x * rhs_.x, y * rhs_.y, z * rhs_.z, w * rhs_.w);
     }
 
+    /// Component wise scalar division
     nsvec4<T> operator/(const nsvec4<T> &rhs_) const
     {
         return nsvec4<T>(x / rhs_.x, y / rhs_.y, z / rhs_.z, w / rhs_.w);
     }
 
+    /// Multiply all components by scalar rhs_
     nsvec4<T> operator*(const T &rhs_) const
     {
         return nsvec4<T>(x * rhs_, y * rhs_, z * rhs_, w * rhs_);
     }
 
+    /// Divide all components by scalar rhs_
     nsvec4<T> operator/(const T &rhs_) const
     {
         return nsvec4<T>(x / rhs_, y / rhs_, z / rhs_, w / rhs_);
     }
 
-    nsvec4<T> &operator=(const nsvec4<T> &rhs_)
-    {
-        if (this == &rhs_)
-            return *this;
-        x = rhs_.x;
-        y = rhs_.y;
-        z = rhs_.z;
-        w = rhs_.w;
-        return *this;
-    }
+    nsvec4<T> &operator=(const nsvec4<T> &rhs_) = default;
+    // {
+    //     if (this == &rhs_)
+    //         return *this;
+    //     x = rhs_.x;
+    //     y = rhs_.y;
+    //     z = rhs_.z;
+    //     w = rhs_.w;
+    //     return *this;
+    // }
 
     nsvec4<T> operator++(i32)
     {
@@ -689,6 +695,8 @@ nsvec4<T> round(const nsvec4<T> &vec_)
     ret.round();
     return ret;
 }
+
+class iostream;
 
 using cvec4 = nsvec4<char>;
 using c16vec4 = nsvec4<char16>;
