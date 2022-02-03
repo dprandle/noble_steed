@@ -70,9 +70,9 @@ class Resource_Cache
     Resource * get(u32 id) const;
 
     template<class ResType>
-    Vector<ResType *> get_all() const
+    vector<ResType *> get_all() const
     {
-        Vector<ResType *> ret;
+        vector<ResType *> ret;
         ret.reserve(resources_.size());
         auto iter = resources_.begin();
         while (iter != resources_.end())
@@ -86,11 +86,11 @@ class Resource_Cache
     }
 
     template<class ResType>
-    Vector<ResType *> get_all(String package) const
+    vector<ResType *> get_all(String package) const
     {
         make_valid_package_name_(package);
 
-        Vector<ResType *> ret;
+        vector<ResType *> ret;
         ret.reserve(resources_.size());
         auto iter = resources_.begin();
         while (iter != resources_.end())
@@ -103,9 +103,9 @@ class Resource_Cache
         return ret;
     }
 
-    Vector<Resource *> get_all() const;
+    vector<Resource *> get_all() const;
 
-    Vector<Resource *> get_all(String package) const;
+    vector<Resource *> get_all(String package) const;
 
     template<class ResType>
     ResType * load(const String & name, const String & package = String(), const Variant_Map & init_params = Variant_Map())
@@ -211,9 +211,9 @@ class Resource_Cache
 
     void make_valid_package_name_(String & str) const;
 
-    Hash_Map<u32, Resource *> resources_;
+    hash_map<u32, Resource *> resources_;
 
-    Hash_Set<String> loaded_packages_;
+    hash_set<String> loaded_packages_;
 
     String current_package_;
 

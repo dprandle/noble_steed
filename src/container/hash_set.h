@@ -5,9 +5,9 @@
 namespace noble_steed
 {
 template<class T>
-using Hash_Set = std::unordered_set<T>;
+using hash_set = std::unordered_set<T>;
 
 template<class T>
-using Hash_Multiset = std::unordered_set<T>;
+using hash_multiset = std::unordered_set<T>;
 
 }

@@ -63,11 +63,11 @@ class World : public Context_Obj
 
     void add_entity_(Entity *to_add, const Variant_Map &init_params);
 
-    Hash_Map<u32, Entity *> entity_ids_;
+    hash_map<u32, Entity *> entity_ids_;
 
-    Vector<Entity *> ent_ptrs_;
+    vector<Entity *> ent_ptrs_;
 
-    Stack<u32> ent_id_stack_;
+    stack<u32> ent_id_stack_;
 
     u32 ent_current_id_;
 

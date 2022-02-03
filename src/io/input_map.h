@@ -44,7 +44,7 @@ struct Input_Action_Trigger
     bool operator==(const Input_Action_Trigger & rhs) const;
 };
 
-using Trigger_Map = Hash_Multimap<i32, Input_Action_Trigger>;
+using Trigger_Map = hash_multimap<i32, Input_Action_Trigger>;
 using Trigger_Range = Tuple2<Trigger_Map::iterator>;
 
 struct Input_Context

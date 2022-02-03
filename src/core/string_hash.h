@@ -37,6 +37,6 @@ struct Hash_Str_Functor
 };
 
 template<class Val>
-using Str_Hash_Map = Hash_Map<Str_Hash, Val, Hash_Str_Functor>;
+using Str_Hash_Map = hash_map<Str_Hash, Val, Hash_Str_Functor>;
 
 } // namespace noble_steed

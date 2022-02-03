@@ -5,5 +5,5 @@
 namespace noble_steed
 {
 template<class T>
-using Forward_List = std::forward_list<T>;
+using forward_list = std::forward_list<T>;
 }

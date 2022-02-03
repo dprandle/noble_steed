@@ -5,5 +5,5 @@
 namespace noble_steed
 {
 template<class T>
-using Stack = std::stack<T>;
+using stack = std::stack<T>;
 }

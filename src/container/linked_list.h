@@ -4,18 +4,18 @@ namespace noble_steed
 {
 
 template<class T>
-class Singly_Linked_List
+struct ll_node
 {
-  public:
-    struct Node
-    {
-        T data;
-        Node *next;
-    };
+    T data;
+    ll_node *next;
+};
 
-    Singly_Linked_List() {}
+template<class T>
+struct singly_linked_list
+{
+    singly_linked_list() {}
 
-    void insert(Node *prev_node, Node *new_node)
+    void insert(ll_node<T> *prev_node, ll_node<T> *new_node)
     {
         if (prev_node == nullptr)
         {
@@ -48,7 +48,7 @@ class Singly_Linked_List
         }
     }
 
-    void remove(Node *prev_node, Node *del_node)
+    void remove(ll_node<T> *prev_node, ll_node<T> *del_node)
     {
         if (prev_node == nullptr)
         {
@@ -70,7 +70,31 @@ class Singly_Linked_List
         }
     }
 
-    Node *head;
+    ll_node<T> *head;
 };
+
+template<class T>
+struct stack_linked_list
+{
+    stack_linked_list() = default;
+
+    stack_linked_list(stack_linked_list &stck_ll) = delete;
+
+    void push(ll_node<T> *new_node)
+    {
+        new_node->next = head;
+        head = new_node;
+    }
+
+    ll_node<T> *pop()
+    {
+        ll_node<T> *top = head;
+        head = head->next;
+        return top;
+    }
+
+    ll_node<T> *head;
+};
+
 
 } // namespace noble_steed

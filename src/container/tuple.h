@@ -13,7 +13,7 @@ struct Tuple2
 {
     Tuple2(T first_ = T(), T second_ = T()) : first(first_), second(second_)
     {}
-    Tuple2(const Pair<T,T> & pr) : first(pr.first), second(pr.second)
+    Tuple2(const pair<T,T> & pr) : first(pr.first), second(pr.second)
     {}
 
     union
@@ -380,7 +380,7 @@ using u8tup2 = Tuple2<u8>;
 using u16tup2 = Tuple2<u16>;
 using utup2 = Tuple2<u32>;
 using u64tup2 = Tuple2<u64>;
-using str_tup2 = Tuple2<String>;
+using string_tup2 = Tuple2<String>;
 
 using dtup3 = Tuple3<double>;
 using ftup3 = Tuple3<float>;
@@ -392,7 +392,7 @@ using u8tup3 = Tuple3<u8>;
 using u16tup3 = Tuple3<u16>;
 using utup3 = Tuple3<u32>;
 using u64tup3 = Tuple3<u64>;
-using str_tup3 = Tuple3<String>;
+using string_tup3 = Tuple3<String>;
 
 using dtup4 = Tuple4<double>;
 using ftup4 = Tuple4<float>;
@@ -404,6 +404,6 @@ using u8tup4 = Tuple4<u8>;
 using u16tup4 = Tuple4<u16>;
 using utup4 = Tuple4<u32>;
 using u64tup4 = Tuple4<u64>;
-using str_tup4 = Tuple4<String>;
+using string_tup4 = Tuple4<String>;
 
 }

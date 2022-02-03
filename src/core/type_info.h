@@ -39,7 +39,7 @@ struct Hash_Type_Info_Functor
 };
 
 template<class Val>
-using Type_Hash_Map = Hash_Map<Type_Info, Val, Hash_Type_Info_Functor>;
+using Type_Hash_Map = hash_map<Type_Info, Val, Hash_Type_Info_Functor>;
 
 template<class T>
 inline Type_Info type_id() {return Type_Info();}

@@ -23,6 +23,7 @@ using char32 = char32_t;
 using sizet = std::size_t;
 using type_info = std::type_info;
 using type_index = std::type_index;
+using ldouble = long double;
 
 #define INVALID_TYPE typeid(Invalid_Type)
 

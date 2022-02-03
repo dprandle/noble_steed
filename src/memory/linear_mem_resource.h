@@ -1,11 +1,11 @@
 #pragma once
 
-#include "allocator.h"
+#include "mem_resource.h"
 
 namespace noble_steed
 {
 
-class Linear_Allocator : public Allocator
+class Linear_Allocator : public Mem_Resource
 {
   public:
     Linear_Allocator(sizet total_size, Mem_Resource_Base *upstream);

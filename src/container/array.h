@@ -5,5 +5,5 @@
 namespace noble_steed
 {
 template<class T, std::size_t N>
-using Array = std::array<T,N>;
+using array = std::array<T,N>;
 }

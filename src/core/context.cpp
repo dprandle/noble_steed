@@ -38,7 +38,7 @@ const String HEADLESS = "HEADLESS";
 } // namespace init_param_key
 
 Context::Context()
-    : _main_alloc(MB_SIZE * 4, Free_List_Allocator::FIND_FIRST),
+    : _main_alloc(MB_SIZE * 4, free_list_mem_resource::placement_policy::FIND_FIRST),
       logger_(nullptr),
       world_(nullptr),
       resource_cache_(nullptr)
@@ -131,10 +131,10 @@ Context & Context::inst()
 
 void Context::subscribe_to_event(Context_Obj * obj, const String & event)
 {
-    subscribe_to_event(obj, Str_Hash(event).value());
+    subscribe_to_event(obj, Str_Hash(event));
 }
 
-void Context::subscribe_to_event(Context_Obj * obj, u32 event_id)
+void Context::subscribe_to_event(Context_Obj * obj, const Str_Hash & event_id)
 {
     event_subscribers_[event_id].insert(obj);
     sig_connect(obj->destroyed, this, &Context::unsubscribe_from_all);
@@ -160,7 +160,7 @@ void Context::unsubscribe_from_event(Context_Obj * obj, const String & event)
     unsubscribe_from_event(obj, Str_Hash(event));
 }
 
-void Context::unsubscribe_from_event(Context_Obj * obj, u32 event_id)
+void Context::unsubscribe_from_event(Context_Obj * obj, const Str_Hash & event_id)
 {
     auto fiter = event_subscribers_.find(event_id);
     if (fiter != event_subscribers_.end())

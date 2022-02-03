@@ -49,8 +49,8 @@ class World_Chunk : public Resource
 
     void on_ent_destroyed(u32 id);
 
-    Vector<Entity *> ents_ptrs_;
-    Hash_Map<u32, Entity *> ents_;
+    vector<Entity *> ents_ptrs_;
+    hash_map<u32, Entity *> ents_;
 };
 
 } // namespace noble_steed

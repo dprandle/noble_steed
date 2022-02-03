@@ -5,10 +5,10 @@
 namespace noble_steed
 {
 
-Vertex_Buffer::Vertex_Buffer() : handle(bgfx::kInvalidHandle), name(), flags(0), layout(), data(nullptr), data_size(0), dynamic(false)
+vertex_buffer::vertex_buffer() : handle(bgfx::kInvalidHandle), name(), flags(0), layout(), data(nullptr), data_size(0), dynamic(false)
 {}
 
-void Vertex_Buffer::alloc()
+void vertex_buffer::alloc()
 {
     if (bgfx_valid_handle(handle))
     {
@@ -27,7 +27,7 @@ void Vertex_Buffer::alloc()
     }
 }
 
-void Vertex_Buffer::update(u32 offset)
+void vertex_buffer::update(u32 offset)
 {
     if (dynamic)
     {
@@ -48,7 +48,7 @@ void Vertex_Buffer::update(u32 offset)
     }
 }
 
-void Vertex_Buffer::free()
+void vertex_buffer::free()
 {
     if (dynamic)
     {
@@ -127,7 +127,7 @@ void Index_Buffer::free()
 
 template<class T>
 void create_if_needed(Vertex_Buffer_Data<T> &buf,
-                      Vector<Vertex_Buffer> &buffers,
+                      vector<vertex_buffer> &buffers,
                       const String &name,
                       bgfx::Attrib::Enum attrib,
                       u8 elements,

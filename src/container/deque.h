@@ -5,5 +5,5 @@
 namespace noble_steed
 {
 template<class T>
-using Deque = std::deque<T>;
+using deque = std::deque<T>;
 }

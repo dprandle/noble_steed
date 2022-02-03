@@ -3,9 +3,9 @@
 
 #include "../core/resource.h"
 #include "../container/vector.h"
-#include "../math/vec2.h"
-#include "../math/vec3.h"
-#include "../math/vec4.h"
+#include "../math/nsvec2.h"
+#include "../math/nsvec3.h"
+#include "../math/nsvec4.h"
 
 BGFX_HANDLE(Index_Buffer_Handle)
 
@@ -22,12 +22,12 @@ enum Index_Buffer_Type
     COUNT
 };
 
-struct Vertex_Buffer
+struct vertex_buffer
 {
-    Vertex_Buffer();
+    vertex_buffer();
 
-    /// The buffer handle as provided by bgfx. This will either be a static or dynamic handle based on \ref Vertex_Buffer.dynamic. The layout
-    /// is given by \ref Vertex_Buffer.layout.
+    /// The buffer handle as provided by bgfx. This will either be a static or dynamic handle based on \ref vertex_buffer.dynamic. The layout
+    /// is given by \ref vertex_buffer.layout.
     u16 handle;
 
     /// The debug name of this buffer.
@@ -58,7 +58,7 @@ struct Index_Buffer
 {
     Index_Buffer();
 
-    /// The buffer handle as provided by bgfx. This will either be a static or dynamic handle based on \ref Vertex_Buffer.flags. The layout
+    /// The buffer handle as provided by bgfx. This will either be a static or dynamic handle based on \ref vertex_buffer.flags. The layout
     /// is given by \ref Index_Buffer.dynamic.
     u16 handle;
 
@@ -70,7 +70,7 @@ struct Index_Buffer
 
     /// Pointer to data to be passed to bgfx on creating index buffer. Data is not owned by buffer - if adding custom idnex buffer
     /// make sure to manage data lifetime. This data is passed to bgfx via makeRef - we'll see if the two frame thing causes issues.
-    Vector<u32> data;
+    vector<u32> data;
 
     /// Is this buffer dynamic - ie vertice information may change frame to frame
     bool dynamic;
@@ -93,8 +93,8 @@ struct Vertex_Buffer_Data
 {
     Vertex_Buffer_Data() : buffer(nullptr)
     {}
-    Vertex_Buffer *buffer;
-    Vector<T> data;
+    vertex_buffer *buffer;
+    vector<T> data;
 };
 
 struct Vertex_Data
@@ -115,7 +115,7 @@ struct Vertex_Data
     /// Remove all unused (not allocated) buffers
     void destroy_buffers();
 
-    Vector<Vertex_Buffer> buffers;
+    vector<vertex_buffer> buffers;
 
     Vertex_Buffer_Data<vec3> positions;
     Vertex_Buffer_Data<vec3> normals;
@@ -144,7 +144,7 @@ struct Index_Data
     /// Remove all unused (not allocated) buffers
     void destroy_buffers();
 
-    Vector<Index_Buffer> buffers;
+    vector<Index_Buffer> buffers;
 };
 
 class Mesh;
@@ -186,7 +186,7 @@ class Mesh : public Resource
     Signal<u32, u32> submesh_id_change;
 
   private:
-    Vector<Submesh> submeshes_;
+    vector<Submesh> submeshes_;
     Vertex_Data shared_vert_data_;
 };
 

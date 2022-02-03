@@ -21,7 +21,7 @@ using Perm_Options = std::filesystem::perm_options;
 using Space_Info = std::filesystem::space_info;
 
 /// Read all contents from file fname in to vector buffer
-bool read_file_to_buffer(const String &fname, i8_Vector &buffer);
+bool read_file_to_buffer(const String &fname, i8_vector &buffer);
 
 /// Read all contents from fname in to read_into as text
 bool read_file_to_string(const String &fname, String &read_into);
@@ -31,7 +31,7 @@ bool write_string_to_file(const String &fname, const String &string);
 
 /// This function forks a new executable with Path/name exec_name, and args exec_args, and saves the command line output to prog_output
 /// This function auto adds the self name to the first arg
-void fork_and_wait(const String &exec_name, const Vector<String> &exec_args, String &prog_output);
+void fork_and_wait(const String &exec_name, const vector<String> &exec_args, String &prog_output);
 
 Path absolute(const Path &p);
 Path absolute(const Path &p, Error_Code &ec);

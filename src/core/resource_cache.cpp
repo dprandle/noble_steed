@@ -152,9 +152,9 @@ Resource *Resource_Cache::get(u32 id) const
     return nullptr;
 }
 
-Vector<Resource *> Resource_Cache::get_all() const
+vector<Resource *> Resource_Cache::get_all() const
 {
-    Vector<Resource *> ret;
+    vector<Resource *> ret;
     ret.resize(resources_.size());
 
     sizet ind = 0;
@@ -168,11 +168,11 @@ Vector<Resource *> Resource_Cache::get_all() const
     return ret;
 }
 
-Vector<Resource *> Resource_Cache::get_all(String package) const
+vector<Resource *> Resource_Cache::get_all(String package) const
 {
     make_valid_package_name_(package);
 
-    Vector<Resource *> ret;
+    vector<Resource *> ret;
     ret.reserve(resources_.size());
     auto iter = resources_.begin();
     while (iter != resources_.end())

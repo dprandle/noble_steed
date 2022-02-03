@@ -24,7 +24,7 @@ struct Event_Buffer
     Event & process();
     bool available();
 
-    Array<Event,20> frame_events;
+    array<Event,20> frame_events;
     size_t cur_ind;
     size_t processed_ind;
 };
@@ -56,7 +56,7 @@ class Context_Obj
 
     void process_events();
 
-    Hash_Map<u32, Signal<Event&>> process_event_map;
+    hash_map<u32, Signal<Event&>> process_event_map;
     Signal<Context_Obj*> destroyed;
     
   protected:

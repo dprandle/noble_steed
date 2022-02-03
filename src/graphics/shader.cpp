@@ -53,7 +53,7 @@ bool Shader::compile(const String &platform, const String &shader_model_profile,
 
 bool Shader::load_shader_(const String &fname, bgfx::ShaderHandle &handle)
 {
-    i8_Vector buf;
+    i8_vector buf;
     if (!fs::read_file_to_buffer(fname, buf))
     {
         wlog("Could not open {}", fname);
@@ -84,7 +84,7 @@ bool Shader::build_shader_(const String &containing_dir,
     }
 
     String output;
-    Vector<String> args;
+    vector<String> args;
     args.push_back("-f");
     args.push_back(fname);
     args.push_back("-o");

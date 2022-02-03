@@ -5,8 +5,8 @@
 namespace noble_steed
 {
 template<class T>
-using Queue = std::queue<T>;
+using queue = std::queue<T>;
 
 template<class T>
-using Priority_Queue = std::priority_queue<T>;
+using priority_queue = std::priority_queue<T>;
 }

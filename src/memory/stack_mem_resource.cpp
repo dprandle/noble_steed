@@ -1,16 +1,16 @@
 #include <stdlib.h>
 #include <algorithm>
 
-#include "stack_allocator.h"
+#include "stack_mem_resource.h"
 #include "utils.h"
 
 namespace noble_steed
 {
 
-Stack_Allocator::Stack_Allocator(sizet total_size, Mem_Resource_Base *upstream): Allocator(total_size, upstream), _offset(0)
+Stack_Allocator::Stack_Allocator(sizet total_size, Mem_Resource_Base *upstream): Mem_Resource(total_size, upstream), _offset(0)
 {}
 
-Stack_Allocator::Stack_Allocator(sizet total_size) : Allocator(total_size, get_default_resource()), _offset(0)
+Stack_Allocator::Stack_Allocator(sizet total_size) : Mem_Resource(total_size, get_default_resource()), _offset(0)
 {}
 
 Stack_Allocator::~Stack_Allocator()

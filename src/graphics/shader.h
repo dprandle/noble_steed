@@ -71,7 +71,7 @@ class Shader : public Resource
     String fragment_src_;
     String varying_def_src_;
     String binary_extension_;
-    Hash_Set<String> extra_include_dirs_;
+    hash_set<String> extra_include_dirs_;
 };
 
 } // namespace noble_steed

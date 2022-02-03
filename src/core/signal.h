@@ -78,7 +78,7 @@ struct Signal
     {
         // By using a temp copy instead of the originals, slot functions can disconnect from
         // signals - ie modify con_slots without causing crashes
-        Vector<Slot<Args...> *> tmp_copy = con_slots;
+        vector<Slot<Args...> *> tmp_copy = con_slots;
         auto iter = tmp_copy.begin();
         while (iter != tmp_copy.end())
         {
@@ -87,7 +87,7 @@ struct Signal
         }
     }
 
-    Vector<Slot<Args...> *> con_slots;
+    vector<Slot<Args...> *> con_slots;
 };
 
 template<class... Args>
@@ -179,6 +179,6 @@ class Router
     sizet connection_count();
 
   private:
-    Vector<Slot_Base *> con_slots;
+    vector<Slot_Base *> con_slots;
 };
 } // namespace noble_steed

@@ -4,8 +4,7 @@
 #include "signal.h"
 
 #include "../container/hash_set.h"
-
-#include "../memory/free_list_allocator.h"
+#include "../memory/free_list_mem_resource.h"
 
 namespace noble_steed
 {
@@ -63,24 +62,24 @@ class Context
 
     void subscribe_to_event(Context_Obj * obj, const String & event);
 
-    void subscribe_to_event(Context_Obj * obj, u32 event_id);
+    void subscribe_to_event(Context_Obj * obj, const Str_Hash & event_id);
 
     void unsubscribe_from_all(Context_Obj * obj);
 
     void unsubscribe_from_event(Context_Obj * obj, const String & event);
 
-    void unsubscribe_from_event(Context_Obj * obj, u32 event_id);
+    void unsubscribe_from_event(Context_Obj * obj, const Str_Hash & event_id);
 
     void post_event_to_queues(Event & event);
 
     void post_event_to_queues(const String & event_name, const Variant_Map & data = Variant_Map());
 
   private:
-    Free_List_Allocator _main_alloc;
+    free_list_mem_resource _main_alloc;
     SPtr<Window> _window;
     Logger * logger_;
     World * world_;
-    Hash_Map<String_Hash, Hash_Set<Context_Obj *>> event_subscribers_;
+    Str_Hash_Map<hash_set<Context_Obj *>> event_subscribers_;
     Resource_Cache * resource_cache_;
     static Context * s_this_;
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "allocator.h"
+#include "mem_resource.h"
 
 namespace noble_steed
 {
 
-class Stack_Allocator : public Allocator
+class Stack_Allocator : public Mem_Resource
 {
     struct Alloc_Header
     {

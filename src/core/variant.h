@@ -20,31 +20,31 @@ namespace noble_steed
 {
 class Variant;
 
-using Variant_Hash = Hash_Map<Str_Hash, Variant>;
-using Variant_Map = Map<Str_Hash, Variant>;
-using Variant_List = List<Variant>;
-using Variant_Vec = Vector<Variant>;
-using Variant_Map_Set = Hash_Set<Variant>;
+using Variant_Hash = hash_map<Str_Hash, Variant>;
+using Variant_Map = map<Str_Hash, Variant>;
+using Variant_List = list<Variant>;
+using Variant_Vec = vector<Variant>;
+using Variant_Map_Set = hash_set<Variant>;
 using Custom_Value = std::any;
 
 using Variant_Type = std::variant<double,
                                   bool,
                                   i8,
-                                  i8_Vector,
+                                  i8_vector,
                                   u8,
-                                  u8_Vector,
+                                  u8_vector,
                                   i16,
-                                  i16_Vector,
+                                  i16_vector,
                                   u16,
-                                  u16_Vector,
+                                  u16_vector,
                                   i32,
-                                  i32_Vector,
+                                  i32_vector,
                                   u32,
-                                  u32_Vector,
+                                  u32_vector,
                                   i64,
-                                  i64_Vector,
+                                  i64_vector,
                                   u64,
-                                  u64_Vector,
+                                  u64_vector,
                                   char,
                                   char*,
                                   const char *,
@@ -80,8 +80,8 @@ using Variant_Type = std::variant<double,
                                   utup4,
                                   u64tup4,
                                   String,
-                                  String_Vector,
-                                  String_List,
+                                  string_vector,
+                                  string_list,
                                   Variant_Map,
                                   Variant_List,
                                   Variant_Vec,

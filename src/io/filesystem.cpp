@@ -13,7 +13,7 @@ namespace noble_steed::fs
 {
 const u32 MAX_PATH = 200;
 
-bool read_file_to_buffer(const String &fname, i8_Vector &buffer)
+bool read_file_to_buffer(const String &fname, i8_vector &buffer)
 {
     std::ifstream ifs;
     ifs.open(fname, std::ifstream::in);
@@ -56,7 +56,7 @@ bool write_string_to_file(const String &fname, const String &string)
     return false;
 }
 
-void fork_and_wait(const String &exec_path, const Vector<String> &exec_args, String &prog_output)
+void fork_and_wait(const String &exec_path, const vector<String> &exec_args, String &prog_output)
 {
     int fd[2];
     pipe(fd);
@@ -68,7 +68,7 @@ void fork_and_wait(const String &exec_path, const Vector<String> &exec_args, Str
         close(fd[0]);
         close(fd[1]);
 
-        Vector<char *> args;
+        vector<char *> args;
         args.resize(exec_args.size() + 2);
         args[0] = (char *)exec_path.c_str();
         args[args.size() - 1] = nullptr;

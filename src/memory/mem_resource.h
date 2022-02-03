@@ -8,12 +8,14 @@ namespace noble_steed
 using Mem_Resource_Base = std::pmr::memory_resource;
 Mem_Resource_Base * get_default_resource();
 
-class Allocator : public Mem_Resource_Base
+
+
+class Mem_Resource : public Mem_Resource_Base
 {
   public:
-    Allocator(sizet total_size, Mem_Resource_Base * upstream);
-    Allocator(const Allocator &copy) = delete;
-    virtual ~Allocator();
+    Mem_Resource(sizet total_size, Mem_Resource_Base * upstream);
+    Mem_Resource(const Mem_Resource &copy) = delete;
+    virtual ~Mem_Resource();
 
     void reset();
 

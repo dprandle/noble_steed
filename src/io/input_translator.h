@@ -59,8 +59,8 @@ class Input_Translator : public System
 
     void handle_focus_change(Event & ev);
 
-    Vector<Input_Context *> context_stack_;
-    Vector<Input_Action_Trigger *> active_triggers_;
+    vector<Input_Context *> context_stack_;
+    vector<Input_Action_Trigger *> active_triggers_;
 
     dtup2 cur_mpos_;
     dtup2 prev_mpos_;

@@ -5,5 +5,5 @@
 namespace noble_steed
 {
 template<class T>
-using Set = std::set<T>;
+using set = std::set<T>;
 }

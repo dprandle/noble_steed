@@ -101,7 +101,7 @@ class Entity : public Context_Obj
 
     String name_;
 
-    Hash_Map<type_index, Component *> comps_;
+    hash_map<type_index, Component *> comps_;
 };
 
 } // namespace noble_steed

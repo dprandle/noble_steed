@@ -2,15 +2,15 @@
 #include <cassert>
 #include <algorithm>
 
-#include "linear_allocator.h"
+#include "linear_mem_resource.h"
 #include "utils.h"
 
 namespace noble_steed
 {
-Linear_Allocator::Linear_Allocator(sizet total_size, Mem_Resource_Base *upstream) : Allocator(total_size, upstream), _offset(0)
+Linear_Allocator::Linear_Allocator(sizet total_size, Mem_Resource_Base *upstream) : Mem_Resource(total_size, upstream), _offset(0)
 {}
 
-Linear_Allocator::Linear_Allocator(sizet total_size) : Allocator(total_size, get_default_resource()), _offset(0)
+Linear_Allocator::Linear_Allocator(sizet total_size) : Mem_Resource(total_size, get_default_resource()), _offset(0)
 {}
 
 Linear_Allocator::~Linear_Allocator()

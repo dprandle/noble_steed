@@ -3,7 +3,7 @@
 #include "type_info.h"
 #include "../container/hash_map.h"
 #include "../container/vector.h"
-#include "../memory/allocator.h"
+#include "../memory/mem_resource.h"
 
 
 

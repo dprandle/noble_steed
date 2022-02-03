@@ -10,13 +10,38 @@
 #include "graphics/renderer.h"
 #include "graphics/mesh.h"
 
+#include "math/bounding_box.h"
+
 #include "scene/world_chunk.h"
 #include "scene/world.h"
 #include "scene/entity.h"
 
+#include <iostream>
+
 int main()
 {
-    // using namespace noble_steed;
+    using namespace noble_steed;
+    vector<vec3> verts;
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,9,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,-3,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    verts.emplace_back(3,4,5);
+    bbox box(verts);
+    
+    vec4 bla(3,4,5,2);
+    bla.ceil();
+    std::cout << "min [" << box.min.x << " " << box.min.y << " " << box.min.z << "]" << std::endl;
+    std::cout << "max [" << box.max.x << " " << box.max.y << " " << box.max.z << "]" << std::endl;
 
     // Application applic;
     // Variant_Map init_params;
