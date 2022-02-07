@@ -86,10 +86,6 @@ struct cube
     }
 };
 
-using ccube = cube<char>;
-using c16cube = cube<char16>;
-using c32cube = cube<char32>;
-using cwcube = cube<wchar>;
 using i8cube = cube<i8>;
 using i16cube = cube<i16>;
 using icube = cube<i32>;

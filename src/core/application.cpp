@@ -4,10 +4,6 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include <glm/mat4x4.hpp>
-#include <glm/common.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-
 #include <iostream>
 #include <sstream>
 

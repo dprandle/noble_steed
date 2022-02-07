@@ -6,7 +6,7 @@ namespace noble_steed
 {
 
 template<class T>
-struct nsbounding_box
+struct bounding_box
 {
     enum box_face
     {
@@ -19,17 +19,17 @@ struct nsbounding_box
         f_front
     };
 
-    nsbounding_box(const vector<nsvec3<T>> &verts_ = vector<nsvec3<T>>(), const nsmat4<T> &tform_=nsmat4<T>())
+    bounding_box(const vector<nsvec3<T>> &verts_ = vector<nsvec3<T>>(), const nsmat4<T> &tform_=nsmat4<T>())
     {
         calculate(verts_, tform_);
     }
 
-    nsbounding_box(const nsvec3<T> &min_, const nsvec3<T> &max_): min(min_), max(max_)
+    bounding_box(const nsvec3<T> &min_, const nsvec3<T> &max_): min(min_), max(max_)
     {
         update_verts();
     }
 
-    ~nsbounding_box()
+    ~bounding_box()
     {}
 
     void calculate(const vector<nsvec3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
@@ -119,20 +119,20 @@ struct nsbounding_box
     nsvec3<T> verts[8];
 };
 
-using cbbox = nsbounding_box<char>;
-using c16bbox = nsbounding_box<char16>;
-using c32bbox = nsbounding_box<char32>;
-using cwbbox = nsbounding_box<wchar>;
-using i8bbox = nsbounding_box<i8>;
-using i16bbox = nsbounding_box<i16>;
-using ibbox = nsbounding_box<i32>;
-using i64bbox = nsbounding_box<i64>;
-using ui8bbox = nsbounding_box<u8>;
-using ui16bbox = nsbounding_box<u16>;
-using uibbox = nsbounding_box<u32>;
-using ui64bbox = nsbounding_box<u64>;
-using bbox = nsbounding_box<float>;
-using dbbox = nsbounding_box<double>;
-using ldbbox = nsbounding_box<ldouble>;
+using cbbox = bounding_box<char>;
+using c16bbox = bounding_box<char16>;
+using c32bbox = bounding_box<char32>;
+using cwbbox = bounding_box<wchar>;
+using i8bbox = bounding_box<i8>;
+using i16bbox = bounding_box<i16>;
+using ibbox = bounding_box<i32>;
+using i64bbox = bounding_box<i64>;
+using ui8bbox = bounding_box<u8>;
+using ui16bbox = bounding_box<u16>;
+using uibbox = bounding_box<u32>;
+using ui64bbox = bounding_box<u64>;
+using bbox = bounding_box<float>;
+using dbbox = bounding_box<double>;
+using ldbbox = bounding_box<ldouble>;
 
 } // namespace noble_steed

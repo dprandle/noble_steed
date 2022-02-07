@@ -1,135 +1,75 @@
 #pragma once
 
 #include "nsmat2.h"
+#include "nsvec3.h"
 
-template<class T>
-nsvec3<T> operator*(const nsvec3<T> &lhs_, const nsmat3<T> &rhs_);
+template <class T>
+struct nsvec3;
 
-template<class T>
-nsvec3<T> operator/(const nsvec3<T> &lhs_, const nsmat3<T> &rhs_);
+template <class T>
+struct nsvec4;
 
-template<class T>
-nsmat3<T> operator%(const nsvec3<T> &lhs_, const nsmat3<T> &rhs_);
+template <class T>
+struct nsquat;
 
-template<class T>
-nsmat3<T> operator*(const i32 &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-nsmat3<T> operator*(const float &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-nsmat3<T> operator*(const double &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-nsmat3<T> operator/(const i32 &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-nsmat3<T> operator/(const float &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-nsmat3<T> operator/(const double &lhs_, const nsmat3<T> &rhs_);
-
-template<class T>
-T determinant(const nsmat3<T> &mat_);
-
-template<class T>
-nsmat3<T> rotation2d_mat3(const T angle_, bool rads_ = false);
-
-template<class T>
-nsmat3<T> rotation2d_mat3(const nsmat3<T> &transform2d_);
-
-template<class T>
-nsmat3<T> rotation2d_mat3(const nsmat2<T> &transform2d_);
-
-template<class T>
-nsmat3<T> rotation_mat3(const nsvec4<T> &axis_angle_, bool rads_ = false);
-
-template<class T>
-nsmat3<T> rotation_mat3(const nsvec3<T> &euler_, typename nsvec3<T>::EulerOrder order_, bool rads_ = false);
-
-template<class T>
-nsmat3<T> rotation_mat3(const nsquat<T> &orientation_);
-
-template<class T>
-nsmat3<T> rotation_mat3(const nsvec3<T> &vec_, const nsvec3<T> &to_vec_);
-
-template<class T>
-nsmat3<T> rotation_mat3(const nsmat4<T> &transform_);
-
-template<class T>
-nsmat3<T> scaling2d_mat3(const nsvec2<T> &scale_);
-
-template<class T>
-nsmat3<T> scaling2d_mat3(const nsmat2<T> &transform2d_);
-
-template<class T>
-nsmat3<T> scaling2d_mat3(const nsmat3<T> &transform2d_);
-
-template<class T>
-nsmat3<T> scaling_mat3(const nsvec3<T> &scale_);
-
-template<class T>
-nsmat3<T> scaling_mat3(const nsmat3<T> &transform_);
-
-template<class T>
-nsmat3<T> scaling_mat3(const nsmat4<T> &transform_);
-
-template<class T>
-nsmat3<T> translation2d_mat3(const nsvec3<T> &m3_);
-
-template<class T>
-nsmat3<T> translation2d_mat3(const nsvec2<T> &m2_);
-
-template<class T>
-nsmat3<T> transpose(const nsmat3<T> mat_);
-
-template<class T>
-nsmat3<T> inverse(const nsmat3<T> mat_);
-
-template<class PUPer, class T>
-void pup(PUPer &p, nsmat3<T> &m3);
+template <class T>
+struct nsmat4;
 
 template<class T>
 struct nsmat3
 {
-    nsmat3()
-    {
-        set_identity();
-    }
+    nsmat3() : data{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
+    {}
 
-    nsmat3(const T &val_)
-    {
-        set(val_);
-    }
+    nsmat3(const T &val_) : data{{val_}, {val_}, {val_}}
+    {}
 
-    nsmat3(const nsmat3 &copy_)
-    {
-        set(copy_.data[0], copy_.data[1], copy_.data[2]);
-    }
+    nsmat3(const nsmat3 &copy_) = default;
 
     nsmat3(const T &a, const T &b, const T &c, const T &d, const T &e, const T &f, const T &g, const T &h, const T &i)
     {
-        set(a, b, c, d, e, f, g, h, i);
+        data[0][0] = a;
+        data[0][1] = b;
+        data[0][2] = c;
+        data[1][0] = d;
+        data[1][1] = e;
+        data[1][2] = f;
+        data[2][0] = g;
+        data[2][1] = h;
+        data[2][2] = i;
     }
 
     nsmat3(const nsvec3<T> &row1, const nsvec3<T> &row2, const nsvec3<T> &row3)
     {
-        set(row1, row2, row3);
+        data[0] = row1;
+        data[1] = row2;
+        data[2] = row3;
     }
 
     nsmat3(const nsmat2<T> &basis_)
     {
-        set(basis_);
-        data[0][2] = static_cast<T>(0);
-        data[1][2] = static_cast<T>(0);
-        data[2][0] = static_cast<T>(0);
-        data[2][1] = static_cast<T>(0);
-        data[2][2] = static_cast<T>(1);
+        data[0][0] = basis_[0][0];
+        data[0][1] = basis_[0][1];
+        data[1][0] = basis_[1][0];
+        data[1][1] = basis_[1][1];
+        data[0][2] = 0;
+        data[1][2] = 0;
+        data[2][0] = 0;
+        data[2][1] = 0;
+        data[2][2] = 1;
     }
 
     nsmat2<T> basis() const
     {
         return nsmat2<T>(data[0][0], data[0][1], data[1][0], data[1][1]);
+    }
+
+    nsmat3<T> &abs()
+    {
+        data[0].abs();
+        data[1].abs();
+        data[2].abs();
+        return *this;
     }
 
     T *data_ptr()
@@ -143,12 +83,18 @@ struct nsmat3
                data[0][1] * data[1][0] * data[2][2] + data[0][2] * data[1][0] * data[2][1] - data[0][2] * data[1][1] * data[2][0];
     }
 
+    nsvec2<T> minmax() const
+    {
+        auto pr = std::minmax({data[0][0], data[0][1], data[0][2], data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2]});
+        return {pr.first, pr.second};
+    }
+
     nsmat3<T> &invert()
     {
         T det = determinant();
 
-        if (det == static_cast<T>(0))
-            return set(0);
+        if (det == 0)
+            return nsmat3<T>();
 
         nsmat3 ret;
         ret[0].set(data[1][1] * data[2][2] - data[1][2] * data[2][1],
@@ -177,20 +123,20 @@ struct nsmat3
         if (!rads_)
             angle_ = radians(angle_);
 
-        data[0][0] = static_cast<T>(std::cos(angle_));
-        data[0][1] = static_cast<T>(std::sin(angle_));
-        data[1][0] = static_cast<T>(-std::sin(angle_));
-        data[1][1] = static_cast<T>(std::cos(angle_));
-        data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0);
-        data[2][2] = static_cast<T>(1);
+        data[0][0] = std::cos(angle_);
+        data[0][1] = std::sin(angle_);
+        data[1][0] = -std::sin(angle_);
+        data[1][1] = std::cos(angle_);
+        data[0][2] = data[1][2] = data[2][0] = data[2][1] = 0;
+        data[2][2] = 1;
         return *this;
     }
 
     nsmat3<T> &rotation2d_from(const nsmat3<T> &transform2d_)
     {
         *this = transform2d_;
-        data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0);
-        data[2][2] = static_cast<T>(1);
+        data[0][2] = data[1][2] = data[2][0] = data[2][1] = 0;
+        data[2][2] = 1;
         data[0].normalize();
         data[1].normalize();
         return *this;
@@ -199,8 +145,8 @@ struct nsmat3
     nsmat3<T> &rotation2d_from(const nsmat2<T> &transform2d_)
     {
         set(transform2d_);
-        data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0);
-        data[2][2] = static_cast<T>(1);
+        data[0][2] = data[1][2] = data[2][0] = data[2][1] = 0;
+        data[2][2] = 1;
         data[0].normalize();
         data[1].normalize();
         return *this;
@@ -215,9 +161,9 @@ struct nsmat3
         if (!rads_)
             angle_ = radians(angle_);
 
-        T c = static_cast<T>(std::cos(angle_));
-        T s = static_cast<T>(std::sin(angle_));
-        T t = static_cast<T>(1) - c;
+        T c = std::cos(angle_);
+        T s = std::sin(angle_);
+        T t = 1 - c;
 
         data[0][0] = c + axis_angle_.x * axis_angle_.x * t;
         data[1][1] = c + axis_angle_.y * axis_angle_.y * t;
@@ -247,21 +193,21 @@ struct nsmat3
         if (!rads_)
         {
             nsvec3<T> eulRads(radians(euler_));
-            cb = static_cast<T>(std::cos(eulRads.x));
-            sb = static_cast<T>(std::sin(eulRads.x));
-            ch = static_cast<T>(std::cos(eulRads.y));
-            sh = static_cast<T>(std::sin(eulRads.y));
-            ca = static_cast<T>(std::cos(eulRads.z));
-            sa = static_cast<T>(std::sin(eulRads.z));
+            cb = std::cos(eulRads.x);
+            sb = std::sin(eulRads.x);
+            ch = std::cos(eulRads.y);
+            sh = std::sin(eulRads.y);
+            ca = std::cos(eulRads.z);
+            sa = std::sin(eulRads.z);
         }
         else
         {
-            cb = static_cast<T>(std::cos(euler_.x));
-            sb = static_cast<T>(std::sin(euler_.x));
-            ch = static_cast<T>(std::cos(euler_.y));
-            sh = static_cast<T>(std::sin(euler_.y));
-            ca = static_cast<T>(std::cos(euler_.z));
-            sa = static_cast<T>(std::sin(euler_.z));
+            cb = std::cos(euler_.x);
+            sb = std::sin(euler_.x);
+            ch = std::cos(euler_.y);
+            sh = std::sin(euler_.y);
+            ca = std::cos(euler_.z);
+            sa = std::sin(euler_.z);
         }
 
         switch (order_)
@@ -394,7 +340,7 @@ struct nsmat3
         nsvec3<T> vs = cross(vec_, to_vec_);
         T ca = vec_ * to_vec_;
         nsvec3<T> v = normalize(vs);
-        nsvec3<T> vt = v * (static_cast<T>(1) - ca);
+        nsvec3<T> vt = v * (1 - ca);
 
         data[0][0] = vt.x * v.x + ca;
         data[1][1] = vt.y * v.y + ca;
@@ -421,7 +367,7 @@ struct nsmat3
 
     nsmat3<T> &scaling2d_from(const nsvec2<T> &scale_)
     {
-        set_identity();
+        *this = nsmat3<T>();
         data[0][0] = scale_.x;
         data[1][1] = scale_.y;
         return *this;
@@ -443,7 +389,7 @@ struct nsmat3
 
     nsmat3<T> &scaling_from(const nsvec3<T> &scale_)
     {
-        set_identity();
+        *this = nsmat3<T>();
         data[0][0] = scale_.x;
         data[1][1] = scale_.y;
         data[2][2] = scale_.z;
@@ -465,45 +411,6 @@ struct nsmat3
         return scaling_from(scalingVec);
     }
 
-    nsmat3<T> &set(const T &a, const T &b, const T &c, const T &d, const T &e, const T &f, const T &g, const T &h, const T &i)
-    {
-        data[0][0] = a;
-        data[0][1] = b;
-        data[0][2] = c;
-        data[1][0] = d;
-        data[1][1] = e;
-        data[1][2] = f;
-        data[2][0] = g;
-        data[2][1] = h;
-        data[2][2] = i;
-        return *this;
-    }
-
-    nsmat3<T> &set(const T &val_)
-    {
-        data[0].set(val_);
-        data[1].set(val_);
-        data[2].set(val_);
-        return *this;
-    }
-
-    nsmat3<T> &set(const nsvec3<T> &row1, const nsvec3<T> &row2, const nsvec3<T> &row3)
-    {
-        data[0] = row1;
-        data[1] = row2;
-        data[2] = row3;
-        return *this;
-    }
-
-    nsmat3<T> &set(const nsmat2<T> &basis_)
-    {
-        data[0][0] = basis_[0][0];
-        data[0][1] = basis_[0][1];
-        data[1][0] = basis_[1][0];
-        data[1][1] = basis_[1][1];
-        return *this;
-    }
-
     nsmat3<T> &set_column(const u32 &i, const T &x, const T &y, const T &z)
     {
         (*this)[0][i] = x;
@@ -520,14 +427,6 @@ struct nsmat3
         return *this;
     }
 
-    nsmat3<T> &set_identity()
-    {
-        data[0].set(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0));
-        data[1].set(static_cast<T>(0), static_cast<T>(1), static_cast<T>(0));
-        data[2].set(static_cast<T>(0), static_cast<T>(0), static_cast<T>(1));
-        return *this;
-    }
-
     nsvec3<T> target() const
     {
         return normalize((*this)(2));
@@ -535,13 +434,13 @@ struct nsmat3
 
     nsmat3<T> &translation2d_from(const nsvec3<T> &m3_)
     {
-        set_identity();
+        *this = nsmat3<T>();
         return set_column(2, m3_.x, m3_.y, 1);
     }
 
     nsmat3<T> &translation2d_from(const nsvec2<T> &m2_)
     {
-        set_identity();
+        *this = nsmat3<T>();
         return set_column(2, m2_.x, m2_.y, 1);
     }
 
@@ -559,27 +458,6 @@ struct nsmat3
         data[1][2] = tmp;
         return *this;
     }
-
-    // string to_string(bool newline_=true) const
-    // {
-    // 	nsstringstream ss;
-    // 	string lc = ";";
-
-    // 	if (newline_)
-    // 		lc += '\n';
-
-    // 	ss << std::left
-    // 	   << "|" << std::setw(6) << data[0][0]
-    // 	   << " " << std::setw(6) << data[0][1]
-    // 	   << " " << std::setw(6) << data[0][2] << lc
-    // 	   << "|" << std::setw(6) << data[1][0]
-    // 	   << " " << std::setw(6) << data[1][1]
-    // 	   << " " << std::setw(6) << data[1][2] << lc
-    // 	   << "|" << std::setw(6) << data[2][0]
-    // 	   << " " << std::setw(6) << data[2][1]
-    // 	   << " " << std::setw(6) << data[2][2] << " |";
-    // 	return ss.str();
-    // }
 
     nsvec3<T> up() const
     {
@@ -806,19 +684,19 @@ struct nsmat3
 template<class T>
 nsmat3<T> operator*(const i32 &lhs_, const nsmat3<T> &rhs_)
 {
-    return rhs_ * static_cast<T>(lhs_);
+    return rhs_ * lhs_;
 }
 
 template<class T>
 nsmat3<T> operator*(const float &lhs_, const nsmat3<T> &rhs_)
 {
-    return rhs_ * static_cast<T>(lhs_);
+    return rhs_ * lhs_;
 }
 
 template<class T>
 nsmat3<T> operator*(const double &lhs_, const nsmat3<T> &rhs_)
 {
-    return rhs_ * static_cast<T>(lhs_);
+    return rhs_ * lhs_;
 }
 
 template<class T>
@@ -848,6 +726,12 @@ nsvec3<T> operator*(const nsvec3<T> &lhs_, const nsmat3<T> &rhs_)
 }
 
 template<class T>
+nsmat3<T> inverse(nsmat3<T> mat_)
+{
+    return mat_.invert();
+}
+
+template<class T>
 nsvec3<T> operator/(const nsvec3<T> &lhs_, const nsmat3<T> &rhs_)
 {
     return lhs_ * inverse(rhs_);
@@ -863,6 +747,13 @@ template<class T>
 T determinant(const nsmat3<T> &mat_)
 {
     return mat_.determinant();
+}
+
+template<class T>
+nsmat3<T> abs(const nsmat3<T> &mat_)
+{
+    auto cpy{mat_};
+    return cpy.abs();
 }
 
 template<class T>
@@ -974,15 +865,12 @@ nsmat3<T> transpose(nsmat3<T> mat_)
 }
 
 template<class T>
-nsmat3<T> inverse(nsmat3<T> mat_)
+std::ostream &operator<<(std::ostream &os, const nsmat3<T> &mat)
 {
-    return mat_.invert();
+    os << PRINT_MAT_START << mat[0] << PRINT_MAT_DELIMITER << mat[1] << PRINT_MAT_DELIMITER << mat[2] << PRINT_MAT_END;
+    return os;
 }
 
-using cmat3 = nsmat3<char>;
-using c16mat3 = nsmat3<char16>;
-using c32mat3 = nsmat3<char32>;
-using wcmat3 = nsmat3<wchar>;
 using i8mat3 = nsmat3<i8>;
 using i16mat3 = nsmat3<i16>;
 using imat3 = nsmat3<i32>;

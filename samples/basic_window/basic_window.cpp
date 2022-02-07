@@ -11,6 +11,7 @@
 #include "graphics/mesh.h"
 
 #include "math/bounding_box.h"
+#include "math/nsquat.h"
 
 #include "scene/world_chunk.h"
 #include "scene/world.h"
@@ -21,27 +22,18 @@
 int main()
 {
     using namespace noble_steed;
-    vector<vec3> verts;
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,9,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,-3,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    verts.emplace_back(3,4,5);
-    bbox box(verts);
-    
-    vec4 bla(3,4,5,2);
-    bla.ceil();
-    std::cout << "min [" << box.min.x << " " << box.min.y << " " << box.min.z << "]" << std::endl;
-    std::cout << "max [" << box.max.x << " " << box.max.y << " " << box.max.z << "]" << std::endl;
+
+    mat4 m4 {{4.0},{2.0435435},{34454.0, 55.0, 1.456, 545.66},{5.5}};
+    std::cout << "Matrix: " << m4 << std::endl;
+
+    vec2 v2{2.379, 5.112};
+    vec2 v22{8.316, -5.478};
+
+    std::cout << "Equal?: " << (v2 == v22) << std::endl;
+
+    vec2 v3 = project(v2, v22);
+    std::cout << "A on B:" << v3 << " Mag: " << v3.length();
+
 
     // Application applic;
     // Variant_Map init_params;

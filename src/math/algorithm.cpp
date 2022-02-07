@@ -4,29 +4,30 @@
 namespace noble_steed
 {
 
-float lerp(float low, float high, float middle)
+bool fequals(float left, float right, float eps)
 {
-    return (middle - low) / (high - low);
+    return (std::abs(left - right) < eps);
 }
 
-double lerp(double low, double high, double middle)
+double round_decimal(double to_round, i8 decimal_places)
 {
-    return (middle - low) / (high - low);
-}
-
-float lerp(i32 low, i32 high, i32 middle)
-{
-    return float(middle - low) / float(high - low);
-}
-
-float lerp(u32 low, u32 high, u32 middle)
-{
-    return float(middle - low) / float(high - low);
+    double mult = 1.0;
+    for (i8 i{0}; i < decimal_places; ++i)
+        mult *= 10;
+    to_round *= mult;
+    to_round = std::round(to_round);
+    to_round *= (1.0 / mult);
+    return to_round;
 }
 
 float random_float(float high, float low)
 {
     return low + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / (high - low));
+}
+
+i8 count_digits(i32 number)
+{
+    return i8(log10(number) + 1);
 }
 
 } // namespace noble_steed
