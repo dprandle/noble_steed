@@ -3,6 +3,8 @@
 #include "../core/basic_types.h"
 #include <iomanip>
 
+#include <iostream>
+
 namespace noble_steed
 {
 #define STR_W(val, width) std::setw(width) << val
@@ -21,12 +23,12 @@ inline constexpr float TO_DEGREES = (180.0 / PI);
 inline constexpr float TO_RADS = (PI / 180.0);
 
 i8 count_digits(i32 number);
-
 template<typename T>
-typename std::enable_if<std::is_floating_point_v<T>, T>::type
-fequals(T left, T right, T eps = FLOAT_EPS) 
+bool fequals(T left, T right, T eps = FLOAT_EPS)
 {
-    return (left < (right + FLOAT_EPS)) && (left > (right - FLOAT_EPS));
+    bool result = (left < (right + FLOAT_EPS)) && (left > (right - FLOAT_EPS));
+    std::cout << "Result: " << result << std::endl;
+    return result;
 }
 
 float random_float(float high_ = 1.0f, float low_ = 0.0f);

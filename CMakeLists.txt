@@ -25,7 +25,6 @@ set(GLFW_DIR ${DEPENDENCY_DIR}/glfw)
 set(BGFX_DIR ${DEPENDENCY_DIR}/bgfx)
 set(BX_DIR ${DEPENDENCY_DIR}/bx)
 set(BIMG_DIR ${DEPENDENCY_DIR}/bimg)
-set(GLM_DIR ${DEPENDENCY_DIR}/glm)
 set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
 set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
 set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
@@ -41,7 +40,6 @@ set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
 set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
 set(BX_INCLUDE_DIR ${BX_DIR}/include)
 set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
-set(GLM_INCLUDE_DIR ${GLM_DIR})
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
 set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
@@ -78,6 +76,7 @@ file(GLOB SRC_FILES
 
 file(GLOB TEST_FILES 
   ${NOBLE_STEED_TEST_DIR}/*.cpp
+  ${NOBLE_STEED_TEST_DIR}/math/*.cpp
   )
 
 # Set project includes dir
@@ -86,7 +85,6 @@ include_directories(
   ${BX_INCLUDE_DIR}
   ${BIMG_INCLUDE_DIR}
   ${GLFW_INCLUDE_DIR}
-  ${GLM_INCLUDE_DIR}
   ${BULLET_INCLUDE_DIR}
   ${SPDLOG_INCLUDE_DIR}
   ${PYBIND_INCLUDE_DIR}

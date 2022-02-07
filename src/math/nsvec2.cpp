@@ -246,7 +246,10 @@ template<class T>
 bool nsvec2<T>::operator==(const nsvec2<T> &rhs_) const
 {
     if constexpr (std::is_floating_point_v<T>)
+    {
+        std::cout <<"SCSCS" << std::endl;
         return (fequals(x, rhs_.x) && fequals(y, rhs_.y));
+    }
     else
         return ((x == rhs_.x) && (y == rhs_.y));
 }
