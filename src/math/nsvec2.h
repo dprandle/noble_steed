@@ -17,7 +17,7 @@ struct nsmat3;
 template<class T>
 struct nsvec2
 {
-    nsvec2(const T &init_ = 0);
+    explicit nsvec2(const T &init_ = 0);
 
     nsvec2(const T &x_, const T &y_);
 
@@ -100,18 +100,6 @@ struct nsvec2
     bool operator>=(const nsvec2<T> &rhs_) const;
 
     bool operator!=(const nsvec2<T> &rhs_) const;
-
-    bool operator==(const T &rhs_) const;
-
-    bool operator!=(const T &rhs_) const;
-
-    bool operator<(const T &rhs_) const;
-
-    bool operator<=(const T &rhs_) const;
-
-    bool operator>(const T &rhs_) const;
-
-    bool operator>=(const T &rhs_) const;
 
     const T &operator[](sizet val_) const;
 

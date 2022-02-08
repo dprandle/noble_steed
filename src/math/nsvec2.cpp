@@ -285,45 +285,6 @@ bool nsvec2<T>::operator!=(const nsvec2<T> &rhs_) const
 }
 
 template<class T>
-bool nsvec2<T>::operator==(const T &rhs_) const
-{
-    if constexpr (std::is_floating_point_v<T>)
-        return (fequals(x, rhs_) && fequals(y, rhs_));
-    else
-        return ((x == rhs_) && (y == rhs_));
-}
-
-template<class T>
-bool nsvec2<T>::operator!=(const T &rhs_) const
-{
-    return !(*this == rhs_);
-}
-
-template<class T>
-bool nsvec2<T>::operator<(const T &rhs_) const
-{
-    return (x < rhs_ && y < rhs_);
-}
-
-template<class T>
-bool nsvec2<T>::operator<=(const T &rhs_) const
-{
-    return !(*this > rhs_);
-}
-
-template<class T>
-bool nsvec2<T>::operator>(const T &rhs_) const
-{
-    return !(*this == rhs_ || *this < rhs_);
-}
-
-template<class T>
-bool nsvec2<T>::operator>=(const T &rhs_) const
-{
-    return !(*this < rhs_);
-}
-
-template<class T>
 const T &nsvec2<T>::operator[](sizet val_) const
 {
     assert(val_ < 2 && "Index out of bounds!");

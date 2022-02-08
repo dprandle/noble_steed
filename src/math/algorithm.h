@@ -10,7 +10,7 @@ namespace noble_steed
 #define STR_W(val, width) std::setw(width) << val
 #define STR_ALIGN std::right << std::setprecision(ROUND_TO_DEC) << std::fixed
 inline constexpr float PI = 3.14159265359f;
-inline constexpr float FLOAT_EPS = 0.00001f;
+inline constexpr float FLOAT_EPS = 0.0001f;
 inline constexpr char PRINT_MAT_DELIMITER = '\n';
 inline constexpr char PRINT_MAT_START = '\n';
 inline constexpr char PRINT_MAT_END = '\n';
@@ -26,9 +26,7 @@ i8 count_digits(i32 number);
 template<typename T>
 bool fequals(T left, T right, T eps = FLOAT_EPS)
 {
-    bool result = (left < (right + FLOAT_EPS)) && (left > (right - FLOAT_EPS));
-    std::cout << "Result: " << result << std::endl;
-    return result;
+    return (left < (right + FLOAT_EPS)) && (left > (right - FLOAT_EPS));
 }
 
 float random_float(float high_ = 1.0f, float low_ = 0.0f);
@@ -51,12 +49,6 @@ template<class T>
 T reflect(const T &vec, const T &normal)
 {
     return T(vec).reflect(normal);
-}
-
-template <class T>
-auto distance(const T &a, const T &b)
-{
-    return (a - b).length();
 }
 
 template <class T>
