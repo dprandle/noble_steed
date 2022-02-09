@@ -31,7 +31,7 @@ int main()
 
     std::cout << "Equal?: " << (v2 == v22) << std::endl;
 
-    vec2 v3 = project(v2, v22);
+    vec2 v3 = math::project(v2, v22);
     std::cout << "A on B:" << v3 << " Mag: " << v3.length();
 
 

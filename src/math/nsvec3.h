@@ -1,8 +1,10 @@
 #pragma once
 
 #include "algorithm.h"
-#include "nsvec2.h"
+#include "vector2.h"
 
+namespace noble_steed
+{
 template<class T>
 struct nsvec4;
 
@@ -37,9 +39,9 @@ struct nsvec3
 
     nsvec3(const T &val_ = 0) : x(val_), y(val_), z(val_)
     {}
-    nsvec3(const nsvec2<T> &xy, const T &z_) : x(xy.x), y(xy.y), z(z_)
+    nsvec3(const vector2<T> &xy, const T &z_) : x(xy.x), y(xy.y), z(z_)
     {}
-    nsvec3(const T &x_, const nsvec2<T> &yz) : x(x_), y(yz.y), z(yz.z)
+    nsvec3(const T &x_, const vector2<T> &yz) : x(x_), y(yz.y), z(yz.z)
     {}
     nsvec3(const T &x_, const T &y_, const T &z_ = 0) : x(x_), y(y_), z(z_)
     {}
@@ -92,7 +94,7 @@ struct nsvec3
 
         if (x == 0)
         {
-            ret.y = PI / 2;
+            ret.y = math::PI / 2;
             if (y == 0)
                 ret.y = 0;
         }
@@ -125,7 +127,7 @@ struct nsvec3
     nsvec3<T> &euler_from(const nsmat3<T> &rotation_mat3_, EulerOrder order_ = XYZ, bool rads_ = false)
     {
         // https://github.com/mrdoob/three.js/blob/master/src/math/Euler.js
-        T ep = 1 - FLOAT_EPS;
+        T ep = 1 - math::FLOAT_EPS;
         switch (order_)
         {
         case (XYZ):
@@ -293,7 +295,7 @@ struct nsvec3
         return *this;
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
         auto pr = std::minmax({x,y,z,});
         return {pr.first, pr.second};
@@ -324,7 +326,7 @@ struct nsvec3
     nsvec3<T> &normalize()
     {
         T l = length();
-        if (l <= FLOAT_EPS)
+        if (l <= math::FLOAT_EPS)
             return *this;
         return *this *= (1 / l);
     }
@@ -400,7 +402,7 @@ struct nsvec3
 
         if (x == 0)
         {
-            ret.y = PI / 2;
+            ret.y = math::PI / 2;
             if (y == 0)
                 ret.y = 0;
         }
@@ -421,9 +423,9 @@ struct nsvec3
         return ret;
     }
 
-    nsvec2<T> vec2() const
+    vector2<T> vec2() const
     {
-        return nsvec2<T>(x, y);
+        return vector2<T>(x, y);
     }
 
     // overloaded operators
@@ -825,6 +827,7 @@ struct nsvec3
 template<class T>
 std::ostream& operator<<(std::ostream& os, const nsvec3<T>& vec)
 {
+    using namespace math;
     os << STR_ALIGN << PRINT_START_VEC << vec.x << PRINT_VEC_DELIMITER << vec.y << PRINT_VEC_DELIMITER << vec.z << PRINT_END_VEC;
     return os;
 }
@@ -841,3 +844,4 @@ using u64vec3 = nsvec3<u64>;
 using vec3 = nsvec3<float>;
 using dvec3 = nsvec3<double>;
 using ldvec3 = nsvec3<ldouble>;
+}

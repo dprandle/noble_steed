@@ -3,6 +3,9 @@
 #include "nsvec4.h"
 #include <cmath>
 
+namespace noble_steed
+{
+
 template<class T>
 struct nsquat
 {
@@ -21,9 +24,9 @@ struct nsquat
         return *this;
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
-        auto pr = std::minmax({x,y,z,w});
+        auto pr = std::minmax({x, y, z, w});
         return {pr.first, pr.second};
     }
 
@@ -230,7 +233,7 @@ struct nsquat
         T half_theta = acos(cos_half_theta);
         T sin_half_theta = sqrt(1.0 - cos_half_theta * cos_half_theta);
 
-        if (std::abs(sin_half_theta) < FLOAT_EPS)
+        if (std::abs(sin_half_theta) < math::FLOAT_EPS)
         {
             *this = 0.5 * (*this + second_);
             return *this;
@@ -573,8 +576,8 @@ nsquat<T> slerp(const nsquat<T> &lhs_, const nsquat<T> &rhs_, const T &scaling_f
 template<class T>
 std::ostream &operator<<(std::ostream &os, const nsquat<T> &qt)
 {
-    os << PRINT_START_VEC << qt.i << PRINT_VEC_DELIMITER << qt.j << PRINT_VEC_DELIMITER << qt.k << PRINT_VEC_DELIMITER
-       << qt.alpha << PRINT_END_VEC;
+    using namespace math;
+    os << PRINT_START_VEC << qt.i << PRINT_VEC_DELIMITER << qt.j << PRINT_VEC_DELIMITER << qt.k << PRINT_VEC_DELIMITER << qt.alpha << PRINT_END_VEC;
     return os;
 }
 
@@ -589,3 +592,4 @@ using u64quat = nsquat<u64>;
 using quat = nsquat<float>;
 using dquat = nsquat<double>;
 using ldquat = nsquat<ldouble>;
+} // namespace noble_steed

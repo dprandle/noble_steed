@@ -5,10 +5,11 @@
 
 #include <iostream>
 
-namespace noble_steed
-{
 #define STR_W(val, width) std::setw(width) << val
 #define STR_ALIGN std::right << std::setprecision(ROUND_TO_DEC) << std::fixed
+namespace noble_steed::math
+{
+
 inline constexpr float PI = 3.14159265359f;
 inline constexpr float FLOAT_EPS = 0.0001f;
 inline constexpr char PRINT_MAT_DELIMITER = '\n';
@@ -22,7 +23,20 @@ inline constexpr i8 ROUND_TO_DEC = 2;
 inline constexpr float TO_DEGREES = (180.0 / PI);
 inline constexpr float TO_RADS = (PI / 180.0);
 
+template<class T>
+struct vector2;
+
+template<class T>
+struct vector3;
+
+template<class T>
+struct bounding_box;
+
+template<class T>
+struct cube;
+
 i8 count_digits(i32 number);
+
 template<typename T>
 bool fequals(T left, T right, T eps = FLOAT_EPS)
 {
@@ -51,16 +65,16 @@ T reflect(const T &vec, const T &normal)
     return T(vec).reflect(normal);
 }
 
-template <class T>
-auto dot(const T & veca, const T & vecb)
+template<class T>
+auto dot(const T &veca, const T &vecb)
 {
-    auto val {veca.data[0] * vecb.data[0]};
-    for (i8 i {1}; i < T::size; ++i)
+    auto val{veca.data[0] * vecb.data[0]};
+    for (i8 i{1}; i < T::size; ++i)
         val += veca[i] * vecb[i];
     return val;
 }
 
-template <class T>
+template<class T>
 auto angle(const T &veca, const T &vecb)
 {
     auto dot_p = dot(veca, vecb);
@@ -79,8 +93,8 @@ T normalize(const T &vec_or_quat)
 template<class T>
 T min(const T &lhs_, const T &rhs_)
 {
-    T ret {lhs_};
-    for (i8 i {0}; i < T::size; ++i)
+    T ret{lhs_};
+    for (i8 i{0}; i < T::size; ++i)
     {
         if (rhs_[i] < ret[i])
             ret[i] = rhs_[i];
@@ -91,8 +105,8 @@ T min(const T &lhs_, const T &rhs_)
 template<class T>
 T max(const T &lhs_, const T &rhs_)
 {
-    T ret {lhs_};
-    for (i8 i {0}; i < T::size; ++i)
+    T ret{lhs_};
+    for (i8 i{0}; i < T::size; ++i)
     {
         if (rhs_[i] > ret[i])
             ret[i] = rhs_[i];
@@ -130,4 +144,4 @@ T round(const T &item, i8 decimal_places)
     return T(item).round(decimal_places);
 }
 
-} // namespace noble_steed
+}

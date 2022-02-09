@@ -2,6 +2,8 @@
 
 #include "nsmat3.h"
 
+namespace noble_steed
+{
 template<class T>
 struct nsmat4
 {
@@ -85,7 +87,7 @@ struct nsmat4
         return *this;
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
         auto pr = std::minmax({data[0][0],
                                data[0][1],
@@ -965,6 +967,7 @@ nsmat4<T> inverse(nsmat4<T> mat_)
 template<class T>
 std::ostream &operator<<(std::ostream &os, const nsmat4<T> &mat)
 {
+    using namespace math;
     os << PRINT_MAT_START << mat[0] << PRINT_MAT_DELIMITER << mat[1] << PRINT_MAT_DELIMITER << mat[2] << PRINT_MAT_DELIMITER << mat[3]
        << PRINT_MAT_END;
     return os;
@@ -981,3 +984,4 @@ using u64mat4 = nsmat4<u64>;
 using mat4 = nsmat4<float>;
 using dmat4 = nsmat4<double>;
 using ldmat4 = nsmat4<ldouble>;
+}

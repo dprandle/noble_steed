@@ -1,7 +1,7 @@
 #include <cmath>
 #include "algorithm.h"
 
-namespace noble_steed
+namespace noble_steed::math
 {
 
 bool fequals(float left, float right, float eps)

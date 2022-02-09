@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../core/basic_types.h"
-#include "nsvec2.h"
+#include "vector2.h"
 #include "nsmat3.h"
-
+namespace noble_steed
+{
 template<class T>
 struct nsmat2
 {
@@ -31,7 +32,7 @@ struct nsmat2
         data[1].y = d;
     }
 
-    nsmat2(const nsvec2<T> &row1, const nsvec2<T> &row2)
+    nsmat2(const vector2<T> &row1, const vector2<T> &row2)
     {
         data[0] = row1;
         data[1] = row2;
@@ -47,7 +48,7 @@ struct nsmat2
         return data[0].x * data[1].y - data[1].x * data[0].y;
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
         auto pr = std::minmax({data[0][0], data[0][1], data[1][0], data[1][1]});
         return {pr.first, pr.second};
@@ -94,7 +95,7 @@ struct nsmat2
         return *this;
     }
 
-    nsmat2<T> &scaling_from(const nsvec2<T> &scale_)
+    nsmat2<T> &scaling_from(const vector2<T> &scale_)
     {
         data[0][0] = scale_.x;
         data[1][1] = scale_.y;
@@ -104,13 +105,13 @@ struct nsmat2
 
     nsmat2<T> &scaling_from(const nsmat2<T> &transform2d_)
     {
-        nsvec2<T> scalingVec(transform2d_[0].length(), transform2d_[1].length());
+        vector2<T> scalingVec(transform2d_[0].length(), transform2d_[1].length());
         return scaling_from(scalingVec);
     }
 
     nsmat2<T> &scaling_from(const nsmat3<T> &transform2d_)
     {
-        nsvec2<T> scalingVec;
+        vector2<T> scalingVec;
         scalingVec.x = sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
         scalingVec.y = sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
         return scaling_from(scalingVec);
@@ -123,7 +124,7 @@ struct nsmat2
         return *this;
     }
 
-    nsmat2<T> &set_column(sizet i, const nsvec2<T> &col)
+    nsmat2<T> &set_column(sizet i, const vector2<T> &col)
     {
         (*this)[i][0] = col.x;
         (*this)[i][1] = col.y;
@@ -178,17 +179,17 @@ struct nsmat2
         return ret;
     }
 
-    nsvec2<T> operator*(const nsvec2<T> &rhs_) const
+    vector2<T> operator*(const vector2<T> &rhs_) const
     {
-        return nsvec2<T>(data[0] * rhs_, data[1] * rhs_);
+        return vector2<T>(data[0] * rhs_, data[1] * rhs_);
     }
 
-    nsmat2<T> operator%(const nsvec2<T> &rhs_) const
+    nsmat2<T> operator%(const vector2<T> &rhs_) const
     {
         return nsmat2<T>(data[0] % rhs_, data[1] % rhs_);
     }
 
-    nsmat2<T> operator/(const nsvec2<T> &rhs_) const
+    nsmat2<T> operator/(const vector2<T> &rhs_) const
     {
         nsmat2<T> ret;
         ret.data[0] = data[0] / rhs_[0];
@@ -266,13 +267,13 @@ struct nsmat2
         return *this;
     }
 
-    nsmat2<T> &operator%=(const nsvec2<T> &rhs_)
+    nsmat2<T> &operator%=(const vector2<T> &rhs_)
     {
         *this = *this % rhs_;
         return *this;
     }
 
-    nsmat2<T> &operator/=(const nsvec2<T> &rhs_)
+    nsmat2<T> &operator/=(const vector2<T> &rhs_)
     {
         *this = *this / rhs_;
         return *this;
@@ -330,26 +331,26 @@ struct nsmat2
         return *this;
     }
 
-    const nsvec2<T> &operator[](sizet val_) const
+    const vector2<T> &operator[](sizet val_) const
     {
         assert(val_ < 2 && "Index out of range!");
         return data[val_];
     }
 
-    nsvec2<T> &operator[](sizet val_)
+    vector2<T> &operator[](sizet val_)
     {
         assert(val_ < 2 && "Index out of range!");
         return data[val_];
     }
 
-    nsvec2<T> operator()(sizet val_) const
+    vector2<T> operator()(sizet val_) const
     {
         assert(val_ < 2 && "Index out of range!");
-        return nsvec2<T>(data[0][val_], data[1][val_]);
+        return vector2<T>(data[0][val_], data[1][val_]);
     }
 
   private:
-    nsvec2<T> data[2];
+    vector2<T> data[2];
 };
 
 template<class T>
@@ -389,19 +390,19 @@ nsmat2<T> operator/(const double &lhs_, const nsmat2<T> &rhs_)
 }
 
 template<class T>
-nsvec2<T> operator*(const nsvec2<T> &lhs_, const nsmat2<T> &rhs_)
+vector2<T> operator*(const vector2<T> &lhs_, const nsmat2<T> &rhs_)
 {
-    return nsvec2<T>(lhs_[0] * rhs_[0][0] + lhs_[1] * rhs_[1][0], lhs_[0] * rhs_[0][1] + lhs_[1] * rhs_[1][1]);
+    return vector2<T>(lhs_[0] * rhs_[0][0] + lhs_[1] * rhs_[1][0], lhs_[0] * rhs_[0][1] + lhs_[1] * rhs_[1][1]);
 }
 
 template<class T>
-nsvec2<T> operator/(const nsvec2<T> &lhs_, const nsmat2<T> &rhs_)
+vector2<T> operator/(const vector2<T> &lhs_, const nsmat2<T> &rhs_)
 {
     return lhs_ * inverse(rhs_);
 }
 
 template<class T>
-nsmat2<T> operator%(const nsvec2<T> &lhs_, const nsmat2<T> &rhs_)
+nsmat2<T> operator%(const vector2<T> &lhs_, const nsmat2<T> &rhs_)
 {
     return nsmat2<T>(rhs_[0] * lhs_[0], rhs_[1] * lhs_[1]);
 }
@@ -438,7 +439,7 @@ nsmat2<T> rotation2d_mat2(const nsmat2<T> &transform2d_)
 }
 
 template<class T>
-nsmat2<T> scaling2d_mat2(const nsvec2<T> &scale_)
+nsmat2<T> scaling2d_mat2(const vector2<T> &scale_)
 {
     return nsmat2<T>().scaling_from(scale_);
 }
@@ -470,7 +471,7 @@ nsmat2<T> inverse(nsmat2<T> mat_)
 template<class T>
 std::ostream& operator<<(std::ostream& os, const nsmat2<T>& mat)
 {
-    os << PRINT_MAT_START << mat[0] << PRINT_MAT_DELIMITER << mat[1] << PRINT_MAT_END;
+    os << math::PRINT_MAT_START << mat[0] << math::PRINT_MAT_DELIMITER << mat[1] << math::PRINT_MAT_END;
     return os;
 }
 
@@ -485,3 +486,4 @@ using u64mat2 = nsmat2<u64>;
 using mat2 = nsmat2<float>;
 using dmat2 = nsmat2<double>;
 using ldmat2 = nsmat2<ldouble>;
+}

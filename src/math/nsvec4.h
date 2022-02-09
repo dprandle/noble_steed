@@ -2,6 +2,9 @@
 
 #include "nsvec3.h"
 
+namespace noble_steed
+{
+
 template<class T>
 struct nsvec4
 {
@@ -17,13 +20,13 @@ struct nsvec4
     {}
     nsvec4(const T &x_, const nsvec3<T> &yzw) : x(x_), y(yzw.x), z(yzw.y), w(yzw.z)
     {}
-    nsvec4(const nsvec2<T> &xy, const nsvec2<T> &zw) : x(xy.x), y(xy.y), z(zw.x), w(zw.y)
+    nsvec4(const vector2<T> &xy, const vector2<T> &zw) : x(xy.x), y(xy.y), z(zw.x), w(zw.y)
     {}
-    nsvec4(const nsvec2<T> &xy, const T &z_ = 0, const T &w_ = 0) : x(xy.x), y(xy.y), z(z_), w(w_)
+    nsvec4(const vector2<T> &xy, const T &z_ = 0, const T &w_ = 0) : x(xy.x), y(xy.y), z(z_), w(w_)
     {}
-    nsvec4(const T &x_, const nsvec2<T> &yz, const T &w_ = 0) : x(x_), y(yz.x), z(yz.z), w(w_)
+    nsvec4(const T &x_, const vector2<T> &yz, const T &w_ = 0) : x(x_), y(yz.x), z(yz.z), w(w_)
     {}
-    nsvec4(const T &x_, const T &y_, const nsvec2<T> &zw) : x(x_), y(y_), z(zw.x), w(zw.y)
+    nsvec4(const T &x_, const T &y_, const vector2<T> &zw) : x(x_), y(y_), z(zw.x), w(zw.y)
     {}
 
     nsvec4<T> &abs()
@@ -49,7 +52,7 @@ struct nsvec4
             w = degrees(w);
 
         T den = std::sqrt(1 - orientation_.w * orientation_.w);
-        if (den < FLOAT_EPS)
+        if (den < math::FLOAT_EPS)
         {
             x = orientation_.x;
             y = orientation_.y;
@@ -152,7 +155,7 @@ struct nsvec4
         return *this;
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
         auto pr = std::minmax({x, y, z, w});
         return {pr.first, pr.second};
@@ -589,6 +592,7 @@ struct nsvec4
 template<class T>
 std::ostream &operator<<(std::ostream &os, const nsvec4<T> &vec)
 {
+    using namespace math;
     os << STR_ALIGN << PRINT_START_VEC << vec.x << PRINT_VEC_DELIMITER << vec.y << PRINT_VEC_DELIMITER << vec.z << PRINT_VEC_DELIMITER << vec.w
        << PRINT_END_VEC;
     return os;
@@ -605,3 +609,4 @@ using u64vec4 = nsvec4<u64>;
 using vec4 = nsvec4<float>;
 using dvec4 = nsvec4<double>;
 using ldvec4 = nsvec4<ldouble>;
+}

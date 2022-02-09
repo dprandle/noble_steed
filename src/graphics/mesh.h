@@ -3,7 +3,7 @@
 
 #include "../core/resource.h"
 #include "../container/vector.h"
-#include "../math/nsvec2.h"
+#include "../math/vector2.h"
 #include "../math/nsvec3.h"
 #include "../math/nsvec4.h"
 

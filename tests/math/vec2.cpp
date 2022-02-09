@@ -1,7 +1,8 @@
-#include "math/nsvec2.h"
+#include "math/vector2.h"
 #include <gtest/gtest.h>
 
 using namespace noble_steed;
+using namespace noble_steed::math;
 
 TEST(Vec2, Project) { 
     vec2 v2 {0.5, -0.8};

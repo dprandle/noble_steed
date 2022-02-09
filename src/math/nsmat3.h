@@ -3,6 +3,9 @@
 #include "nsmat2.h"
 #include "nsvec3.h"
 
+namespace noble_steed
+{
+
 template <class T>
 struct nsvec3;
 
@@ -83,7 +86,7 @@ struct nsmat3
                data[0][1] * data[1][0] * data[2][2] + data[0][2] * data[1][0] * data[2][1] - data[0][2] * data[1][1] * data[2][0];
     }
 
-    nsvec2<T> minmax() const
+    vector2<T> minmax() const
     {
         auto pr = std::minmax({data[0][0], data[0][1], data[0][2], data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2]});
         return {pr.first, pr.second};
@@ -365,7 +368,7 @@ struct nsmat3
         return *this;
     }
 
-    nsmat3<T> &scaling2d_from(const nsvec2<T> &scale_)
+    nsmat3<T> &scaling2d_from(const vector2<T> &scale_)
     {
         *this = nsmat3<T>();
         data[0][0] = scale_.x;
@@ -375,13 +378,13 @@ struct nsmat3
 
     nsmat3<T> &scaling2d_from(const nsmat2<T> &transform2d_)
     {
-        nsvec2<T> scalingVec(transform2d_[0].length(), transform2d_[1].length());
+        vector2<T> scalingVec(transform2d_[0].length(), transform2d_[1].length());
         return scaling_from(scalingVec);
     }
 
     nsmat3<T> &scaling2d_from(const nsmat3<T> &transform2d_)
     {
-        nsvec2<T> scalingVec;
+        vector2<T> scalingVec;
         scalingVec.x = sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
         scalingVec.y = sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
         return scaling_from(scalingVec);
@@ -438,7 +441,7 @@ struct nsmat3
         return set_column(2, m3_.x, m3_.y, 1);
     }
 
-    nsmat3<T> &translation2d_from(const nsvec2<T> &m2_)
+    nsmat3<T> &translation2d_from(const vector2<T> &m2_)
     {
         *this = nsmat3<T>();
         return set_column(2, m2_.x, m2_.y, 1);
@@ -811,7 +814,7 @@ nsmat3<T> rotation_mat3(const nsmat3<T> &transform_)
 }
 
 template<class T>
-nsmat3<T> scaling2d_mat3(const nsvec2<T> &scale_)
+nsmat3<T> scaling2d_mat3(const vector2<T> &scale_)
 {
     return nsmat3<T>().scaling2d_from(scale_);
 }
@@ -853,7 +856,7 @@ nsmat3<T> translation2d_mat3(const nsvec3<T> &m3_)
 }
 
 template<class T>
-nsmat3<T> translation2d_mat3(const nsvec2<T> &m2_)
+nsmat3<T> translation2d_mat3(const vector2<T> &m2_)
 {
     return nsmat3<T>().translation2d_from(m2_);
 }
@@ -867,6 +870,7 @@ nsmat3<T> transpose(nsmat3<T> mat_)
 template<class T>
 std::ostream &operator<<(std::ostream &os, const nsmat3<T> &mat)
 {
+    using namespace math;
     os << PRINT_MAT_START << mat[0] << PRINT_MAT_DELIMITER << mat[1] << PRINT_MAT_DELIMITER << mat[2] << PRINT_MAT_END;
     return os;
 }
@@ -882,3 +886,4 @@ using u64mat3 = nsmat3<u64>;
 using mat3 = nsmat3<float>;
 using dmat3 = nsmat3<double>;
 using ldmat3 = nsmat3<ldouble>;
+}
