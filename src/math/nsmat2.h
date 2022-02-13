@@ -81,10 +81,10 @@ struct nsmat2
         if (!rads_)
             angle_ = radians(angle_);
 
-        data[0][0] = std::cos(angle_);
-        data[0][1] = std::sin(angle_);
-        data[1][0] = -std::sin(angle_);
-        data[1][1] = std::cos(angle_);
+        data[0][0] = math::cos(angle_);
+        data[0][1] = math::sin(angle_);
+        data[1][0] = -math::sin(angle_);
+        data[1][1] = math::cos(angle_);
         return *this;
     }
 
@@ -112,8 +112,8 @@ struct nsmat2
     nsmat2<T> &scaling_from(const nsmat3<T> &transform2d_)
     {
         vector2<T> scalingVec;
-        scalingVec.x = sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
-        scalingVec.y = sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
+        scalingVec.x = math::sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
+        scalingVec.y = math::sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
         return scaling_from(scalingVec);
     }
 
@@ -333,19 +333,16 @@ struct nsmat2
 
     const vector2<T> &operator[](sizet val_) const
     {
-        assert(val_ < 2 && "Index out of range!");
         return data[val_];
     }
 
     vector2<T> &operator[](sizet val_)
     {
-        assert(val_ < 2 && "Index out of range!");
         return data[val_];
     }
 
     vector2<T> operator()(sizet val_) const
     {
-        assert(val_ < 2 && "Index out of range!");
         return vector2<T>(data[0][val_], data[1][val_]);
     }
 

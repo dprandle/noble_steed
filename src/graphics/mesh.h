@@ -4,8 +4,8 @@
 #include "../core/resource.h"
 #include "../container/vector.h"
 #include "../math/vector2.h"
-#include "../math/nsvec3.h"
-#include "../math/nsvec4.h"
+#include "../math/vector3.h"
+#include "../math/vector4.h"
 
 BGFX_HANDLE(Index_Buffer_Handle)
 

@@ -1,5 +1,5 @@
 #include "../container/vector.h"
-#include "nsvec3.h"
+#include "vector3.h"
 #include "nsmat4.h"
 
 namespace noble_steed
@@ -19,12 +19,12 @@ struct bounding_box
         f_front
     };
 
-    bounding_box(const vector<nsvec3<T>> &verts_ = vector<nsvec3<T>>(), const nsmat4<T> &tform_=nsmat4<T>())
+    bounding_box(const vector<vector3<T>> &verts_ = vector<vector3<T>>(), const nsmat4<T> &tform_=nsmat4<T>())
     {
         calculate(verts_, tform_);
     }
 
-    bounding_box(const nsvec3<T> &min_, const nsvec3<T> &max_): min(min_), max(max_)
+    bounding_box(const vector3<T> &min_, const vector3<T> &max_): min(min_), max(max_)
     {
         update_verts();
     }
@@ -32,15 +32,15 @@ struct bounding_box
     ~bounding_box()
     {}
 
-    void calculate(const vector<nsvec3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
+    void calculate(const vector<vector3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
     {
         clear();
         extend(verts_, tform_);
     }
 
-    nsvec3<T> center(const box_face &face_ = f_none)
+    vector3<T> center(const box_face &face_ = f_none)
     {
-        nsvec3<T> center = (max - min) * 0.5;
+        vector3<T> center = (max - min) * 0.5;
         switch (face_)
         {
         case (f_none):
@@ -69,13 +69,13 @@ struct bounding_box
 
     void clear()
     {
-        min = nsvec3<T>();
-        max = nsvec3<T>();
+        min = vector3<T>();
+        max = vector3<T>();
         for (sizet i = 0; i < 8; ++i)
-            verts[i] = nsvec3<T>();
+            verts[i] = vector3<T>();
     }
 
-    void extend(const vector<nsvec3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
+    void extend(const vector<vector3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
     {
         if (!verts_.empty())
         {
@@ -85,7 +85,7 @@ struct bounding_box
         
         for (sizet i = 0; i < verts_.size(); ++i)
         {
-            nsvec3<T> tvert = (tform_ * nsvec4<T>(verts_[i], 1.0f)).vec3();
+            vector3<T> tvert = (tform_ * vector4<T>(verts_[i], 1.0f)).vec3();
 
             // Find maximum of each dimension
             max.maximize(tvert);
@@ -98,25 +98,25 @@ struct bounding_box
 
     T volume()
     {
-        nsvec3<T> diff = (max - min).abs();
+        vector3<T> diff = (max - min).abs();
         return diff.x * diff.y * diff.z;
     }
 
     void update_verts()
     {
         verts[0] = min;
-        verts[1] = nsvec3<T>(max.x, min.y, min.z);
-        verts[2] = nsvec3<T>(min.x, max.y, min.z);
-        verts[3] = nsvec3<T>(max.x, max.y, min.z);
-        verts[4] = nsvec3<T>(min.x, min.y, max.z);
-        verts[5] = nsvec3<T>(max.x, min.y, max.z);
-        verts[6] = nsvec3<T>(min.x, max.y, max.z);
+        verts[1] = vector3<T>(max.x, min.y, min.z);
+        verts[2] = vector3<T>(min.x, max.y, min.z);
+        verts[3] = vector3<T>(max.x, max.y, min.z);
+        verts[4] = vector3<T>(min.x, min.y, max.z);
+        verts[5] = vector3<T>(max.x, min.y, max.z);
+        verts[6] = vector3<T>(min.x, max.y, max.z);
         verts[7] = max;
     }
 
-    nsvec3<T> min;
-    nsvec3<T> max;
-    nsvec3<T> verts[8];
+    vector3<T> min;
+    vector3<T> max;
+    vector3<T> verts[8];
 };
 
 using cbbox = bounding_box<char>;

@@ -6,23 +6,23 @@ namespace noble_steed
 {
 
 template<class T>
-struct nsvec4;
+struct vector4;
 
 template<class T>
-struct nsvec3;
+struct vector3;
 
 template<class T>
 struct rectangle
 {
-    rectangle(const nsvec4<T> & center_wh);
+    rectangle(const vector4<T> & center_wh);
     rectangle(T x, T y, T width, T height);
-    nsvec4<T> rect;
+    vector4<T> rect;
 };
 
 template<class T>
 struct cube_base
 {
-    cube_base(const nsvec3<T> &min_ = nsvec3<T>(), const nsvec3<T> &max_ = nsvec3<T>());
+    cube_base(const vector3<T> &min_ = vector3<T>(), const vector3<T> &max_ = vector3<T>());
 
     cube_base<T> operator+(const cube_base<T> &rhs);
     cube_base<T> operator-(const cube_base<T> &rhs);
@@ -33,14 +33,14 @@ struct cube_base
     {
         struct
         {
-            nsvec3<T> min;
-            nsvec3<T> max;
+            vector3<T> min;
+            vector3<T> max;
         };
 
         struct
         {
-            nsvec3<T> a;
-            nsvec3<T> b;
+            vector3<T> a;
+            vector3<T> b;
         };
     };
 };

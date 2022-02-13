@@ -1,39 +1,51 @@
-#include <bgfx/bgfx.h>
-
 #include "core/application.h"
-#include "graphics/window.h"
-#include "io/input_map.h"
-#include "io/input_translator.h"
 #include "core/resource_cache.h"
 #include "core/context.h"
-#include "scene/world.h"
+
+#include "graphics/window.h"
 #include "graphics/renderer.h"
 #include "graphics/mesh.h"
 
-#include "math/bounding_box.h"
-#include "math/nsquat.h"
+#include "io/input_map.h"
+#include "io/input_translator.h"
 
+#include "math/bounding_box.h"
+#include "math/quaternion.h"
+
+#include "scene/world.h"
 #include "scene/world_chunk.h"
 #include "scene/world.h"
 #include "scene/entity.h"
 
+#include "container/string.h"
+
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
+
+using namespace noble_steed;
 
 int main()
 {
-    using namespace noble_steed;
-
     mat4 m4 {{4.0},{2.0435435},{34454.0, 55.0, 1.456, 545.66},{5.5}};
     std::cout << "Matrix: " << m4 << std::endl;
 
-    vec2 v2{2.379, 5.112};
-    vec2 v22{8.316, -5.478};
+    vec2 v1 {1, 4.5};
+    vec2 v2{3,4};
+    bool result = v1 < v2;
+    std::cout << "result: " << result << std::endl;
 
-    std::cout << "Equal?: " << (v2 == v22) << std::endl;
+    vec2 v{-1,-1};
+    vec2 polar = math::cartesian_to_polar(v);
+    polar.y *= math::TO_DEGREES;
+    std::cout << polar << std::endl;
 
-    vec2 v3 = math::project(v2, v22);
-    std::cout << "A on B:" << v3 << " Mag: " << v3.length();
+    vec3 test {1.5, 6.8};
+    ivec2 test2 = math::convert_elements<i32>(test.xy);
+    std::cout << "test: " << test << " and test2: " << test2 << std::endl;
 
+    auto qt = math::orientation(vec4{2,3,4,math::PI/4});
+    
 
     // Application applic;
     // Variant_Map init_params;

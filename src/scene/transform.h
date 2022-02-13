@@ -1,7 +1,7 @@
 #pragma once
 
 #include "component.h"
-#include "../math/nsvec4.h"
+#include "../math/vector4.h"
 
 namespace noble_steed
 {

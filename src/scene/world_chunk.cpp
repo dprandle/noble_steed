@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "world_chunk.h"
 #include "world.h"
 #include "transform.h"

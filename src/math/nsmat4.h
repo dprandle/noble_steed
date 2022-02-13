@@ -38,7 +38,7 @@ struct nsmat4
     {}
 
     //
-    nsmat4(const nsvec4<T> &row1, const nsvec4<T> &row2, const nsvec4<T> &row3, const nsvec4<T> &row4)
+    nsmat4(const vector4<T> &row1, const vector4<T> &row2, const vector4<T> &row3, const vector4<T> &row4)
     {
         data[0] = row1;
         data[1] = row2;
@@ -190,7 +190,7 @@ struct nsmat4
     nsmat4<T> &perspective_from(const T &fov_, const T &aspect_ratio_, const T &z_near_, const T &z_far_)
     {
         T zRange = z_near_ - z_far_;
-        T usefulNum = tan(radians(fov_ / 2));
+        T usefulNum = math::tan(radians(fov_ / 2));
         *this = nsmat4<T>();
         data[0][0] = 1 / (aspect_ratio_ * usefulNum);
         data[1][1] = 1 / usefulNum;
@@ -202,12 +202,12 @@ struct nsmat4
         return *this;
     }
 
-    nsvec3<T> right() const
+    vector3<T> right() const
     {
-        return normalize(nsvec3<T>(data[0].x, data[1].x, data[2].x));
+        return normalize(vector3<T>(data[0].x, data[1].x, data[2].x));
     }
 
-    nsmat4<T> &rotation_from(const nsvec4<T> &axis_angle_, bool rads_ = false)
+    nsmat4<T> &rotation_from(const vector4<T> &axis_angle_, bool rads_ = false)
     {
         // http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToMatrix/index.htm
 
@@ -216,8 +216,8 @@ struct nsmat4
         if (!rads_)
             angle = radians(angle);
 
-        T c = std::cos(angle);
-        T s = std::sin(angle);
+        T c = math::cos(angle);
+        T s = math::sin(angle);
         T t = 1 - c;
 
         data[0][0] = c + axis_angle_.x * axis_angle_.x * t;
@@ -250,32 +250,32 @@ struct nsmat4
         return *this;
     }
 
-    nsmat4<T> &rotation_from(const nsvec3<T> &euler_, typename nsvec3<T>::EulerOrder order_, bool rads_ = false)
+    nsmat4<T> &rotation_from(const vector3<T> &euler_, typename vector3<T>::euler_order order_, bool rads_ = false)
     {
         T cb, sb, ch, sh, ca, sa;
         if (!rads_)
         {
-            nsvec3<T> eulRads(radians(euler_));
-            cb = std::cos(eulRads.x);
-            sb = std::sin(eulRads.x);
-            ch = std::cos(eulRads.y);
-            sh = std::sin(eulRads.y);
-            ca = std::cos(eulRads.z);
-            sa = std::sin(eulRads.z);
+            vector3<T> eulRads(radians(euler_));
+            cb = math::cos(eulRads.x);
+            sb = math::sin(eulRads.x);
+            ch = math::cos(eulRads.y);
+            sh = math::sin(eulRads.y);
+            ca = math::cos(eulRads.z);
+            sa = math::sin(eulRads.z);
         }
         else
         {
-            cb = std::cos(euler_.x);
-            sb = std::sin(euler_.x);
-            ch = std::cos(euler_.y);
-            sh = std::sin(euler_.y);
-            ca = std::cos(euler_.z);
-            sa = std::sin(euler_.z);
+            cb = math::cos(euler_.x);
+            sb = math::sin(euler_.x);
+            ch = math::cos(euler_.y);
+            sh = math::sin(euler_.y);
+            ca = math::cos(euler_.z);
+            sa = math::sin(euler_.z);
         }
 
         switch (order_)
         {
-        case (nsvec3<T>::XYZ): {
+        case (vector3<T>::XYZ): {
             data[0][0] = ch * ca;
             data[0][1] = -ch * sa;
             data[0][2] = sh;
@@ -289,7 +289,7 @@ struct nsmat4
             data[2][2] = cb * ch;
             break;
         }
-        case (nsvec3<T>::XZY): {
+        case (vector3<T>::XZY): {
             data[0][0] = ch * ca;
             data[0][1] = -sa;
             data[0][2] = sh * ca;
@@ -303,7 +303,7 @@ struct nsmat4
             data[2][2] = sb * sh * sa + cb * ch;
             break;
         }
-        case (nsvec3<T>::YXZ): {
+        case (vector3<T>::YXZ): {
             data[0][0] = ch * ca + sh * sa * sb;
             data[0][1] = sh * ca * sb - ch * sa;
             data[0][2] = cb * sh;
@@ -317,7 +317,7 @@ struct nsmat4
             data[2][2] = cb * ch;
             break;
         }
-        case (nsvec3<T>::YZX): {
+        case (vector3<T>::YZX): {
             data[0][0] = ch * ca;
             data[0][1] = sb * sh - cb * ch * sa;
             data[0][2] = sb * ch * sa + cb * sh;
@@ -331,7 +331,7 @@ struct nsmat4
             data[2][2] = cb * ch - sb * sh * sa;
             break;
         }
-        case (nsvec3<T>::ZXY): {
+        case (vector3<T>::ZXY): {
             data[0][0] = ch * ca - sh * sa * sb;
             data[0][1] = -cb * sa;
             data[0][2] = sh * ca + ch * sa * sb;
@@ -345,7 +345,7 @@ struct nsmat4
             data[2][2] = cb * ch;
             break;
         }
-        case (nsvec3<T>::ZYX): {
+        case (vector3<T>::ZYX): {
             data[0][0] = ch * ca;
             data[0][1] = sb * ca * sh - cb * sa;
             data[0][2] = cb * ca * sh + sb * sa;
@@ -371,7 +371,7 @@ struct nsmat4
         return round_to_zero();
     }
 
-    nsmat4<T> &rotation_from(const nsquat<T> &ornt_)
+    nsmat4<T> &rotation_from(const quaternion<T> &ornt_)
     {
         data[0][0] = 1 - 2 * (ornt_.y * ornt_.y + ornt_.z * ornt_.z);
         data[0][1] = 2 * (ornt_.x * ornt_.y - ornt_.z * ornt_.w);
@@ -430,13 +430,13 @@ struct nsmat4
         return *this;
     }
 
-    nsmat4<T> &rotation_from(const nsvec3<T> &vec_, const nsvec3<T> &to_vec_)
+    nsmat4<T> &rotation_from(const vector3<T> &vec_, const vector3<T> &to_vec_)
     {
         /* http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm */
-        nsvec3<T> vs = cross(vec_, to_vec_);
+        vector3<T> vs = cross(vec_, to_vec_);
         T ca = vec_ * to_vec_;
-        nsvec3<T> v = normalize(vs);
-        nsvec3<T> vt = v * (1 - ca);
+        vector3<T> v = normalize(vs);
+        vector3<T> vt = v * (1 - ca);
 
         data[0][0] = vt.x * v.x + ca;
         data[1][1] = vt.y * v.y + ca;
@@ -471,7 +471,7 @@ struct nsmat4
         return *this;
     }
 
-    nsmat4<T> &scaling_from(const nsvec3<T> &scale_)
+    nsmat4<T> &scaling_from(const vector3<T> &scale_)
     {
         *this = nsmat4<T>();
         data[0][0] = scale_.x;
@@ -482,16 +482,16 @@ struct nsmat4
 
     nsmat4<T> &scaling_from(const nsmat3<T> &transform_)
     {
-        nsvec3<T> scalingVec(transform_[0].length(), transform_[1].length(), transform_[2].length());
+        vector3<T> scalingVec(transform_[0].length(), transform_[1].length(), transform_[2].length());
         return scaling_from(scalingVec);
     }
 
     nsmat4<T> &scaling_from(const nsmat4<T> &transform_)
     {
-        nsvec3<T> scalingVec;
-        scalingVec.x = sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
-        scalingVec.y = sqrt(transform_[1][0] * transform_[1][0] + transform_[1][1] * transform_[1][1] + transform_[1][2] * transform_[1][2]);
-        scalingVec.z = sqrt(transform_[2][0] * transform_[2][0] + transform_[2][1] * transform_[2][1] + transform_[2][2] * transform_[2][2]);
+        vector3<T> scalingVec;
+        scalingVec.x = math::sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
+        scalingVec.y = math::sqrt(transform_[1][0] * transform_[1][0] + transform_[1][1] * transform_[1][1] + transform_[1][2] * transform_[1][2]);
+        scalingVec.z = math::sqrt(transform_[2][0] * transform_[2][0] + transform_[2][1] * transform_[2][1] + transform_[2][2] * transform_[2][2]);
         return scaling_from(scalingVec);
     }
 
@@ -504,7 +504,7 @@ struct nsmat4
         return *this;
     }
 
-    nsmat4<T> &set_column(const u32 &i, const nsvec4<T> &col)
+    nsmat4<T> &set_column(const u32 &i, const vector4<T> &col)
     {
         (*this)[0][i] = col.x;
         (*this)[1][i] = col.y;
@@ -513,17 +513,17 @@ struct nsmat4
         return *this;
     }
 
-    nsvec3<T> target() const
+    vector3<T> target() const
     {
-        return normalize(nsvec3<T>(data[0].z, data[1].z, data[2].z));
+        return normalize(vector3<T>(data[0].z, data[1].z, data[2].z));
     }
 
-    nsmat4<T> &translation_from(const nsvec3<T> &pos_)
+    nsmat4<T> &translation_from(const vector3<T> &pos_)
     {
         return set_column(3, pos_.x, pos_.y, pos_.z, 1);
     }
 
-    nsmat4<T> &translation_from(const nsvec4<T> &posw_)
+    nsmat4<T> &translation_from(const vector4<T> &posw_)
     {
         return set_column(3, posw_.x, posw_.y, posw_.z, 1);
     }
@@ -560,9 +560,9 @@ struct nsmat4
         return *this;
     }
 
-    nsvec3<T> up() const
+    vector3<T> up() const
     {
-        return normalize(nsvec3<T>(data[0].y, data[1].y, data[2].y));
+        return normalize(vector3<T>(data[0].y, data[1].y, data[2].y));
     }
 
     //
@@ -606,17 +606,17 @@ struct nsmat4
         return ret;
     }
 
-    nsvec4<T> operator*(const nsvec4<T> &rhs_) const
+    vector4<T> operator*(const vector4<T> &rhs_) const
     {
-        return nsvec4<T>(data[0] * rhs_, data[1] * rhs_, data[2] * rhs_, data[3] * rhs_);
+        return vector4<T>(data[0] * rhs_, data[1] * rhs_, data[2] * rhs_, data[3] * rhs_);
     }
 
-    nsmat4<T> operator%(const nsvec4<T> &rhs_) const
+    nsmat4<T> operator%(const vector4<T> &rhs_) const
     {
         return nsmat4<T>(data[0] % rhs_, data[1] % rhs_, data[2] % rhs_, data[3] % rhs_);
     }
 
-    nsmat4<T> operator/(const nsvec4<T> &rhs_) const
+    nsmat4<T> operator/(const vector4<T> &rhs_) const
     {
         nsmat4<T> ret;
         ret.data[0] = data[0] / rhs_[0];
@@ -706,13 +706,13 @@ struct nsmat4
         return *this;
     }
 
-    nsmat4<T> &operator%=(const nsvec4<T> &rhs_)
+    nsmat4<T> &operator%=(const vector4<T> &rhs_)
     {
         *this = *this % rhs_;
         return *this;
     }
 
-    nsmat4<T> &operator/=(const nsvec4<T> &rhs_)
+    nsmat4<T> &operator/=(const vector4<T> &rhs_)
     {
         *this = *this / rhs_;
         return *this;
@@ -775,7 +775,7 @@ struct nsmat4
     }
 
     //
-    const nsvec4<T> &operator[](const u32 &pVal) const
+    const vector4<T> &operator[](const u32 &pVal) const
     {
         if (pVal > 3)
             throw(std::out_of_range("mat4 index out of range"));
@@ -783,20 +783,20 @@ struct nsmat4
     }
 
     //
-    nsvec4<T> &operator[](const u32 &pVal)
+    vector4<T> &operator[](const u32 &pVal)
     {
         if (pVal > 3)
             throw(std::out_of_range("mat4 index out of range"));
         return data[pVal];
     }
 
-    nsvec4<T> operator()(const u32 &pVal) const
+    vector4<T> operator()(const u32 &pVal) const
     {
-        return nsvec4<T>(data[0][pVal], data[1][pVal], data[2][pVal], data[3][pVal]);
+        return vector4<T>(data[0][pVal], data[1][pVal], data[2][pVal], data[3][pVal]);
     }
 
   private:
-    nsvec4<T> data[4];
+    vector4<T> data[4];
 };
 
 template<class T>
@@ -836,21 +836,21 @@ nsmat4<T> operator/(const double &lhs_, const nsmat4<T> &rhs_)
 }
 
 template<class T>
-nsvec3<T> operator*(const nsvec3<T> &lhs_, const nsmat4<T> &rhs_)
+vector3<T> operator*(const vector3<T> &lhs_, const nsmat4<T> &rhs_)
 {
-    return nsvec3<T>(lhs_[0] * rhs_[0][0] + lhs_[1] * rhs_[1][0] + lhs_[2] * rhs_[2][0] + lhs_[3] * rhs_[3][0],
+    return vector3<T>(lhs_[0] * rhs_[0][0] + lhs_[1] * rhs_[1][0] + lhs_[2] * rhs_[2][0] + lhs_[3] * rhs_[3][0],
                      lhs_[0] * rhs_[0][1] + lhs_[1] * rhs_[1][1] + lhs_[2] * rhs_[2][1] + lhs_[3] * rhs_[3][1],
                      lhs_[0] * rhs_[0][2] + lhs_[1] * rhs_[1][2] + lhs_[2] * rhs_[2][2] + lhs_[3] * rhs_[3][2]);
 }
 
 template<class T>
-nsvec3<T> operator/(const nsvec3<T> &lhs_, const nsmat4<T> &rhs_)
+vector3<T> operator/(const vector3<T> &lhs_, const nsmat4<T> &rhs_)
 {
     return lhs_ * inverse(rhs_);
 }
 
 template<class T>
-nsmat4<T> operator%(const nsvec3<T> &lhs_, const nsmat4<T> &rhs_)
+nsmat4<T> operator%(const vector3<T> &lhs_, const nsmat4<T> &rhs_)
 {
     return nsmat4<T>(rhs_[0] * lhs_[0], rhs_[1] * lhs_[1], rhs_[2] * lhs_[2], rhs_[3] * lhs_[3]);
 }
@@ -881,25 +881,25 @@ nsmat4<T> perspective(const T &fov_, const T &aspect_ratio_, const T &z_near_, c
 }
 
 template<class T>
-nsmat4<T> rotation_mat4(const nsvec4<T> &axis_angle_, bool rads_)
+nsmat4<T> rotation_mat4(const vector4<T> &axis_angle_, bool rads_)
 {
     return nsmat4<T>().rotation_from(axis_angle_, rads_);
 }
 
 template<class T>
-nsmat4<T> rotation_mat4(const nsvec3<T> &euler_, typename nsvec3<T>::EulerOrder order_, bool rads_)
+nsmat4<T> rotation_mat4(const vector3<T> &euler_, typename vector3<T>::euler_order order_, bool rads_)
 {
     return nsmat4<T>().rotation_from(euler_, order_, rads_);
 }
 
 template<class T>
-nsmat4<T> rotation_mat4(const nsquat<T> &orientation_)
+nsmat4<T> rotation_mat4(const quaternion<T> &orientation_)
 {
     return nsmat4<T>().rotation_from(orientation_);
 }
 
 template<class T>
-nsmat4<T> rotation_mat4(const nsvec3<T> &vec_, const nsvec3<T> &to_vec_)
+nsmat4<T> rotation_mat4(const vector3<T> &vec_, const vector3<T> &to_vec_)
 {
     return nsmat4<T>().rotation_from(vec_, to_vec_);
 }
@@ -917,7 +917,7 @@ nsmat4<T> rotation_mat4(const nsmat4<T> &transform_)
 }
 
 template<class T>
-nsmat4<T> scaling_mat4(const nsvec3<T> &scale_)
+nsmat4<T> scaling_mat4(const vector3<T> &scale_)
 {
     return nsmat4<T>().scaling_from(scale_);
 }
@@ -935,13 +935,13 @@ nsmat4<T> scaling_mat4(const nsmat4<T> &transform_)
 }
 
 template<class T>
-nsmat4<T> translation_mat4(const nsvec3<T> &pos_)
+nsmat4<T> translation_mat4(const vector3<T> &pos_)
 {
     return nsmat4<T>().translation_from(pos_);
 }
 
 template<class T>
-nsmat4<T> translation_mat4(const nsvec4<T> &posw_)
+nsmat4<T> translation_mat4(const vector4<T> &posw_)
 {
     return nsmat4<T>().translation_from(posw_);
 }

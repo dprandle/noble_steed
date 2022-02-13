@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cmath>
-#include <cassert>
-#include <iostream>
-
 #include "algorithm.h"
 
 namespace noble_steed
@@ -17,99 +13,17 @@ struct nsmat3;
 template<class T>
 struct vector2
 {
-    explicit vector2(const T &init_ = 0);
+    explicit vector2(T init_ = 0) : data{init_, init_}
+    {}
 
-    vector2(const T &x_, const T &y_);
+    vector2(T x_, T y_) : data{x_, y_}
+    {}
 
-    template<class U>
-    vector2<U> convert() const
-    {
-        return {x, y};
-    }
-
-    vector2<T> minmax() const;
-
-    T angle() const;
-
-    T length() const;
-
-    T length_sq() const;
-
-    vector2<T> &set_length(const T &len_);
-
-    vector2<T> &rotate(T angle_);
-
-    vector2<T> &project(const vector2<T> &vec_);
-
-    vector2<T> &project_plane(const vector2<T> &normal);
-
-    vector2<T> &reflect(const vector2<T> &normal);
-
-    vector2<T> &normalize();
-
-    vector2<T> &abs();
-
-    vector2<T> &ceil();
-
-    vector2<T> &floor();
-
-    vector2<T> &round(i8 decimal_places);
-
-    vector2<T> &round();
-
-    vector2<T> operator+(const vector2<T> &rhs_) const;
-
-    vector2<T> operator-(const vector2<T> &rhs_) const;
-
-    vector2<T> operator*(const vector2<T> &rhs_) const;
-
-    vector2<T> operator/(const vector2<T> &rhs_) const;
-
-    vector2<T> operator*(const T &rhs_) const;
-
-    vector2<T> operator/(const T &rhs_) const;
-
-    vector2<T> operator++(i32);
-
-    vector2<T> operator--(i32);
-
-    vector2<T> &operator++();
-
-    vector2<T> &operator--();
-
-    vector2<T> &operator+=(const vector2<T> &rhs_);
-
-    vector2<T> &operator-=(const vector2<T> &rhs_);
-
-    vector2<T> &operator*=(const vector2<T> &rhs_);
-
-    vector2<T> &operator/=(const vector2<T> &rhs_);
-
-    vector2<T> &operator*=(const T &rhs_);
-
-    vector2<T> &operator/=(const T &rhs_);
-
-    bool operator==(const vector2<T> &rhs_) const;
-
-    bool operator<(const vector2<T> &rhs_) const;
-
-    bool operator<=(const vector2<T> &rhs_) const;
-
-    bool operator>(const vector2<T> &rhs_) const;
-
-    bool operator>=(const vector2<T> &rhs_) const;
-
-    bool operator!=(const vector2<T> &rhs_) const;
-
-    const T &operator[](sizet val_) const;
-
-    T &operator[](sizet val_);
-
-    static constexpr i8 size = 2;
+    COMMON_OPERATORS(vector2<T>, 2)
 
     union
     {
-        T data[size];
+        T data[size_];
 
         struct
         {
@@ -137,35 +51,58 @@ struct vector2
     };
 };
 
-template<class T>
-vector2<T> operator*(const T &lhs_, const vector2<T> &rhs_);
-
-template<class T>
-vector2<T> operator/(const T &lhs_, const vector2<T> &rhs_);
-
-template<class T>
-std::ostream &operator<<(std::ostream &os, const vector2<T> &vec);
-
 namespace math
 {
 template<class T>
-noble_steed::vector2<T> to_cartesian(const noble_steed::vector2<T> &polar);
+vector2<T> scaling_vec2(const nsmat2<T> &tform)
+{
+    return {length(tform[0]), length(tform[1])};
+}
 
 template<class T>
-noble_steed::vector2<T> to_polar(const noble_steed::vector2<T> &cartesian);
+vector2<T> scaling_vec2(const nsmat3<T> &tform)
+{
+    return {length(tform[0].vec2()), length(tform[1].vec2())};
+}
 
 template<class T>
-noble_steed::vector2<T> scaling_vec2(const noble_steed::nsmat2<T> &tform);
+vector2<T> translation_vec2(const nsmat2<T> &tform)
+{
+    return tform(2);
+}
 
 template<class T>
-noble_steed::vector2<T> scaling_vec2(const noble_steed::nsmat3<T> &tform);
+vector2<T> translation_vec2(const nsmat3<T> &tform)
+{
+    return tform(2).vec2();
+}
+
+template<floating_pt T>
+vector2<T> polar_to_cartesian(const vector2<T> &polar)
+{
+    return {polar.x * math::cos(polar.y), polar.x * math::sin(polar.y)};
+}
+
+template<integral T>
+vector2<T> polar_to_cartesian(const vector2<T> &polar)
+{
+    return {polar.x * math::cos((float)polar.y), polar.x * math::sin((float)polar.y)};
+}
 
 template<class T>
-noble_steed::vector2<T> translation_vec2(const noble_steed::nsmat2<T> &tform);
+vector2<T> cartesian_to_polar(const vector2<T> &cartesian)
+{
+    return {length(cartesian), angle(cartesian, vector2<T>(1, 0))};
+}
 
-template<class T>
-noble_steed::vector2<T> translation_vec2(const noble_steed::nsmat3<T> &tform);
 } // namespace math
+
+// Enable type trait
+template<class U>
+struct is_vec<vector2<U>>
+{
+    static constexpr bool value = true;
+};
 
 // Math typedefs
 using i8vec2 = vector2<i8>;
