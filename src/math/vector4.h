@@ -20,11 +20,11 @@ struct vector4
     vector4(T x_, const vector2<T> &yz_, T w_) : _xvec2(x_), yz(yz_), _wvec2(w_)
     {}
 
-    COMMON_OPERATORS(vector4<T>, 4)
+    COMMON_OPERATORS(vector4<T>, 4, T)
 
     union
     {
-        T data[4];
+        T data[size_];
 
         struct
         {

@@ -19,7 +19,7 @@ struct vector2
     vector2(T x_, T y_) : data{x_, y_}
     {}
 
-    COMMON_OPERATORS(vector2<T>, 2)
+    COMMON_OPERATORS(vector2<T>, 2, T)
 
     union
     {

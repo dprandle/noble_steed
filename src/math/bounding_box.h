@@ -1,6 +1,6 @@
 #include "../container/vector.h"
 #include "vector3.h"
-#include "nsmat4.h"
+#include "matrix4.h"
 
 namespace noble_steed
 {
@@ -19,7 +19,7 @@ struct bounding_box
         f_front
     };
 
-    bounding_box(const vector<vector3<T>> &verts_ = vector<vector3<T>>(), const nsmat4<T> &tform_=nsmat4<T>())
+    bounding_box(const vector<vector3<T>> &verts_ = vector<vector3<T>>(), const matrix4<T> &tform_=matrix4<T>())
     {
         calculate(verts_, tform_);
     }
@@ -32,7 +32,7 @@ struct bounding_box
     ~bounding_box()
     {}
 
-    void calculate(const vector<vector3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
+    void calculate(const vector<vector3<T>> &verts_, const matrix4<T> &tform_ = matrix4<T>())
     {
         clear();
         extend(verts_, tform_);
@@ -75,7 +75,7 @@ struct bounding_box
             verts[i] = vector3<T>();
     }
 
-    void extend(const vector<vector3<T>> &verts_, const nsmat4<T> &tform_ = nsmat4<T>())
+    void extend(const vector<vector3<T>> &verts_, const matrix4<T> &tform_ = matrix4<T>())
     {
         if (!verts_.empty())
         {

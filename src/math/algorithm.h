@@ -95,7 +95,7 @@ inline constexpr char PRINT_MAT_END = '\n';
 inline constexpr char PRINT_VEC_DELIMITER = ' ';
 inline constexpr char PRINT_START_VEC = '[';
 inline constexpr char PRINT_END_VEC = ']';
-inline constexpr i8 ROUND_TO_DEC = 2;
+inline constexpr i8 ROUND_TO_DEC = 4;
 
 inline constexpr float TO_DEGREES = (180.0 / PI);
 inline constexpr float TO_RADS = (PI / 180.0);
@@ -157,8 +157,7 @@ double round_decimal(double to_round, i8 decimal_places);
 template<class T>
 auto sum_elements(const T &veca)
 {
-    using Type = typename T::value_type;
-    Type ret{0};
+    auto ret = decltype(veca.data[0]){0};
     for (auto &&item : veca)
         ret += item;
     return ret;
@@ -177,8 +176,7 @@ auto convert_elements(const T &veca)
 template<class T>
 auto dot(const T &veca, const T &vecb)
 {
-    using Type = typename T::value_type;
-    Type ret{0};
+    auto ret = decltype(veca.data[0]){0};
     for (i8 i{0}; i < veca.size(); ++i)
         ret += veca[i] * vecb[i];
     return ret;
@@ -202,7 +200,7 @@ auto length(const T &veca)
     return math::sqrt((float)length_sq(veca));
 }
 
-template<class T>
+template<vec_or_quat_type T>
 void set_length(T *vec, const typename T::value_type &new_len)
 {
     auto len = length(*vec);
@@ -211,14 +209,14 @@ void set_length(T *vec, const typename T::value_type &new_len)
     *vec *= (new_len / len);
 }
 
-template<class T>
+template<vec_or_quat_type T>
 T set_length(T vec, const typename T::value_type &new_len)
 {
     set_length(&vec, new_len);
     return vec;
 }
 
-template<holds_floating_pt T>
+template<vec_type T>
 auto angle(const T &veca, const T &vecb)
 {
     auto dot_p = dot(veca, vecb);
@@ -228,7 +226,8 @@ auto angle(const T &veca, const T &vecb)
     return math::acos(dot_p / l);
 }
 
-template<holds_integral T>
+template<vec_type T>
+requires holds_integral<T>
 auto angle(const T &veca, const T &vecb)
 {
     auto dot_p = dot(veca, vecb);
@@ -238,7 +237,8 @@ auto angle(const T &veca, const T &vecb)
     return math::acos(dot_p / l);
 }
 
-template<holds_floating_pt T>
+template<vec_type T>
+requires holds_floating_pt<T>
 void project(T *a, const T &b)
 {
     using Type = typename T::value_type;
@@ -248,7 +248,7 @@ void project(T *a, const T &b)
     *a = (math::dot(*a, b) / denom) * b;
 }
 
-template<holds_integral T>
+template<vec_type T>
 void project(T *a, const T &b)
 {
     using Type = typename T::value_type;
@@ -258,47 +258,47 @@ void project(T *a, const T &b)
     *a = (math::dot(*a, b) / (float)denom) * b;
 }
 
-template<class T>
+template<vec_type T>
 T project(T a, const T &b)
 {
     project(&a, b);
     return a;
 }
 
-template<class T>
+template<vec_type T>
 void project_plane(T *vec, const T &normal)
 {
     *vec -= project(*vec, normal);
 }
 
-template<class T>
+template<vec_type T>
 T project_plane(T vec, const T &normal)
 {
     project_plane(&vec, normal);
     return vec;
 }
 
-template<class T>
+template<vec_type T>
 void reflect(T *vec, const T &normal)
 {
     using Type = typename T::value_type;
     *vec -= (Type)2 * math::dot(*vec, normal) * normal;
 }
 
-template<class T>
+template<vec_type T>
 T reflect(T vec, const T &normal)
 {
     reflect(&vec, normal);
     return vec;
 }
 
-template<class T>
+template<vec_or_quat_type T>
 void normalize(T *vec_or_quat)
 {
     set_length(vec_or_quat, (typename T::value_type)1);
 }
 
-template<class T>
+template<vec_or_quat_type T>
 T normalize(T vec_or_quat)
 {
     normalize(&vec_or_quat);
@@ -483,6 +483,85 @@ T round(T item, i8 decimal_places)
     return item;
 }
 
+template<mat_type T, vec_type V>
+void set_mat_column(T *mat, sizet ind, const V &col)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 i{0}; i < T::size_; ++i)
+        (*mat)[i][ind] = col[ind];
+}
+
+template<mat_type T>
+void compwise_mult(T *lhs, const T &rhs)
+{
+    for (i8 i{0}; ++i; i < T::size_)
+        (*lhs)[i] *= rhs[i];
+}
+
+template<mat_type T>
+T compwise_mult(T lhs, const T &rhs)
+{
+    compwise_mult(&lhs, rhs);
+    return lhs;
+}
+
+template<mat_type T, vec_type V>
+void compwise_mult_rows(T *lhs, const V &row_vec)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 i{0}; ++i; i < T::size_)
+        (*lhs)[i] *= row_vec;
+}
+
+template<mat_type T, vec_type V>
+T compwise_mult_rows(T lhs, const V &row_vec)
+{
+    compwise_mult_rows(&lhs, row_vec);
+    return lhs;
+}
+
+template<vec_type V, mat_type T>
+T compwise_mult_rows(const V &row_vec, const T &rhs)
+{
+    return compwise_mult_rows(rhs, row_vec);
+}
+
+template<vec_type V, mat_type T>
+void compwise_mult_rows(const V &row_vec, T *rhs)
+{
+    compwise_mult_rows(rhs, row_vec);
+}
+
+template<mat_type T, vec_type V>
+void compwise_mult_columns(T *lhs, const V &column_vec)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 rowi{0}; ++rowi; rowi < T::size_)
+    {
+        for (i8 coli{0}; ++coli; coli < T::size_)
+            (*lhs)[rowi][coli] *= column_vec[rowi];
+    }
+}
+
+template<mat_type T, vec_type V>
+T compwise_mult_columns(T lhs, const V &column_vec)
+{
+    compwise_mult_columns(&lhs, column_vec);
+    return lhs;
+}
+
+template<vec_type V, mat_type T>
+T compwise_mult_columns(const V &column_vec, const T &rhs)
+{
+    return compwise_mult_columns(rhs, column_vec);
+}
+
+template<vec_type V, mat_type T>
+void compwise_mult_columns(const V &column_vec, T *rhs)
+{
+    compwise_mult_columns(rhs, column_vec);
+}
+
 } // namespace math
 
 template<class T>
@@ -654,7 +733,7 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
     return os;
 }
 
-#define COMMON_OPERATORS(type, element_count)                                                                                                        \
+#define COMMON_OPERATORS(type, element_count, ind_ret_type)                                                                                          \
     inline type operator++(i32)                                                                                                                      \
     {                                                                                                                                                \
         type ret(*this);                                                                                                                             \
@@ -711,19 +790,19 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
     {                                                                                                                                                \
         return *this = *this / rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    const T &operator[](sizet val_) const                                                                                                            \
+    const ind_ret_type &operator[](sizet val_) const                                                                                                 \
     {                                                                                                                                                \
         return data[val_];                                                                                                                           \
     }                                                                                                                                                \
-    T &operator[](sizet val_)                                                                                                                        \
+    ind_ret_type &operator[](sizet val_)                                                                                                             \
     {                                                                                                                                                \
         return data[val_];                                                                                                                           \
     }                                                                                                                                                \
     template<class U>                                                                                                                                \
     using container_type = vector2<U>;                                                                                                               \
     using value_type = T;                                                                                                                            \
-    using iterator = T *;                                                                                                                            \
-    using const_iterator = const T *;                                                                                                                \
+    using iterator = ind_ret_type *;                                                                                                                 \
+    using const_iterator = const ind_ret_type *;                                                                                                     \
     static constexpr u8 size_ = element_count;                                                                                                       \
     inline constexpr sizet size() const                                                                                                              \
     {                                                                                                                                                \

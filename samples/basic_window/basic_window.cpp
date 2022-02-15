@@ -27,8 +27,11 @@ using namespace noble_steed;
 
 int main()
 {
-    mat4 m4 {{4.0},{2.0435435},{34454.0, 55.0, 1.456, 545.66},{5.5}};
+    ldmat4 m4 {{4.0},{2.0435435},{-34454.0, 55.0, 1.456, 545.66},{5.5}};
     std::cout << "Matrix: " << m4 << std::endl;
+    std::cout << "Matrix abs: " << math::round(m4, 3) << std::endl;
+    std::cout << "Matrix sum: " << math::sum_elements(m4) << std::endl;
+
 
     vec2 v1 {1, 4.5};
     vec2 v2{3,4};

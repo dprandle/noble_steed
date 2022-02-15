@@ -13,11 +13,11 @@ struct quaternion
     quaternion(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_)
     {}
 
-    COMMON_OPERATORS(quaternion<T>, 4)
+    COMMON_OPERATORS(quaternion<T>, 4, T)
 
     union
     {
-        T data[4];
+        T data[size_];
 
         struct
         {

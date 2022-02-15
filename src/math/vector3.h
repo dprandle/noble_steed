@@ -11,7 +11,7 @@ template<floating_pt T>
 struct quaternion;
 
 template<class T>
-struct nsmat4;
+struct matrix4;
 
 template<class T>
 struct vector3
@@ -42,11 +42,11 @@ struct vector3
     vector3(T x_, T y_, T z_ = 0) : x(x_), y(y_), z(z_)
     {}
 
-    COMMON_OPERATORS(vector3<T>, 3)
+    COMMON_OPERATORS(vector3<T>, 3, T)
 
     union
     {
-        T data[3];
+        T data[size_];
 
         struct
         {
@@ -181,7 +181,7 @@ vector3<T> scaling_vec3(const nsmat3<T> &transform_)
 }
 
 template<class T>
-vector3<T> translation_vec3(const nsmat4<T> &transform_)
+vector3<T> translation_vec3(const matrix4<T> &transform_)
 {
     return transform_(3).vec3();
 }

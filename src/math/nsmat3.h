@@ -16,7 +16,7 @@ template <floating_pt T>
 struct quaternion;
 
 template <class T>
-struct nsmat4;
+struct matrix4;
 
 template<class T>
 struct nsmat3
@@ -328,7 +328,7 @@ struct nsmat3
         return *this;
     }
 
-    nsmat3<T> &rotation_from(const nsmat4<T> &transform_)
+    nsmat3<T> &rotation_from(const matrix4<T> &transform_)
     {
         *this = transform_.basis();
         data[0].normalize();
@@ -405,7 +405,7 @@ struct nsmat3
         return scaling_from(scalingVec);
     }
 
-    nsmat3<T> &scaling_from(const nsmat4<T> &transform_)
+    nsmat3<T> &scaling_from(const matrix4<T> &transform_)
     {
         vector3<T> scalingVec;
         scalingVec.x = math::sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
@@ -802,7 +802,7 @@ nsmat3<T> rotation_mat3(const vector3<T> &vec_, const vector3<T> &to_vec_)
 }
 
 template<class T>
-nsmat3<T> rotation_mat3(const nsmat4<T> &transform_)
+nsmat3<T> rotation_mat3(const matrix4<T> &transform_)
 {
     return nsmat3<T>().rotation_from(transform_);
 }
@@ -844,7 +844,7 @@ nsmat3<T> scaling_mat3(const nsmat3<T> &transform_)
 }
 
 template<class T>
-nsmat3<T> scaling_mat3(const nsmat4<T> &transform_)
+nsmat3<T> scaling_mat3(const matrix4<T> &transform_)
 {
     return nsmat3<T>().scaling_from(transform_);
 }
