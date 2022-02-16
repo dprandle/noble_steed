@@ -1,6 +1,7 @@
 #include "core/application.h"
 #include "core/resource_cache.h"
 #include "core/context.h"
+#include "core/profile_timer.h"
 
 #include "graphics/window.h"
 #include "graphics/renderer.h"
@@ -18,6 +19,7 @@
 #include "scene/entity.h"
 
 #include "container/string.h"
+#include <chrono>
 
 #include <iostream>
 #include <stdio.h>
@@ -27,29 +29,22 @@ using namespace noble_steed;
 
 int main()
 {
-    ldmat4 m4 {{4.0},{2.0435435},{-34454.0, 55.0, 1.456, 545.66},{5.5}};
-    std::cout << "Matrix: " << m4 << std::endl;
-    std::cout << "Matrix abs: " << math::round(m4, 3) << std::endl;
-    std::cout << "Matrix sum: " << math::sum_elements(m4) << std::endl;
+    vec4 v {1, 2, 3, 4};
+    mat4 m{vec4(0.9), vec4(0.9), vec4(0.9), vec4(0.9)};
+    mat4 m2 {v * 4, v * 3, v, v * 2};
+    vec4 mans;
+    profile_timer t;
+    t.reset();
+    for (int i = 0; i < 1000000000; ++i)
+    {
+        m = m * m2;
+    }
+    u64 res = t.elapsed();
+    std::cout << "Result: " << res << " for m " << m << std::endl;
 
-
-    vec2 v1 {1, 4.5};
-    vec2 v2{3,4};
-    bool result = v1 < v2;
-    std::cout << "result: " << result << std::endl;
-
-    vec2 v{-1,-1};
-    vec2 polar = math::cartesian_to_polar(v);
-    polar.y *= math::TO_DEGREES;
-    std::cout << polar << std::endl;
-
-    vec3 test {1.5, 6.8};
-    ivec2 test2 = math::convert_elements<i32>(test.xy);
-    std::cout << "test: " << test << " and test2: " << test2 << std::endl;
-
-    auto qt = math::orientation(vec4{2,3,4,math::PI/4});
-    
-
+    // std::cout << "m: " << m << std::endl;
+    // std::cout << "m2: " << m2 << std::endl;
+    // std::cout << "Result: " << m * m2 << std::endl;
     // Application applic;
     // Variant_Map init_params;
     // ilog("STARTING BASIC WINDOW");c

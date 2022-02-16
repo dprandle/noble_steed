@@ -4,10 +4,10 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
-//#include <iostream>
 #include <type_traits>
 
-#define STR_W(val, width) std::setw(width) << val
+#define NOBLESTEED_USE_SSE
+
 #define STR_ALIGN std::right << std::setprecision(ROUND_TO_DEC) << std::fixed
 
 namespace noble_steed
@@ -565,10 +565,10 @@ void compwise_mult_columns(const V &column_vec, T *rhs)
 } // namespace math
 
 template<class T>
-concept holds_basic_comparable_type = vec_type<T>;
+concept holds_basic_comparable_type = vec_type<T> || mat_type<T> || quat_type<T>;
 
 template<class T>
-concept holds_basic_arithmetic_type = vec_type<T>;
+concept holds_basic_arithmetic_type = vec_type<T> || mat_type<T> || quat_type<T>;
 
 template<holds_basic_comparable_type T>
 requires holds_floating_pt<T>

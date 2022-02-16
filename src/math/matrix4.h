@@ -1,9 +1,15 @@
 #pragma once
 
 #include "nsmat3.h"
+#include "vector4.h"
+
+#ifdef NOBLESTEED_USE_SSE
+#include <immintrin.h>
+#endif
 
 namespace noble_steed
 {
+
 template<class T>
 struct matrix4
 {
@@ -39,74 +45,11 @@ struct matrix4
             vector4<T> row3;
             vector4<T> row4;
         };
+        #ifdef NOBLESTEED_USE_SSE
+        __m128 _data[size_];
+        #endif
     };
 };
-
-template<class T>
-vector4<T> operator*(const matrix4<T> &lhs, const vector4<T> &rhs)
-{
-    using namespace math;
-    return {dot(lhs[0], rhs), dot(lhs[1], rhs), dot(lhs[2], rhs), dot(lhs[3] * rhs)};
-}
-
-template<class T>
-vector4<T> operator*(const vector4<T> &lhs, const matrix4<T> &rhs)
-{
-    vector4<T> ret;
-    ret[0] = lhs[0] * rhs[0][0] + lhs[1] * rhs[1][0] + lhs[2] * rhs[2][0] + lhs[3] * rhs[3][0];
-    ret[1] = lhs[0] * rhs[0][1] + lhs[1] * rhs[1][1] + lhs[2] * rhs[2][1] + lhs[3] * rhs[3][1];
-    ret[2] = lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2] + lhs[3] * rhs[3][2];
-    ret[3] = lhs[0] * rhs[0][3] + lhs[1] * rhs[1][3] + lhs[2] * rhs[2][3] + lhs[3] * rhs[3][3];
-    return ret;
-}
-
-template<floating_pt T>
-vector4<T> operator/(const matrix4<T> &lhs, const vector4<T> &rhs)
-{
-    using namespace math;
-    T mult = 1 / dot(rhs, rhs);
-    return {dot(lhs[0], rhs), math::dot(lhs[1], rhs), dot(lhs[2], rhs), dot(lhs[3] * rhs)};
-}
-
-template<integral T>
-vector4<T> operator/(const matrix4<T> &lhs, const vector4<T> &rhs)
-{
-    using namespace math;
-    T lensq = dot(rhs, rhs);
-    return {dot(lhs[0], rhs) / lensq, dot(lhs[1], rhs) / lensq, dot(lhs[2], rhs) / lensq, dot(lhs[3] * rhs) / lensq};
-}
-
-template<class T>
-matrix4<T> operator*(const matrix4<T> &lhs, const matrix4<T> &rhs)
-{
-    matrix4<T> ret;
-    ret[0][0] = lhs[0][0] * rhs[0][0] + lhs[0][1] * rhs[1][0] + lhs[0][2] * rhs[2][0] + lhs[0][3] * rhs[3][0];
-    ret[0][1] = lhs[0][0] * rhs[0][1] + lhs[0][1] * rhs[1][1] + lhs[0][2] * rhs[2][1] + lhs[0][3] * rhs[3][1];
-    ret[0][2] = lhs[0][0] * rhs[0][2] + lhs[0][1] * rhs[1][2] + lhs[0][2] * rhs[2][2] + lhs[0][3] * rhs[3][2];
-    ret[0][3] = lhs[0][0] * rhs[0][3] + lhs[0][1] * rhs[1][3] + lhs[0][2] * rhs[2][3] + lhs[0][3] * rhs[3][3];
-
-    ret[1][0] = lhs[1][0] * rhs[0][0] + lhs[1][1] * rhs[1][0] + lhs[1][2] * rhs[2][0] + lhs[1][3] * rhs[3][0];
-    ret[1][1] = lhs[1][0] * rhs[0][1] + lhs[1][1] * rhs[1][1] + lhs[1][2] * rhs[2][1] + lhs[1][3] * rhs[3][1];
-    ret[1][2] = lhs[1][0] * rhs[0][2] + lhs[1][1] * rhs[1][2] + lhs[1][2] * rhs[2][2] + lhs[1][3] * rhs[3][2];
-    ret[1][3] = lhs[1][0] * rhs[0][3] + lhs[1][1] * rhs[1][3] + lhs[1][2] * rhs[2][3] + lhs[1][3] * rhs[3][3];
-
-    ret[2][0] = lhs[2][0] * rhs[0][0] + lhs[2][1] * rhs[1][0] + lhs[2][2] * rhs[2][0] + lhs[2][3] * rhs[3][0];
-    ret[2][1] = lhs[2][0] * rhs[0][1] + lhs[2][1] * rhs[1][1] + lhs[2][2] * rhs[2][1] + lhs[2][3] * rhs[3][1];
-    ret[2][2] = lhs[2][0] * rhs[0][2] + lhs[2][1] * rhs[1][2] + lhs[2][2] * rhs[2][2] + lhs[2][3] * rhs[3][2];
-    ret[2][3] = lhs[2][0] * rhs[0][3] + lhs[2][1] * rhs[1][3] + lhs[2][2] * rhs[2][3] + lhs[2][3] * rhs[3][3];
-
-    ret[3][0] = lhs[3][0] * rhs[0][0] + lhs[3][1] * rhs[1][0] + lhs[3][2] * rhs[2][0] + lhs[3][3] * rhs[3][0];
-    ret[3][1] = lhs[3][0] * rhs[0][1] + lhs[3][1] * rhs[1][1] + lhs[3][2] * rhs[2][1] + lhs[3][3] * rhs[3][1];
-    ret[3][2] = lhs[3][0] * rhs[0][2] + lhs[3][1] * rhs[1][2] + lhs[3][2] * rhs[2][2] + lhs[3][3] * rhs[3][2];
-    ret[3][3] = lhs[3][0] * rhs[0][3] + lhs[3][1] * rhs[1][3] + lhs[3][2] * rhs[2][3] + lhs[3][3] * rhs[3][3];
-    return ret;
-}
-
-template<class T>
-matrix4<T> operator/(const matrix4<T> &lhs, const matrix4<T> &rhs)
-{
-    return lhs * inverse(rhs);
-}
 
 namespace math
 {
@@ -169,18 +112,22 @@ template<class T>
 matrix4<T> inverse(const matrix4<T> &mat)
 {
     T det = determinant(mat);
+    bool invertable = true;
     if constexpr (std::is_floating_point_v<T>)
     {
-        if (fequals(det, 0))
-            return matrix4<T>();
+        if (fequals(det, (T)0))
+            invertable = false;
     }
     else
     {
         if (det == 0)
-            return matrix4<T>();
+            invertable = false;
     }
 
     matrix4<T> ret;
+    if (!invertable)
+        return ret;
+    
     ret[0][0] = mat[1][2] * mat[2][3] * mat[3][1] - mat[1][3] * mat[2][2] * mat[3][1] + mat[1][3] * mat[2][1] * mat[3][2] -
                 mat[1][1] * mat[2][3] * mat[3][2] - mat[1][2] * mat[2][1] * mat[3][3] + mat[1][1] * mat[2][2] * mat[3][3];
     ret[0][1] = mat[0][3] * mat[2][2] * mat[3][1] - mat[0][2] * mat[2][3] * mat[3][1] - mat[0][3] * mat[2][1] * mat[3][2] +
@@ -347,6 +294,103 @@ matrix4<T> translation_mat4(const matrix4<T> &transform)
 
 } // namespace math
 
+template<class T>
+vector4<T> operator*(const matrix4<T> &lhs, const vector4<T> &rhs)
+{
+    using namespace math;
+    return {dot(lhs[0], rhs), dot(lhs[1], rhs), dot(lhs[2], rhs), dot(lhs[3], rhs)};
+}
+
+template<class T>
+vector4<T> operator*(const vector4<T> &lhs, const matrix4<T> &rhs)
+{
+    vector4<T> ret;
+    ret[0] = lhs[0] * rhs[0][0] + lhs[1] * rhs[1][0] + lhs[2] * rhs[2][0] + lhs[3] * rhs[3][0];
+    ret[1] = lhs[0] * rhs[0][1] + lhs[1] * rhs[1][1] + lhs[2] * rhs[2][1] + lhs[3] * rhs[3][1];
+    ret[2] = lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2] + lhs[3] * rhs[3][2];
+    ret[3] = lhs[0] * rhs[0][3] + lhs[1] * rhs[1][3] + lhs[2] * rhs[2][3] + lhs[3] * rhs[3][3];
+    return ret;
+}
+
+template<floating_pt T>
+vector4<T> operator/(const matrix4<T> &lhs, const vector4<T> &rhs)
+{
+    using namespace math;
+    T mult = 1 / dot(rhs, rhs);
+    return {dot(lhs[0], rhs) * mult, math::dot(lhs[1], rhs) * mult, dot(lhs[2], rhs) * mult, dot(lhs[3], rhs) * mult};
+}
+
+template<integral T>
+vector4<T> operator/(const matrix4<T> &lhs, const vector4<T> &rhs)
+{
+    using namespace math;
+    T lensq = dot(rhs, rhs);
+    return {dot(lhs[0], rhs) / lensq, dot(lhs[1], rhs) / lensq, dot(lhs[2], rhs) / lensq, dot(lhs[3] * rhs) / lensq};
+}
+
+
+template<class T>
+inline matrix4<T> operator*(const matrix4<T> &lhs, const matrix4<T> &rhs)
+{
+    matrix4<T> ret;
+    ret[0][0] = lhs[0][0] * rhs[0][0] + lhs[0][1] * rhs[1][0] + lhs[0][2] * rhs[2][0] + lhs[0][3] * rhs[3][0];
+    ret[0][1] = lhs[0][0] * rhs[0][1] + lhs[0][1] * rhs[1][1] + lhs[0][2] * rhs[2][1] + lhs[0][3] * rhs[3][1];
+    ret[0][2] = lhs[0][0] * rhs[0][2] + lhs[0][1] * rhs[1][2] + lhs[0][2] * rhs[2][2] + lhs[0][3] * rhs[3][2];
+    ret[0][3] = lhs[0][0] * rhs[0][3] + lhs[0][1] * rhs[1][3] + lhs[0][2] * rhs[2][3] + lhs[0][3] * rhs[3][3];
+
+    ret[1][0] = lhs[1][0] * rhs[0][0] + lhs[1][1] * rhs[1][0] + lhs[1][2] * rhs[2][0] + lhs[1][3] * rhs[3][0];
+    ret[1][1] = lhs[1][0] * rhs[0][1] + lhs[1][1] * rhs[1][1] + lhs[1][2] * rhs[2][1] + lhs[1][3] * rhs[3][1];
+    ret[1][2] = lhs[1][0] * rhs[0][2] + lhs[1][1] * rhs[1][2] + lhs[1][2] * rhs[2][2] + lhs[1][3] * rhs[3][2];
+    ret[1][3] = lhs[1][0] * rhs[0][3] + lhs[1][1] * rhs[1][3] + lhs[1][2] * rhs[2][3] + lhs[1][3] * rhs[3][3];
+
+    ret[2][0] = lhs[2][0] * rhs[0][0] + lhs[2][1] * rhs[1][0] + lhs[2][2] * rhs[2][0] + lhs[2][3] * rhs[3][0];
+    ret[2][1] = lhs[2][0] * rhs[0][1] + lhs[2][1] * rhs[1][1] + lhs[2][2] * rhs[2][1] + lhs[2][3] * rhs[3][1];
+    ret[2][2] = lhs[2][0] * rhs[0][2] + lhs[2][1] * rhs[1][2] + lhs[2][2] * rhs[2][2] + lhs[2][3] * rhs[3][2];
+    ret[2][3] = lhs[2][0] * rhs[0][3] + lhs[2][1] * rhs[1][3] + lhs[2][2] * rhs[2][3] + lhs[2][3] * rhs[3][3];
+
+    ret[3][0] = lhs[3][0] * rhs[0][0] + lhs[3][1] * rhs[1][0] + lhs[3][2] * rhs[2][0] + lhs[3][3] * rhs[3][0];
+    ret[3][1] = lhs[3][0] * rhs[0][1] + lhs[3][1] * rhs[1][1] + lhs[3][2] * rhs[2][1] + lhs[3][3] * rhs[3][1];
+    ret[3][2] = lhs[3][0] * rhs[0][2] + lhs[3][1] * rhs[1][2] + lhs[3][2] * rhs[2][2] + lhs[3][3] * rhs[3][2];
+    ret[3][3] = lhs[3][0] * rhs[0][3] + lhs[3][1] * rhs[1][3] + lhs[3][2] * rhs[2][3] + lhs[3][3] * rhs[3][3];
+    return ret;
+}
+
+template<class T>
+vector4<T> operator/(const vector4<T> &lhs, const matrix4<T> &rhs)
+{
+    using namespace math;
+    return lhs * math::inverse(rhs);
+}
+
+template<class T>
+matrix4<T> operator/(const matrix4<T> &lhs, const matrix4<T> &rhs)
+{
+    return lhs * math::inverse(rhs);
+}
+
+#ifdef NOBLESTEED_USE_SSE
+
+inline __m128 _linear_combine_sse(__m128 left, const matrix4<float> &right)
+{
+    __m128 res;
+    res = _mm_mul_ps(_mm_shuffle_ps(left, left, 0x00), right._data[0]);
+    res = _mm_add_ps(res, _mm_mul_ps(_mm_shuffle_ps(left, left, 0x55), right._data[1]));
+    res = _mm_add_ps(res, _mm_mul_ps(_mm_shuffle_ps(left, left, 0xaa), right._data[2]));
+    res = _mm_add_ps(res, _mm_mul_ps(_mm_shuffle_ps(left, left, 0xff), right._data[3]));
+    return (res);
+}
+
+inline matrix4<float> operator*(const matrix4<float> &lhs, const matrix4<float> &rhs)
+{
+    matrix4<float> ret;
+    ret._data[0] = _linear_combine_sse(lhs._data[0], rhs);
+    ret._data[1] = _linear_combine_sse(lhs._data[1], rhs);
+    ret._data[2] = _linear_combine_sse(lhs._data[2], rhs);
+    ret._data[3] = _linear_combine_sse(lhs._data[3], rhs);
+    return ret;
+}
+#endif
+
 // Enable type trait
 template<class U>
 struct is_mat<matrix4<U>>
@@ -365,4 +409,5 @@ using u64mat4 = matrix4<u64>;
 using mat4 = matrix4<float>;
 using dmat4 = matrix4<double>;
 using ldmat4 = matrix4<ldouble>;
+
 } // namespace noble_steed
