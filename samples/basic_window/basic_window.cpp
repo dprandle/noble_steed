@@ -26,21 +26,18 @@
 #include <string.h>
 
 using namespace noble_steed;
+constexpr const int arrsize = 100000000;
+float answer_array[arrsize];
 
 int main()
 {
-    vec4 v {1, 2, 3, 4};
+    vec4 v{1, 2, 3, 4};
     mat4 m{vec4(0.9), vec4(0.9), vec4(0.9), vec4(0.9)};
-    mat4 m2 {v * 4, v * 3, v, v * 2};
-    vec4 mans;
-    profile_timer t;
-    t.reset();
-    for (int i = 0; i < 1000000000; ++i)
-    {
-        m = m * m2;
-    }
-    u64 res = t.elapsed();
-    std::cout << "Result: " << res << " for m " << m << std::endl;
+    mat4 m2{v * 4, v * 3, v, v * 2};
+
+    //std::fill(&answer_array[0], &answer_array[0] + arrsize, m2);
+
+    std::cout << "Result: " << m2 * v << std::endl;
 
     // std::cout << "m: " << m << std::endl;
     // std::cout << "m2: " << m2 << std::endl;

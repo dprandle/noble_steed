@@ -1,5 +1,4 @@
 #pragma once
-
 #include "vector3.h"
 
 namespace noble_steed
@@ -74,11 +73,41 @@ struct vector4
             vector2<T> yz;
             T _wvec2;
         };
+
+#if NOBLE_STEED_SIMD
+        __m128 _v4;
+#endif
     };
 };
 
 namespace math
 {
+#if NOBLE_STEED_SIMD
+
+inline __m128 _sse_dp(const __m128 & left, const __m128 & right)
+{
+#if NOBLE_STEED_SIMD & NOBLE_STEED_SSE41_BIT
+    return _mm_dp_ps(left, right, 0xff);
+#elif NOBLE_STEED_SIMD & NOBLE_STEED_SSE3_BIT
+    __m128 mul0 = _mm_mul_ps(left, right);
+    __m128 hadd0 = _mm_hadd_ps(mul0, mul0);
+    __m128 hadd1 = _mm_hadd_ps(hadd0, hadd0);
+    return hadd1;
+#else
+    __m128 mul0 = _mm_mul_ps(left, right);
+    __m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
+    __m128 add0 = _mm_add_ps(mul0, swp0);
+    mul0 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
+    add0 = _mm_add_ps(add0, mul0);
+    return add0;
+#endif
+}
+
+inline float dot(const vector4<float> &lhs, const vector4<float> &rhs)
+{
+    return _mm_cvtss_f32(_sse_dp(lhs._v4, rhs._v4));
+}
+#endif
 
 template<floating_pt T>
 vector4<T> axis_angle(const quaternion<T> &orientation)
@@ -110,7 +139,6 @@ struct is_vec<vector4<U>>
 {
     static constexpr bool value = true;
 };
-
 
 using i8vec4 = vector4<i8>;
 using i16vec4 = vector4<i16>;

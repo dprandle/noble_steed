@@ -3,10 +3,6 @@
 #include "nsmat3.h"
 #include "vector4.h"
 
-#ifdef NOBLESTEED_USE_SSE
-#include <immintrin.h>
-#endif
-
 namespace noble_steed
 {
 
@@ -45,9 +41,9 @@ struct matrix4
             vector4<T> row3;
             vector4<T> row4;
         };
-        #ifdef NOBLESTEED_USE_SSE
+#if NOBLE_STEED_SIMD
         __m128 _data[size_];
-        #endif
+#endif
     };
 };
 
@@ -85,7 +81,7 @@ void transpose(matrix4<T> *mat)
 }
 
 template<class T>
-matrix4<T> transpose(matrix4<T> mat)
+inline matrix4<T> transpose(matrix4<T> mat)
 {
     transpose(&mat);
     return mat;
@@ -127,7 +123,7 @@ matrix4<T> inverse(const matrix4<T> &mat)
     matrix4<T> ret;
     if (!invertable)
         return ret;
-    
+
     ret[0][0] = mat[1][2] * mat[2][3] * mat[3][1] - mat[1][3] * mat[2][2] * mat[3][1] + mat[1][3] * mat[2][1] * mat[3][2] -
                 mat[1][1] * mat[2][3] * mat[3][2] - mat[1][2] * mat[2][1] * mat[3][3] + mat[1][1] * mat[2][2] * mat[3][3];
     ret[0][1] = mat[0][3] * mat[2][2] * mat[3][1] - mat[0][2] * mat[2][3] * mat[3][1] - mat[0][3] * mat[2][1] * mat[3][2] +
@@ -292,13 +288,24 @@ matrix4<T> translation_mat4(const matrix4<T> &transform)
     return ret;
 }
 
+#if NOBLE_STEED_SIMD
+template<>
+inline void transpose(matrix4<float> *mat)
+{
+    _MM_TRANSPOSE4_PS(mat->_data[0], mat->_data[1], mat->_data[2], mat->_data[3]);
+}
+#endif
+
 } // namespace math
 
 template<class T>
 vector4<T> operator*(const matrix4<T> &lhs, const vector4<T> &rhs)
 {
     using namespace math;
-    return {dot(lhs[0], rhs), dot(lhs[1], rhs), dot(lhs[2], rhs), dot(lhs[3], rhs)};
+    return {dot(lhs[0], rhs),
+    dot(lhs[1], rhs),
+    dot(lhs[2], rhs),
+    dot(lhs[3], rhs)};
 }
 
 template<class T>
@@ -327,7 +334,6 @@ vector4<T> operator/(const matrix4<T> &lhs, const vector4<T> &rhs)
     T lensq = dot(rhs, rhs);
     return {dot(lhs[0], rhs) / lensq, dot(lhs[1], rhs) / lensq, dot(lhs[2], rhs) / lensq, dot(lhs[3] * rhs) / lensq};
 }
-
 
 template<class T>
 inline matrix4<T> operator*(const matrix4<T> &lhs, const matrix4<T> &rhs)
@@ -368,7 +374,7 @@ matrix4<T> operator/(const matrix4<T> &lhs, const matrix4<T> &rhs)
     return lhs * math::inverse(rhs);
 }
 
-#ifdef NOBLESTEED_USE_SSE
+#if NOBLE_STEED_SIMD
 
 inline __m128 _linear_combine_sse(__m128 left, const matrix4<float> &right)
 {
@@ -380,6 +386,17 @@ inline __m128 _linear_combine_sse(__m128 left, const matrix4<float> &right)
     return (res);
 }
 
+inline __m128 _linear_combine_v4_sse(const matrix4<float> &left, __m128 right)
+{
+    __m128 res;
+    res = _mm_mul_ps(left._data[0], right);
+    res = _mm_add_ps(res, _mm_mul_ps(left._data[1], right));
+    res = _mm_add_ps(res, _mm_mul_ps(left._data[2], right));
+    res = _mm_add_ps(res, _mm_mul_ps(left._data[3], right));
+    return (res);
+}
+
+template<>
 inline matrix4<float> operator*(const matrix4<float> &lhs, const matrix4<float> &rhs)
 {
     matrix4<float> ret;
@@ -389,6 +406,18 @@ inline matrix4<float> operator*(const matrix4<float> &lhs, const matrix4<float> 
     ret._data[3] = _linear_combine_sse(lhs._data[3], rhs);
     return ret;
 }
+
+template<>
+inline vector4<float> operator*(const matrix4<float> & lhs, const vector4<float> &rhs)
+{
+    vector4<float> ret;
+    ret.data[0] = _mm_cvtss_f32(math::_sse_dp(lhs._data[0], rhs._v4));
+    ret.data[1] = _mm_cvtss_f32(math::_sse_dp(lhs._data[1], rhs._v4));
+    ret.data[2] = _mm_cvtss_f32(math::_sse_dp(lhs._data[2], rhs._v4));
+    ret.data[3] = _mm_cvtss_f32(math::_sse_dp(lhs._data[3], rhs._v4));
+    return ret;
+}
+
 #endif
 
 // Enable type trait

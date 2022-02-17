@@ -34,6 +34,7 @@ set(GTEST_DIR ${DEPENDENCY_DIR}/googletest)
 # Set library source directory
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(NOBLE_STEED_TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
+set(NOBLE_STEED_BENCHMARK_DIR ${CMAKE_SOURCE_DIR}/benchmarks)
 
 # Set include directories
 set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
@@ -47,6 +48,7 @@ set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_CLAN)
 
 add_definitions(
     -DBX_CONFIG_DEBUG
@@ -76,10 +78,15 @@ file(GLOB SRC_FILES
   ${NOBLE_STEED_SRC_DIR}/memory/*.cpp
   )
 
+file(GLOB BENCHMARK_FILES 
+  ${NOBLE_STEED_BENCHMARK_DIR}/*.cpp
+)
+
+
 file(GLOB TEST_FILES 
-  ${NOBLE_STEED_TEST_DIR}/*.cpp
-  ${NOBLE_STEED_TEST_DIR}/math/*.cpp
-  )
+${NOBLE_STEED_TEST_DIR}/*.cpp
+${NOBLE_STEED_TEST_DIR}/math/*.cpp
+)
 
 # Set project includes dir
 include_directories(
@@ -177,6 +184,12 @@ else()
     )
 endif()
 
+if(MSVC)
+    target_compile_options(${TARGET_NAME} INTERFACE /arch:SSE4.1)
+else()
+    target_compile_options(${TARGET_NAME} INTERFACE -msse4.1)
+endif()
+
 configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
 configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
 configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
@@ -188,6 +201,9 @@ add_custom_target(deploy_shader_lib ALL
  COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
  DEPENDS ${TARGET_NAME}
  )
+
+ find_package(benchmark REQUIRED)
+
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
 
@@ -201,5 +217,8 @@ add_executable(${TARGET_NAME}_tests ${TEST_FILES})
 target_link_libraries(${TARGET_NAME}_tests gtest ${TARGET_NAME})
 include(GoogleTest)
 gtest_discover_tests(${TARGET_NAME}_tests)
+
+add_executable(${TARGET_NAME}_benchmarks ${BENCHMARK_FILES})
+target_link_libraries(${TARGET_NAME}_benchmarks benchmark::benchmark benchmark::benchmark_main ${TARGET_NAME})
 
 add_subdirectory(samples)
