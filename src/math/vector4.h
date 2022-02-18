@@ -1,6 +1,8 @@
 #pragma once
 #include "vector3.h"
 
+#include <iostream>
+
 namespace noble_steed
 {
 template<class T>
@@ -84,7 +86,7 @@ namespace math
 {
 #if NOBLE_STEED_SIMD
 
-inline __m128 _sse_dp(const __m128 & left, const __m128 & right)
+inline __m128 _sse_dp(const __m128 &left, const __m128 &right)
 {
 #if NOBLE_STEED_SIMD & NOBLE_STEED_SSE41_BIT
     return _mm_dp_ps(left, right, 0xff);
@@ -103,10 +105,12 @@ inline __m128 _sse_dp(const __m128 & left, const __m128 & right)
 #endif
 }
 
+template<>
 inline float dot(const vector4<float> &lhs, const vector4<float> &rhs)
 {
     return _mm_cvtss_f32(_sse_dp(lhs._v4, rhs._v4));
 }
+
 #endif
 
 template<floating_pt T>
@@ -132,6 +136,14 @@ vector4<T> axis_angle(const quaternion<T> &orientation)
 }
 
 } // namespace math
+
+template<class T>
+inline vector4<float> operator*(vector4<float> lhs, const T &rhs)
+{
+    __m128 s = _mm_set1_ps(rhs);
+    lhs._v4 = _mm_mul_ps(lhs._v4, s);
+    return lhs;
+}
 
 // Enable type trait
 template<class U>

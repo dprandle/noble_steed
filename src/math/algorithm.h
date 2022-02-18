@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../core/basic_types.h"
-#include <algorithm>
-#include <cmath>
+//#include <algorithm>
+//#include <cmath>
+#include <math.h>
 #include <iomanip>
 #include <type_traits>
 
@@ -14,6 +15,7 @@
 #define NOBLE_STEED_SSE42_BIT (0x00000020)
 #define NOBLE_STEED_AVX_BIT (0x00000040)
 #define NOBLE_STEED_AVX2_BIT (0x00000080)
+#define NOBLE_STEED_SSE_SQRT_BIT (0x00000100)
 
 #define NOBLE_STEED_USE_SSE (NOBLE_STEED_SSE_BIT)
 #define NOBLE_STEED_USE_SSE2 (NOBLE_STEED_SSE2_BIT | NOBLE_STEED_USE_SSE)
@@ -24,7 +26,7 @@
 #define NOBLE_STEED_USE_AVX (NOBLE_STEED_AVX_BIT | NOBLE_STEED_SSE42)
 #define NOBLE_STEED_USE_AVX2 (NOBLE_STEED_AVX2_BIT | NOBLE_STEED_AVX)
 
-#define NOBLE_STEED_SIMD NOBLE_STEED_USE_SSE41
+#define NOBLE_STEED_SIMD (NOBLE_STEED_USE_SSE41 | NOBLE_STEED_SSE_SQRT_BIT)
 
 #if NOBLE_STEED_SIMD
 #include <immintrin.h>
@@ -161,16 +163,22 @@ T atan(T val)
 }
 
 template<floating_pt T>
-T sqrt(T val)
+inline T sqrt(T val)
 {
     return std::sqrt(val);
 }
 
-#if NOBLE_STEED_SIMD & NOBLE_STEED_USE_SSE2
-double sqrt(double val)
+template<floating_pt T>
+inline T rsqrt(T val)
 {
-    return std::sqrt(val);
+    return T(1) / std::sqrt(val);
 }
+
+#if NOBLE_STEED_SIMD & NOBLE_STEED_USE_SSE
+#if NOBLE_STEED_SIMD & NOBLE_STEED_SSE_SQRT_BIT
+inline float sqrt(float val) {return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(val)));}
+#endif
+inline float rsqrt(float val) {return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(val)));}
 #endif
 
 template<floating_pt T>
@@ -203,7 +211,7 @@ auto convert_elements(const T &veca)
 }
 
 template<class T>
-auto dot(const T &veca, const T &vecb)
+inline typename T::value_type dot(const T &veca, const T &vecb)
 {
     auto ret = decltype(veca.data[0]){0};
     for (i8 i{0}; i < veca.size(); ++i)
@@ -212,34 +220,32 @@ auto dot(const T &veca, const T &vecb)
 }
 
 template<class T>
-auto length_sq(const T &veca)
+inline auto length_sq(const T &veca)
 {
     return dot(veca, veca);
 }
 
 template<holds_floating_pt T>
-auto length(const T &veca)
+inline auto length(const T &veca)
 {
-    return math::sqrt(length_sq(veca));
+    return math::sqrt(dot(veca, veca));
 }
 
 template<holds_integral T>
-auto length(const T &veca)
+inline auto length(const T &veca)
 {
     return math::sqrt((float)length_sq(veca));
 }
 
 template<vec_or_quat_type T>
-void set_length(T *vec, const typename T::value_type &new_len)
+inline void set_length(T *vec, const typename T::value_type &new_len)
 {
-    auto len = length(*vec);
-    if (len < math::FLOAT_EPS)
-        return;
-    *vec *= (new_len / len);
+    auto len = math::rsqrt(dot(*vec, *vec));
+    *vec *= (new_len * len);
 }
 
 template<vec_or_quat_type T>
-T set_length(T vec, const typename T::value_type &new_len)
+inline T set_length(T vec, const typename T::value_type &new_len)
 {
     set_length(&vec, new_len);
     return vec;
@@ -324,7 +330,8 @@ T reflect(T vec, const T &normal)
 template<vec_or_quat_type T>
 void normalize(T *vec_or_quat)
 {
-    set_length(vec_or_quat, (typename T::value_type)1);
+    auto len = math::rsqrt(dot(*vec_or_quat, *vec_or_quat));
+    *vec_or_quat *= len;
 }
 
 template<vec_or_quat_type T>
@@ -594,10 +601,10 @@ void compwise_mult_columns(const V &column_vec, T *rhs)
 } // namespace math
 
 template<class T>
-concept holds_basic_comparable_type = vec_type<T> || mat_type<T> || quat_type<T>;
+concept holds_basic_comparable_type = (vec_type<T> || mat_type<T> || quat_type<T>);
 
 template<class T>
-concept holds_basic_arithmetic_type = vec_type<T> || mat_type<T> || quat_type<T>;
+concept holds_basic_arithmetic_type = (vec_type<T> || mat_type<T> || quat_type<T>);
 
 template<holds_basic_comparable_type T>
 requires holds_floating_pt<T>
