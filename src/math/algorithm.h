@@ -166,6 +166,13 @@ T sqrt(T val)
     return std::sqrt(val);
 }
 
+#if NOBLE_STEED_SIMD & NOBLE_STEED_USE_SSE2
+double sqrt(double val)
+{
+    return std::sqrt(val);
+}
+#endif
+
 template<floating_pt T>
 bool fequals(T left, T right, T eps = FLOAT_EPS)
 {
@@ -756,67 +763,35 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
 }
 
 #define COMMON_OPERATORS(type, element_count, ind_ret_type)                                                                                          \
-    inline type operator++(i32)                                                                                                                      \
+    inline type &operator+=(const type &rhs_)                                                                                                        \
     {                                                                                                                                                \
-        type ret(*this);                                                                                                                             \
-        ++(*this);                                                                                                                                   \
-        return ret;                                                                                                                                  \
+        return *this = *this + rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type operator--(i32)                                                                                                                      \
+    inline type &operator-=(const type &rhs_)                                                                                                        \
     {                                                                                                                                                \
-        type ret(*this);                                                                                                                             \
-        --(*this);                                                                                                                                   \
-        return ret;                                                                                                                                  \
+        return *this = *this - rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator++()                                                                                                                        \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            ++data[i];                                                                                                                               \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator--()                                                                                                                               \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            --data[i];                                                                                                                               \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator+=(const type &rhs_)                                                                                                               \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            data[i] += rhs_.data[i];                                                                                                                 \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator-=(const type &rhs_)                                                                                                               \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            data[i] -= rhs_.data[i];                                                                                                                 \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator*=(const type &rhs_)                                                                                                               \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            data[i] *= rhs_.data[i];                                                                                                                 \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator/=(const type &rhs_)                                                                                                               \
-    {                                                                                                                                                \
-        for (u8 i{0}; i < size_; ++i)                                                                                                                \
-            data[i] /= rhs_.data[i];                                                                                                                 \
-        return *this;                                                                                                                                \
-    }                                                                                                                                                \
-    type &operator*=(const T &rhs_)                                                                                                                  \
+    inline type &operator*=(const type &rhs_)                                                                                                        \
     {                                                                                                                                                \
         return *this = *this * rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    type &operator/=(const T &rhs_)                                                                                                                  \
+    inline type &operator/=(const type &rhs_)                                                                                                        \
     {                                                                                                                                                \
         return *this = *this / rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    const ind_ret_type &operator[](sizet val_) const                                                                                                 \
+    inline type &operator*=(const T &rhs_)                                                                                                           \
+    {                                                                                                                                                \
+        return *this = *this * rhs_;                                                                                                                 \
+    }                                                                                                                                                \
+    inline type &operator/=(const T &rhs_)                                                                                                           \
+    {                                                                                                                                                \
+        return *this = *this / rhs_;                                                                                                                 \
+    }                                                                                                                                                \
+    inline const ind_ret_type &operator[](u8 val_) const                                                                                             \
     {                                                                                                                                                \
         return data[val_];                                                                                                                           \
     }                                                                                                                                                \
-    ind_ret_type &operator[](sizet val_)                                                                                                             \
+    inline ind_ret_type &operator[](u8 val_)                                                                                                         \
     {                                                                                                                                                \
         return data[val_];                                                                                                                           \
     }                                                                                                                                                \
@@ -844,7 +819,7 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
     }                                                                                                                                                \
     inline constexpr const_iterator end() const                                                                                                      \
     {                                                                                                                                                \
-        return &data[0] + size_;                                                                                                                     \
+        return begin() + size_;                                                                                                                      \
     }
 
 } // namespace noble_steed

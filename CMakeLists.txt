@@ -46,9 +46,9 @@ set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
 set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_CLAN)
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 add_definitions(
     -DBX_CONFIG_DEBUG
@@ -95,7 +95,6 @@ include_directories(
   ${BIMG_INCLUDE_DIR}
   ${GLFW_INCLUDE_DIR}
   ${BULLET_INCLUDE_DIR}
-  ${SPDLOG_INCLUDE_DIR}
   ${PYBIND_INCLUDE_DIR}
   ${ASSIMP_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
@@ -106,13 +105,15 @@ add_subdirectory(${PYBIND_DIR})
 add_subdirectory(${GLFW_DIR})
 add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
-add_subdirectory(${SPDLOG_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if (WIN32)
-# Windows stuff here
+    # Windows stuff here
+    include_directories( ${SPDLOG_INCLUDE_DIR} )
+    add_subdirectory(${SPDLOG_DIR})
     add_definitions(-DPLATFORM_WINDOWS)
     add_definitions(-DGLFW_EXPOSE_NATIVE_WIN32)
+
 elseif(APPLE)
     add_definitions(-DPLATFORM_OSX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_COCOA)
@@ -120,8 +121,9 @@ elseif(APPLE)
     
     # Set dependency library paths
     set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.dylib)
-    set(BGFX_BIN_DIR "${BGFX_DIR}/.build/osx64_clang/bin")
+    set(BGFX_BIN_DIR "${BGFX_DIR}/.build/osx-x64/bin")
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
+    message("BGFX: ${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
     
     link_directories(/usr/local/lib)
     include_directories(/usr/local/include)    
@@ -130,6 +132,7 @@ elseif(APPLE)
         ${BGFX_LIB_PATH}  
         pybind11::embed
         glfw
+        stdc++
         assimp
         Bullet2FileLoader
         Bullet3Dynamics
@@ -141,10 +144,17 @@ elseif(APPLE)
         BulletCollision
         Bullet3Common
         BulletDynamics
-        LinearMath
         spdlog
-        )
+        fmt)
+    set_target_properties(${TARGET_NAME} PROPERTIES FRAMEWORK TRUE)
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+        ${NOBLE_STEED_SRC_DIR})
+        
 else()
+    # SPDLOG doesn't build correctly on mac - it always crashes clang for some reason :/
+    include_directories(${SPDLOG_INCLUDE_DIR})
+    add_subdirectory(${SPDLOG_DIR})
     add_definitions(-DPLATFORM_LINUX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
     add_library(${TARGET_NAME} ${SRC_FILES})
@@ -169,19 +179,16 @@ else()
         BulletCollision
         Bullet3Common
         BulletDynamics
-        LinearMath
         ${PYTHON_LIBRARIES}
         spdlog
         X11
         GL
         stdc++fs
-        pthread
-    )
+        pthread)
 
     target_include_directories(${PROJECT_NAME}
         PUBLIC
-        ${NOBLE_STEED_SRC_DIR}
-    )
+        ${NOBLE_STEED_SRC_DIR})
 endif()
 
 if(MSVC)
@@ -197,12 +204,11 @@ configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTP
 configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
 
 # Copy the shader lib source to the default shader lib directory in build folder
-add_custom_target(deploy_shader_lib ALL
- COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
- DEPENDS ${TARGET_NAME}
- )
-
- find_package(benchmark REQUIRED)
+# message("Trying to copy " ${CMAKE_SOURCE_DIR}/shader_lib " to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib)
+# add_custom_target(deploy_shader_lib ALL
+#  COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
+#  DEPENDS ${TARGET_NAME}
+#  )
 
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
@@ -210,14 +216,16 @@ add_custom_target(deploy_shader_lib ALL
 # target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
 #   ${TARGET_NAME}
 # )
-enable_testing()
-set(INSTALL_GTEST OFF)
-add_subdirectory(${GTEST_DIR})
-add_executable(${TARGET_NAME}_tests ${TEST_FILES})
-target_link_libraries(${TARGET_NAME}_tests gtest ${TARGET_NAME})
-include(GoogleTest)
-gtest_discover_tests(${TARGET_NAME}_tests)
+# enable_testing()
+# set(INSTALL_GTEST OFF)
+# add_subdirectory(${GTEST_DIR})
+# add_executable(${TARGET_NAME}_tests ${TEST_FILES})
+# target_link_libraries(${TARGET_NAME}_tests gtest ${TARGET_NAME})
+# include(GoogleTest)
+# gtest_discover_tests(${TARGET_NAME}_tests)
 
+
+find_package(benchmark REQUIRED)
 add_executable(${TARGET_NAME}_benchmarks ${BENCHMARK_FILES})
 target_link_libraries(${TARGET_NAME}_benchmarks benchmark::benchmark benchmark::benchmark_main ${TARGET_NAME})
 

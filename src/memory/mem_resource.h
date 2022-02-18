@@ -1,11 +1,20 @@
 #pragma once
 
+#ifdef PLATFORM_OSX
+#include <experimental/memory_resource>
+#else
 #include <memory_resource>
+#endif
 #include "../core/basic_types.h"
 
 namespace noble_steed
 {
+#ifdef PLATFORM_OSX
+using Mem_Resource_Base = std::experimental::pmr::memory_resource;
+#else
 using Mem_Resource_Base = std::pmr::memory_resource;
+#endif
+
 Mem_Resource_Base * get_default_resource();
 
 

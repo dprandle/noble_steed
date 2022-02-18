@@ -4,7 +4,11 @@ namespace noble_steed
 {
 Mem_Resource_Base *get_default_resource()
 {
+#ifdef PLATFORM_OSX
+    return nullptr;//std::experimental::pmr::get_default_resource();
+#else
     return std::pmr::get_default_resource();
+#endif
 }
 
 Mem_Resource::Mem_Resource(const std::size_t total_size, Mem_Resource_Base *upstream)

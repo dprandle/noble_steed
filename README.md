@@ -44,6 +44,8 @@ The cmake config parameters to use are as follows:
 "BUILD_OPENGL3_DEMOS":false,
 "GLFW_BUILD_DOCS":false,
 "GLFW_INSTALL":false,
+"GLFW_BUILD_EXAMPLES": false,
+"GLFW_BUILD_TESTS": false,
 "BUILD_EXTRAS":false,
 "BUILD_UNIT_TESTS":false,
 "SPDLOG_BUILD_SHARED":true

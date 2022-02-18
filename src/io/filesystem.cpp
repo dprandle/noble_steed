@@ -101,14 +101,9 @@ String executable_name()
     GetModuleFileNameA(nullptr, buffer, MAX_PATH);
     ret = buffer;
 #elif defined(__APPLE__)
-    u32 buf_size = MAX_PATH;
-    char *buffer = ns_ctxt.malloc_array<char>(buf_size);
-    if (_NSGetExecutablePath(buffer, &buf_size) != 0)
-    {
-        ns_ctxt.free_array(buffer);
-        buffer = ns_ctxt.malloc_array<char>(buf_size);
-        _NSGetExecutablePath(buffer, &buf_size);
-    }
+    u32 buf_size(MAX_PATH);
+    char buffer[MAX_PATH];
+    assert(_NSGetExecutablePath(buffer, &buf_size));
     ret = buffer;
     size_t ind = ret.find_last_of('/');
     if (ind != String::npos)
