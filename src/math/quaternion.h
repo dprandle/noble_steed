@@ -15,6 +15,10 @@ struct quaternion
 
     COMMON_OPERATORS(quaternion<T>, 4, T)
 
+#if NOBLE_STEED_SIMD
+    using _simd_type = typename simd_traits<T, size_>::_simd_type;
+#endif
+
     union
     {
         T data[size_];
@@ -42,43 +46,26 @@ struct quaternion
             T k;
             T alpha;
         };
+
+#if NOBLE_STEED_SIMD
+        _simd_type _v4;
+#endif
     };
 };
 
-template<class T>
-quaternion<T> operator*(const quaternion<T> &lhs, const quaternion<T> &rhs)
-{
-    quaternion<T> ret{lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
-                  lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x,
-                  lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w,
-                  lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z};
-    return ret;
-}
-
-template<class T>
-vector3<T> operator*(const vector3<T> &lhs, const vector3<T> &rhs)
-{
-    vector3<T> ret;
-    // quat_ * vec3
-    T ix = lhs.w * rhs.x + lhs.y * rhs.z - lhs.z * rhs.y;
-    T iy = lhs.w * rhs.y + lhs.z * rhs.x - lhs.x * rhs.z;
-    T iz = lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x;
-    T iw = -lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
-    // vec3 * inverse(quat_)
-    ret.x = ix * lhs.w + iw * -lhs.x + iy * -lhs.z - iz * -lhs.y;
-    ret.y = iy * lhs.w + iw * -lhs.y + iz * -lhs.x - ix * -lhs.z;
-    ret.z = iz * lhs.w + iw * -lhs.z + ix * -lhs.y - iy * -lhs.x;
-    return ret;
-}
-
-template<class T>
-quaternion<T> operator/(const quaternion<T> &lhs, const quaternion<T> &rhs)
-{
-    return lhs * inverse(rhs);
-}
-
 namespace math
 {
+
+#if NOBLE_STEED_SIMD
+
+template<>
+inline float dot(const quaternion<float> &lhs, const quaternion<float> &rhs)
+{
+    return _mm_cvtss_f32(_sse_dp(lhs._v4, rhs._v4));
+}
+
+#endif
+
 template<class T>
 quaternion<T> slerp(quaternion<T> first, const quaternion<T> &second, const T &scaling_factor)
 {
@@ -167,6 +154,28 @@ vector3<T> up(const quaternion<T> &q)
 }
 
 template<floating_pt T>
+vector4<T> axis_angle(const quaternion<T> &orientation)
+{
+    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
+    vector4<T> ret;
+    ret.w = 2 * math::acos(orientation.w);
+    T den = math::sqrt(1 - orientation.w * orientation.w);
+    if (den < math::FLOAT_EPS)
+    {
+        ret.x = orientation.x;
+        ret.y = orientation.y;
+        ret.z = orientation.z;
+    }
+    else
+    {
+        ret.x = orientation.x / den;
+        ret.y = orientation.y / den;
+        ret.z = orientation.z / den;
+    }
+    return ret;
+}
+
+template<floating_pt T>
 quaternion<T> orientation(const vector4<T> &axis_angle)
 {
     quaternion<T> ret;
@@ -241,47 +250,6 @@ quaternion<T> orientation(const vector3<T> &euler, typename vector3<T>::euler_or
 }
 
 template<floating_pt T>
-quaternion<T> orientation(const nsmat3<T> &rotation)
-{
-    quaternion<T> ret;
-    T tr = rotation[0][0] + rotation[1][1] + rotation[2][2], s;
-
-    if (tr > 0)
-    {
-        s = math::sqrt(tr + 1.0) * 2;
-        ret.w = 0.25 * s;
-        ret.x = (rotation[2][1] - rotation[1][2]) / s;
-        ret.y = (rotation[0][2] - rotation[2][0]) / s;
-        ret.z = (rotation[1][0] - rotation[0][1]) / s;
-    }
-    else if ((rotation[0][0] > rotation[1][1]) & (rotation[0][0] > rotation[2][2]))
-    {
-        s = math::sqrt(1.0 + rotation[0][0] - rotation[1][1] - rotation[2][2]) * 2;
-        ret.w = (rotation[2][1] - rotation[1][2]) / s;
-        ret.x = 0.25 * s;
-        ret.y = (rotation[0][1] + rotation[1][0]) / s;
-        ret.z = (rotation[0][2] + rotation[2][0]) / s;
-    }
-    else if (rotation[1][1] > rotation[2][2])
-    {
-        s = math::sqrt(1.0 + rotation[1][1] - rotation[0][0] - rotation[2][2]) * 2;
-        ret.w = (rotation[0][2] - rotation[2][0]) / s;
-        ret.x = (rotation[0][1] + rotation[1][0]) / s;
-        ret.y = 0.25 * s;
-        ret.z = (rotation[1][2] + rotation[2][1]) / s;
-    }
-    else
-    {
-        s = math::sqrt(1.0 + rotation[2][2] - rotation[0][0] - rotation[1][1]) * 2;
-        ret.w = (rotation[1][0] - rotation[0][1]) / s;
-        ret.x = (rotation[0][2] + rotation[2][0]) / s;
-        ret.y = (rotation[1][2] + rotation[2][1]) / s;
-        ret.z = 0.25 * s;
-    }
-    return ret;
-}
-
-template<floating_pt T>
 quaternion<T> orientation(const vector3<T> &from_vec, const vector3<T> &to_vec_)
 {
     /* http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm */
@@ -305,6 +273,71 @@ quaternion<T> orientation(const vector3<T> &from_vec, const vector3<T> &to_vec_)
     return ret;
 }
 } // namespace math
+
+#if NOBLE_STEED_SIMD
+
+inline quaternion<float> operator+(quaternion<float> lhs, const quaternion<float> &rhs)
+{
+    lhs._v4 = _mm_add_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+inline quaternion<float> operator-(quaternion<float> lhs, const quaternion<float> &rhs)
+{
+    lhs._v4 = _mm_sub_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+template<basic_number T>
+inline quaternion<float> operator*(quaternion<float> lhs, T rhs)
+{
+    __m128 s = _mm_set1_ps(rhs);
+    lhs._v4 = _mm_mul_ps(lhs._v4, s);
+    return lhs;
+}
+
+template<basic_number T>
+inline quaternion<float> operator/(quaternion<float> lhs, T rhs)
+{
+    __m128 s = _mm_set1_ps(1.0 / rhs);
+    lhs._v4 = _mm_mul_ps(lhs._v4, s);
+    return lhs;
+}
+
+#endif
+
+/// SIMD Quaternion multiply is much slower than just regular multiply - tested it and its about 3x slower on my maching
+template<class T>
+quaternion<T> operator*(const quaternion<T> &lhs, const quaternion<T> &rhs)
+{
+    quaternion<T> ret{lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
+                      lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x,
+                      lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w,
+                      lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z};
+    return ret;
+}
+
+template<class T>
+vector3<T> operator*(const quaternion<T> &lhs, const vector3<T> &rhs)
+{
+    vector3<T> ret;
+    // quat_ * vec3
+    T ix = lhs.w * rhs.x + lhs.y * rhs.z - lhs.z * rhs.y;
+    T iy = lhs.w * rhs.y + lhs.z * rhs.x - lhs.x * rhs.z;
+    T iz = lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x;
+    T iw = -lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
+    // vec3 * inverse(quat_)
+    ret.x = ix * lhs.w + iw * -lhs.x + iy * -lhs.z - iz * -lhs.y;
+    ret.y = iy * lhs.w + iw * -lhs.y + iz * -lhs.x - ix * -lhs.z;
+    ret.z = iz * lhs.w + iw * -lhs.z + ix * -lhs.y - iy * -lhs.x;
+    return ret;
+}
+
+template<class T>
+quaternion<T> operator/(const quaternion<T> &lhs, const quaternion<T> &rhs)
+{
+    return lhs * math::inverse(rhs);
+}
 
 // Enable type trait
 template<class U>

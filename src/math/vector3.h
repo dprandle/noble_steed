@@ -4,14 +4,6 @@
 
 namespace noble_steed
 {
-template<class T>
-struct vector4;
-
-template<floating_pt T>
-struct quaternion;
-
-template<class T>
-struct matrix4;
 
 template<class T>
 struct vector3
@@ -167,112 +159,6 @@ vector3<T> cartesian_to_spherical(const vector3<T> &cartesian)
         ret.z = 0;
     else
         ret.z = math::acos(cartesian.z / ret.x);
-    return ret;
-}
-
-template<class T>
-vector3<T> scaling_vec3(const nsmat3<T> &transform_)
-{
-    vector3<T> ret;
-    ret.x = length(transform_[0]);
-    ret.y = length(transform_[1]);
-    ret.z = length(transform_[2]);
-    return ret;
-}
-
-template<class T>
-vector3<T> translation_vec3(const matrix4<T> &transform_)
-{
-    return transform_(3).vec3();
-}
-
-template<floating_pt T>
-vector3<T> euler_vec3(const nsmat3<T> &rotation_mat3, typename vector3<T>::euler_order order = vector3<T>::XYZ)
-{
-    // https://github.com/mrdoob/three.js/blob/master/src/math/Euler.js
-    vector3<T> ret;
-    T ep = 1 - math::FLOAT_EPS;
-    switch (order)
-    {
-    case (vector2<T>::XYZ):
-        ret.y = math::asin(rotation_mat3[0][2]);
-        if (std::abs(rotation_mat3[0][2]) < ep)
-        {
-            ret.x = math::atan(-rotation_mat3[1][2], rotation_mat3[2][2]);
-            ret.z = math::atan(-rotation_mat3[0][1], rotation_mat3[0][0]);
-        }
-        else
-        {
-            ret.x = math::atan(rotation_mat3[2][1], rotation_mat3[1][1]);
-            ret.z = 0;
-        }
-        break;
-    case (vector2<T>::XZY):
-        ret.z = math::asin(rotation_mat3[0][1]);
-        if (std::abs(rotation_mat3[0][1]) < ep)
-        {
-            ret.x = math::atan(rotation_mat3[2][1], rotation_mat3[1][1]);
-            ret.y = math::atan(rotation_mat3[0][2], rotation_mat3[0][0]);
-        }
-        else
-        {
-            ret.x = math::atan(-rotation_mat3[1][2], rotation_mat3[2][2]);
-            ret.y = 0;
-        }
-        break;
-    case (vector2<T>::YXZ):
-        ret.x = math::asin(rotation_mat3[1][2]);
-        if (std::abs(rotation_mat3[1][2]) < ep)
-        {
-            ret.y = math::atan(rotation_mat3[0][2], rotation_mat3[2][2]);
-            ret.z = math::atan(rotation_mat3[1][0], rotation_mat3[1][1]);
-        }
-        else
-        {
-            ret.y = math::atan(-rotation_mat3[2][0], rotation_mat3[0][0]);
-            ret.z = 0;
-        }
-        break;
-    case (vector2<T>::YZX):
-        ret.z = math::asin(rotation_mat3[1][0]);
-        if (std::abs(rotation_mat3[1][0]) < ep)
-        {
-            ret.x = math::atan(-rotation_mat3[1][2], rotation_mat3[1][1]);
-            ret.y = math::atan(-rotation_mat3[2][0], rotation_mat3[0][0]);
-        }
-        else
-        {
-            ret.x = 0;
-            ret.y = math::atan(rotation_mat3[0][2], rotation_mat3[2][2]);
-        }
-        break;
-    case (vector2<T>::ZXY):
-        ret.x = math::asin(rotation_mat3[2][1]);
-        if (std::abs(rotation_mat3[2][1]) < ep)
-        {
-            ret.y = math::atan(-rotation_mat3[2][0], rotation_mat3[2][2]);
-            ret.z = math::atan(-rotation_mat3[0][1], rotation_mat3[1][1]);
-        }
-        else
-        {
-            ret.y = 0;
-            ret.z = math::atan(rotation_mat3[1][0], rotation_mat3[0][0]);
-        }
-        break;
-    case (vector2<T>::ZYX):
-        ret.y = math::asin(rotation_mat3[2][0]);
-        if (std::abs(rotation_mat3[2][0]) < ep)
-        {
-            ret.x = math::atan(rotation_mat3[2][1], rotation_mat3[2][2]);
-            ret.z = math::atan(rotation_mat3[1][0], rotation_mat3[0][0]);
-        }
-        else
-        {
-            ret.x = 0;
-            ret.z = math::atan(-rotation_mat3[0][1], rotation_mat3[1][1]);
-        }
-        break;
-    }
     return ret;
 }
 } // namespace math

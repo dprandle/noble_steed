@@ -107,6 +107,8 @@ add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# add_compile_options("-msse4.1")
+
 if (WIN32)
     # Windows stuff here
     include_directories( ${SPDLOG_INCLUDE_DIR} )
@@ -192,9 +194,9 @@ else()
 endif()
 
 if(MSVC)
-    target_compile_options(${TARGET_NAME} INTERFACE /arch:SSE4.1)
+    target_compile_options(${TARGET_NAME} PUBLIC /arch:SSE4.1)
 else()
-    target_compile_options(${TARGET_NAME} INTERFACE -msse4.1)
+    target_compile_options(${TARGET_NAME} PUBLIC -msse4.1)
 endif()
 
 configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)

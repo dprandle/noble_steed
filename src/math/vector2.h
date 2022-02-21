@@ -4,11 +4,6 @@
 
 namespace noble_steed
 {
-template<class T>
-struct nsmat2;
-
-template<class T>
-struct nsmat3;
 
 template<class T>
 struct vector2
@@ -53,30 +48,6 @@ struct vector2
 
 namespace math
 {
-template<class T>
-vector2<T> scaling_vec2(const nsmat2<T> &tform)
-{
-    return {length(tform[0]), length(tform[1])};
-}
-
-template<class T>
-vector2<T> scaling_vec2(const nsmat3<T> &tform)
-{
-    return {length(tform[0].vec2()), length(tform[1].vec2())};
-}
-
-template<class T>
-vector2<T> translation_vec2(const nsmat2<T> &tform)
-{
-    return tform(2);
-}
-
-template<class T>
-vector2<T> translation_vec2(const nsmat3<T> &tform)
-{
-    return tform(2).vec2();
-}
-
 template<floating_pt T>
 vector2<T> polar_to_cartesian(const vector2<T> &polar)
 {

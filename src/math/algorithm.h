@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <type_traits>
 
+#include <iostream>
+
 #define NOBLE_STEED_SSE_BIT (0x00000001)
 #define NOBLE_STEED_SSE2_BIT (0x00000002)
 #define NOBLE_STEED_SSE3_BIT (0x00000004)
@@ -26,10 +28,23 @@
 #define NOBLE_STEED_USE_AVX (NOBLE_STEED_AVX_BIT | NOBLE_STEED_SSE42)
 #define NOBLE_STEED_USE_AVX2 (NOBLE_STEED_AVX2_BIT | NOBLE_STEED_AVX)
 
-#define NOBLE_STEED_SIMD (NOBLE_STEED_USE_SSE41 | NOBLE_STEED_SSE_SQRT_BIT)
+#define NOBLE_STEED_SIMD 0//(NOBLE_STEED_USE_SSE41 | NOBLE_STEED_SSE_SQRT_BIT)
 
 #if NOBLE_STEED_SIMD
 #include <immintrin.h>
+namespace noble_steed
+{
+template <typename T,i8 SZ>
+struct simd_traits {
+    using _simd_type = T[SZ];
+};
+
+template <>
+struct simd_traits<float,4> {
+    using _simd_type = __m128;
+    // etc
+};
+}
 #endif
 
 #define STR_ALIGN std::right << std::setprecision(ROUND_TO_DEC) << std::fixed
@@ -530,7 +545,7 @@ void set_mat_column(T *mat, sizet ind, const V &col)
 template<mat_type T>
 void compwise_mult(T *lhs, const T &rhs)
 {
-    for (i8 i{0}; ++i; i < T::size_)
+    for (i8 i{0}; i < T::size_; ++i)
         (*lhs)[i] *= rhs[i];
 }
 
@@ -541,11 +556,25 @@ T compwise_mult(T lhs, const T &rhs)
     return lhs;
 }
 
+template<mat_type T>
+void compwise_div(T *lhs, const T &rhs)
+{
+    for (i8 i{0}; i < T::size_; ++i)
+        (*lhs)[i] /= rhs[i];
+}
+
+template<mat_type T>
+T compwise_div(T lhs, const T &rhs)
+{
+    compwise_div(&lhs, rhs);
+    return lhs;
+}
+
 template<mat_type T, vec_type V>
 void compwise_mult_rows(T *lhs, const V &row_vec)
 {
     static_assert(T::size_ == V::size_);
-    for (i8 i{0}; ++i; i < T::size_)
+    for (i8 i{0}; i < T::size_; ++i)
         (*lhs)[i] *= row_vec;
 }
 
@@ -569,12 +598,41 @@ void compwise_mult_rows(const V &row_vec, T *rhs)
 }
 
 template<mat_type T, vec_type V>
+void compwise_div_rows(T *lhs, const V &row_vec)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 i{0}; i < T::size_; ++i)
+        (*lhs)[i] /= row_vec;
+}
+
+template<vec_type V, mat_type T>
+void compwise_div_rows(const V &row_vec, T *rhs)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 i{0}; i < T::size_; ++i)
+        (*rhs)[i] = row_vec / (*rhs)[i];
+}
+
+template<mat_type T, vec_type V>
+T compwise_div_rows(T lhs, const V &row_vec)
+{
+    compwise_div_rows(&lhs, row_vec);
+    return lhs;
+}
+
+template<vec_type V, mat_type T>
+T compwise_div_rows(const V &row_vec, const T &rhs)
+{
+    return compwise_div_rows(row_vec, &rhs);
+}
+
+template<mat_type T, vec_type V>
 void compwise_mult_columns(T *lhs, const V &column_vec)
 {
     static_assert(T::size_ == V::size_);
-    for (i8 rowi{0}; ++rowi; rowi < T::size_)
+    for (i8 rowi{0}; rowi < T::size_; ++rowi)
     {
-        for (i8 coli{0}; ++coli; coli < T::size_)
+        for (i8 coli{0}; coli < T::size_; ++coli)
             (*lhs)[rowi][coli] *= column_vec[rowi];
     }
 }
@@ -589,15 +647,45 @@ T compwise_mult_columns(T lhs, const V &column_vec)
 template<vec_type V, mat_type T>
 T compwise_mult_columns(const V &column_vec, const T &rhs)
 {
-    return compwise_mult_columns(rhs, column_vec);
+    return compwise_mult_columns(column_vec, &rhs);
+}
+
+
+template<mat_type T, vec_type V>
+void compwise_div_columns(T *lhs, const V &column_vec)
+{
+    static_assert(T::size_ == V::size_);
+    for (i8 rowi{0}; rowi < T::size_; ++rowi)
+    {
+        for (i8 coli{0}; coli < T::size_; ++coli)
+            (*lhs)[rowi][coli] /= column_vec[rowi];
+    }
 }
 
 template<vec_type V, mat_type T>
-void compwise_mult_columns(const V &column_vec, T *rhs)
+void compwise_div_columns(const V &column_vec, T *rhs)
 {
-    compwise_mult_columns(rhs, column_vec);
+    static_assert(T::size_ == V::size_);
+    for (i8 rowi{0}; rowi < T::size_; ++rowi)
+    {
+        for (i8 coli{0}; coli < T::size_; ++coli)
+            (*rhs)[rowi][coli] = column_vec[rowi] / (*rhs)[rowi][coli];
+    }
 }
 
+template<mat_type T, vec_type V>
+T compwise_div_columns(T lhs, const V &column_vec)
+{
+    compwise_mult_columns(&lhs, column_vec);
+    return lhs;
+}
+
+template<vec_type V, mat_type T>
+T compwise_div_columns(const V &column_vec, T rhs)
+{
+    compwise_mult_columns(column_vec, &rhs);
+    return rhs;
+}
 } // namespace math
 
 template<class T>
@@ -686,7 +774,7 @@ T operator-(T lhs_, const T &rhs_)
     return lhs_;
 }
 
-template<vec_type T>
+template<holds_basic_arithmetic_type T>
 T operator*(T lhs_, const T &rhs_)
 {
     for (sizet i{0}; i < lhs_.size(); ++i)
@@ -695,7 +783,7 @@ T operator*(T lhs_, const T &rhs_)
 }
 
 template<basic_number T, holds_basic_arithmetic_type U>
-U operator*(U lhs_, const T &rhs_)
+U operator*(U lhs_, T rhs_)
 {
     for (auto &&element : lhs_)
         element *= rhs_;
@@ -703,12 +791,12 @@ U operator*(U lhs_, const T &rhs_)
 }
 
 template<basic_number T, holds_basic_arithmetic_type U>
-U operator*(const T &lhs_, const U &rhs_)
+U operator*(T lhs_, const U &rhs_)
 {
     return rhs_ * lhs_;
 }
 
-template<vec_type T>
+template<holds_basic_arithmetic_type T>
 T operator/(T lhs_, const T &rhs_)
 {
     for (sizet i{0}; i < lhs_.size(); ++i)
@@ -717,14 +805,14 @@ T operator/(T lhs_, const T &rhs_)
 }
 
 template<basic_number T, holds_basic_arithmetic_type U>
-U operator/(const U lhs_, const T &rhs_)
+U operator/(const U lhs_, T rhs_)
 {
     T tmp((T)1.0 / rhs_);
     return lhs_ * tmp;
 }
 
 template<integral T, holds_basic_arithmetic_type U>
-U operator/(U lhs_, const T &rhs_)
+U operator/(U lhs_, T rhs_)
 {
     for (auto &&element : lhs_)
         element /= rhs_;
@@ -732,7 +820,7 @@ U operator/(U lhs_, const T &rhs_)
 }
 
 template<floating_pt T, holds_basic_arithmetic_type U>
-U operator/(const T &lhs_, U rhs_)
+U operator/(T lhs_, U rhs_)
 {
     for (auto &&element : rhs_)
         element = lhs_ / element;

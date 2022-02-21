@@ -1,7 +1,6 @@
 #pragma once
-#include "vector3.h"
 
-#include <iostream>
+#include "vector3.h"
 
 namespace noble_steed
 {
@@ -22,6 +21,10 @@ struct vector4
     {}
 
     COMMON_OPERATORS(vector4<T>, 4, T)
+
+#if NOBLE_STEED_SIMD
+    using _simd_type = typename simd_traits<T, size_>::_simd_type;
+#endif
 
     union
     {
@@ -77,7 +80,7 @@ struct vector4
         };
 
 #if NOBLE_STEED_SIMD
-        __m128 _v4;
+        _simd_type _v4;
 #endif
     };
 };
@@ -113,37 +116,51 @@ inline float dot(const vector4<float> &lhs, const vector4<float> &rhs)
 
 #endif
 
-template<floating_pt T>
-vector4<T> axis_angle(const quaternion<T> &orientation)
-{
-    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
-    vector4<T> ret;
-    ret.w = 2 * math::acos(orientation.w);
-    T den = math::sqrt(1 - orientation.w * orientation.w);
-    if (den < math::FLOAT_EPS)
-    {
-        ret.x = orientation.x;
-        ret.y = orientation.y;
-        ret.z = orientation.z;
-    }
-    else
-    {
-        ret.x = orientation.x / den;
-        ret.y = orientation.y / den;
-        ret.z = orientation.z / den;
-    }
-    return ret;
-}
-
 } // namespace math
 
-template<class T>
-inline vector4<float> operator*(vector4<float> lhs, const T &rhs)
+#if NOBLE_STEED_SIMD
+
+inline vector4<float> operator*(vector4<float> lhs, const vector4<float> &rhs)
+{
+    lhs._v4 = _mm_mul_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+inline vector4<float> operator/(vector4<float> lhs, const vector4<float> &rhs)
+{
+    lhs._v4 = _mm_div_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+inline vector4<float> operator+(vector4<float> lhs, const vector4<float> &rhs)
+{
+    lhs._v4 = _mm_add_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+inline vector4<float> operator-(vector4<float> lhs, const vector4<float> &rhs)
+{
+    lhs._v4 = _mm_sub_ps(lhs._v4, rhs._v4);
+    return lhs;
+}
+
+template<basic_number T>
+inline vector4<float> operator*(vector4<float> lhs, T rhs)
 {
     __m128 s = _mm_set1_ps(rhs);
     lhs._v4 = _mm_mul_ps(lhs._v4, s);
     return lhs;
 }
+
+template<basic_number T>
+inline vector4<float> operator/(vector4<float> lhs, T rhs)
+{
+    __m128 s = _mm_set1_ps(1.0/rhs);
+    lhs._v4 = _mm_mul_ps(lhs._v4, s);
+    return lhs;
+}
+
+#endif
 
 // Enable type trait
 template<class U>

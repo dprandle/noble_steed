@@ -26,16 +26,12 @@
 #include <string.h>
 
 using namespace noble_steed;
-constexpr const int arrsize = 100000000;
-float answer_array[arrsize];
 
 int main()
 {
-    vec4 v{1, 2, 3, 4};
-    math::normalize(&v);
+    mat4 m = math::perspective(90.0f, 9/16.0f, 1.0f, 100.0f);
+    
     //std::fill(&answer_array[0], &answer_array[0] + arrsize, m2);
-
-    std::cout << "Result: " << v << std::endl;
 
     // std::cout << "m: " << m << std::endl;
     // std::cout << "m2: " << m2 << std::endl;
