@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../core/basic_types.h"
-//#include <algorithm>
-//#include <cmath>
 #include <math.h>
 #include <iomanip>
 #include <type_traits>
@@ -28,7 +26,7 @@
 #define NOBLE_STEED_USE_AVX (NOBLE_STEED_AVX_BIT | NOBLE_STEED_SSE42)
 #define NOBLE_STEED_USE_AVX2 (NOBLE_STEED_AVX2_BIT | NOBLE_STEED_AVX)
 
-#define NOBLE_STEED_SIMD 0//(NOBLE_STEED_USE_SSE41 | NOBLE_STEED_SSE_SQRT_BIT)
+#define NOBLE_STEED_SIMD (NOBLE_STEED_USE_SSE41)// | NOBLE_STEED_SSE_SQRT_BIT)
 
 #if NOBLE_STEED_SIMD
 #include <immintrin.h>
@@ -44,6 +42,25 @@ struct simd_traits<float,4> {
     using _simd_type = __m128;
     // etc
 };
+
+inline __m128 _sse_dp(const __m128 &left, const __m128 &right)
+{
+#if NOBLE_STEED_SIMD & NOBLE_STEED_SSE41_BIT
+    return _mm_dp_ps(left, right, 0xff);
+#elif NOBLE_STEED_SIMD & NOBLE_STEED_SSE3_BIT
+    __m128 mul0 = _mm_mul_ps(left, right);
+    __m128 hadd0 = _mm_hadd_ps(mul0, mul0);
+    __m128 hadd1 = _mm_hadd_ps(hadd0, hadd0);
+    return hadd1;
+#else
+    __m128 mul0 = _mm_mul_ps(left, right);
+    __m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
+    __m128 add0 = _mm_add_ps(mul0, swp0);
+    mul0 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
+    add0 = _mm_add_ps(add0, mul0);
+    return add0;
+#endif
+}
 }
 #endif
 
@@ -621,9 +638,10 @@ T compwise_div_rows(T lhs, const V &row_vec)
 }
 
 template<vec_type V, mat_type T>
-T compwise_div_rows(const V &row_vec, const T &rhs)
+T compwise_div_rows(const V &row_vec, T rhs)
 {
-    return compwise_div_rows(row_vec, &rhs);
+    compwise_div_rows(row_vec, &rhs);
+    return rhs;
 }
 
 template<mat_type T, vec_type V>
@@ -676,14 +694,14 @@ void compwise_div_columns(const V &column_vec, T *rhs)
 template<mat_type T, vec_type V>
 T compwise_div_columns(T lhs, const V &column_vec)
 {
-    compwise_mult_columns(&lhs, column_vec);
+    compwise_div_columns(&lhs, column_vec);
     return lhs;
 }
 
 template<vec_type V, mat_type T>
 T compwise_div_columns(const V &column_vec, T rhs)
 {
-    compwise_mult_columns(column_vec, &rhs);
+    compwise_div_columns(column_vec, &rhs);
     return rhs;
 }
 } // namespace math

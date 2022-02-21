@@ -53,6 +53,13 @@ struct quaternion
     };
 };
 
+// Enable type trait
+template<class U>
+struct is_quat<quaternion<U>>
+{
+    static constexpr bool value = true;
+};
+
 namespace math
 {
 
@@ -338,13 +345,6 @@ quaternion<T> operator/(const quaternion<T> &lhs, const quaternion<T> &rhs)
 {
     return lhs * math::inverse(rhs);
 }
-
-// Enable type trait
-template<class U>
-struct is_quat<quaternion<U>>
-{
-    static constexpr bool value = true;
-};
 
 using quat = quaternion<float>;
 using dquat = quaternion<double>;

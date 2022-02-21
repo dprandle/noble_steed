@@ -481,6 +481,7 @@ vector3<T> translation_component(const matrix3<T> &transform)
     return transform(3);
 }
 
+
 } // namespace math
 
 // Overloaded operators
@@ -546,6 +547,14 @@ vector3<T> operator/(const vector3<T> &lhs, const matrix3<T> &rhs)
 {
     return lhs * math::inverse(rhs);
 }
+
+#if NOBLE_STEED_SIMD
+vector3<float> operator*(const vector3<float> &lhs, const matrix3<float> &rhs)
+{
+    auto mat = math::transpose(rhs);
+    return mat * lhs;
+}
+#endif
 
 using i8mat3 = matrix3<i8>;
 using i16mat3 = matrix3<i16>;

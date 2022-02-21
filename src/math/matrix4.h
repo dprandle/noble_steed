@@ -255,12 +255,34 @@ void compwise_mult(matrix4<float> *lhs, const matrix4<float> &rhs)
 }
 
 template<>
+void compwise_mult(matrix3<float> *lhs, const matrix3<float> &rhs)
+{
+    matrix4<float> m4(*lhs);
+    matrix4<float> m4_rhs(rhs);
+    m4._data[0] = _mm_mul_ps(m4._data[0], m4_rhs._data[0]);
+    m4._data[1] = _mm_mul_ps(m4._data[1], m4_rhs._data[1]);
+    m4._data[2] = _mm_mul_ps(m4._data[2], m4_rhs._data[2]);
+    *lhs = math::basis(m4);
+}
+
+template<>
 void compwise_div(matrix4<float> *lhs, const matrix4<float> &rhs)
 {
     lhs->_data[0] = _mm_div_ps(lhs->_data[0], rhs._data[0]);
     lhs->_data[1] = _mm_div_ps(lhs->_data[1], rhs._data[1]);
     lhs->_data[2] = _mm_div_ps(lhs->_data[2], rhs._data[2]);
     lhs->_data[3] = _mm_div_ps(lhs->_data[3], rhs._data[3]);
+}
+
+template<>
+void compwise_div(matrix3<float> *lhs, const matrix3<float> &rhs)
+{
+    matrix4<float> m4(*lhs);
+    matrix4<float> m4_rhs(rhs);
+    m4._data[0] = _mm_div_ps(m4._data[0], m4_rhs._data[0]);
+    m4._data[1] = _mm_div_ps(m4._data[1], m4_rhs._data[1]);
+    m4._data[2] = _mm_div_ps(m4._data[2], m4_rhs._data[2]);
+    *lhs = math::basis(m4);
 }
 
 template<>
@@ -273,12 +295,34 @@ void compwise_mult_rows(matrix4<float> *lhs, const vector4<float> &row_vec)
 }
 
 template<>
+void compwise_mult_rows(matrix3<float> *lhs, const vector3<float> &row_vec)
+{
+    matrix4<float> m4(*lhs);
+    vector4<float> v4(row_vec);
+    m4._data[0] = _mm_mul_ps(m4._data[0], v4._v4);
+    m4._data[1] = _mm_mul_ps(m4._data[1], v4._v4);
+    m4._data[2] = _mm_mul_ps(m4._data[2], v4._v4);
+    *lhs = math::basis(m4);
+}
+
+template<>
 void compwise_div_rows(matrix4<float> *lhs, const vector4<float> &row_vec)
 {
     lhs->_data[0] = _mm_div_ps(lhs->_data[0], row_vec._v4);
     lhs->_data[1] = _mm_div_ps(lhs->_data[1], row_vec._v4);
     lhs->_data[2] = _mm_div_ps(lhs->_data[2], row_vec._v4);
     lhs->_data[3] = _mm_div_ps(lhs->_data[3], row_vec._v4);
+}
+
+template<>
+void compwise_div_rows(matrix3<float> *lhs, const vector3<float> &row_vec)
+{
+    matrix4<float> m4(*lhs);
+    vector4<float> v4(row_vec);
+    m4._data[0] = _mm_div_ps(m4._data[0], v4._v4);
+    m4._data[1] = _mm_div_ps(m4._data[1], v4._v4);
+    m4._data[2] = _mm_div_ps(m4._data[2], v4._v4);
+    *lhs = math::basis(m4);
 }
 
 template<>
@@ -291,6 +335,17 @@ void compwise_div_rows(const vector4<float> &row_vec, matrix4<float> *rhs)
 }
 
 template<>
+void compwise_div_rows(const vector3<float> &row_vec, matrix3<float> *rhs)
+{
+    matrix4<float> m4(*rhs);
+    vector4<float> v4(row_vec);
+    m4._data[0] = _mm_div_ps(v4._v4, m4._data[0]);
+    m4._data[1] = _mm_div_ps(v4._v4, m4._data[1]);
+    m4._data[2] = _mm_div_ps(v4._v4, m4._data[2]);
+    *rhs = math::basis(m4);
+}
+
+template<>
 void compwise_mult_columns(matrix4<float> *lhs, const vector4<float> &col_vec)
 {
     transpose(lhs);
@@ -300,6 +355,7 @@ void compwise_mult_columns(matrix4<float> *lhs, const vector4<float> &col_vec)
     lhs->_data[3] = _mm_mul_ps(lhs->_data[3], col_vec._v4);
     transpose(lhs);
 }
+
 
 template<>
 void compwise_div_columns(matrix4<float> *lhs, const vector4<float> &col_vec)
@@ -430,6 +486,16 @@ inline matrix4<float> operator*(matrix4<float> lhs, const matrix4<float> &rhs)
     return lhs;
 }
 
+inline matrix3<float> operator*(const matrix3<float> & lhs, const matrix3<float> &rhs)
+{
+    matrix4<float> m4(lhs);
+    m4._data[0] = _linear_combine_sse(m4._data[0], rhs);
+    m4._data[1] = _linear_combine_sse(m4._data[1], rhs);
+    m4._data[2] = _linear_combine_sse(m4._data[2], rhs);
+    return math::basis(m4);
+}
+
+
 inline vector4<float> operator*(const matrix4<float> &lhs, const vector4<float> &rhs)
 {
     vector4<float> ret;
@@ -440,15 +506,20 @@ inline vector4<float> operator*(const matrix4<float> &lhs, const vector4<float> 
     return ret;
 }
 
+inline vector3<float> operator*(const matrix3<float> &lhs, const vector3<float> &rhs)
+{
+    matrix4<float> m4(lhs);
+    vector4<float> v4(rhs);
+    vector3<float> ret;
+    ret.data[0] = _mm_cvtss_f32(math::_sse_dp(m4._data[0], v4._v4));
+    ret.data[1] = _mm_cvtss_f32(math::_sse_dp(m4._data[1], v4._v4));
+    ret.data[2] = _mm_cvtss_f32(math::_sse_dp(m4._data[2], v4._v4));
+    return ret;
+}
+
 inline vector4<float> operator*(const vector4<float> &lhs, const matrix4<float> & rhs)
 {
-    auto tposed = math::transpose(rhs);
-    return tposed * lhs;
-    // ret[0] = lhs[0] * rhs[0][0] + lhs[1] * rhs[1][0] + lhs[2] * rhs[2][0] + lhs[3] * rhs[3][0];
-    // ret[1] = lhs[0] * rhs[0][1] + lhs[1] * rhs[1][1] + lhs[2] * rhs[2][1] + lhs[3] * rhs[3][1];
-    // ret[2] = lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2] + lhs[3] * rhs[3][2];
-    // ret[3] = lhs[0] * rhs[0][3] + lhs[1] * rhs[1][3] + lhs[2] * rhs[2][3] + lhs[3] * rhs[3][3];
-    // return ret;
+    return math::transpose(rhs) * lhs;
 }
 
 template<basic_number T>
@@ -463,15 +534,38 @@ inline matrix4<float> operator*(matrix4<float> lhs, T rhs)
 }
 
 template<basic_number T>
+inline matrix3<float> operator*(const matrix3<float> & lhs, T rhs)
+{
+    __m128 r = _mm_set_ss(rhs);
+    matrix4<T> m4(lhs);
+    m4._data[0] = _mm_mul_ps(m4._data[0], r);
+    m4._data[1] = _mm_mul_ps(m4._data[1], r);
+    m4._data[2] = _mm_mul_ps(m4._data[2], r);
+    return math::basis(m4);
+}
+
+template<basic_number T>
 inline matrix4<float> operator/(matrix4<float> lhs, T rhs)
 {
-    __m128 r = _mm_set_ss(1.0 / rhs);
+    __m128 r = _mm_set_ss(1.0f / rhs);
     lhs._data[0] = _mm_mul_ps(lhs._data[0], r);
     lhs._data[1] = _mm_mul_ps(lhs._data[1], r);
     lhs._data[2] = _mm_mul_ps(lhs._data[2], r);
     lhs._data[3] = _mm_mul_ps(lhs._data[3], r);
     return lhs;
 }
+
+template<basic_number T>
+inline matrix3<float> operator/(const matrix3<float> & lhs, T rhs)
+{
+    __m128 r = _mm_set_ss(1.0f / rhs);
+    matrix4<T> m4(lhs);
+    m4._data[0] = _mm_mul_ps(m4._data[0], r);
+    m4._data[1] = _mm_mul_ps(m4._data[1], r);
+    m4._data[2] = _mm_mul_ps(m4._data[2], r);
+    return math::basis(m4);
+}
+
 
 inline matrix4<float> operator+(matrix4<float> lhs, const matrix4<float> &rhs)
 {
@@ -482,6 +576,15 @@ inline matrix4<float> operator+(matrix4<float> lhs, const matrix4<float> &rhs)
     return lhs;
 }
 
+inline matrix3<float> operator+(const matrix3<float> & lhs, const matrix3<float> &rhs)
+{
+    matrix4<float> m4(lhs), m4_rhs(rhs);
+    m4._data[0] = _mm_add_ps(m4._data[0], m4_rhs._data[0]);
+    m4._data[1] = _mm_add_ps(m4._data[1], m4_rhs._data[1]);
+    m4._data[2] = _mm_add_ps(m4._data[2], m4_rhs._data[2]);
+    return math::basis(m4);
+}
+
 inline matrix4<float> operator-(matrix4<float> lhs, const matrix4<float> &rhs)
 {
     lhs._data[0] = _mm_sub_ps(lhs._data[0], rhs._data[0]);
@@ -489,6 +592,15 @@ inline matrix4<float> operator-(matrix4<float> lhs, const matrix4<float> &rhs)
     lhs._data[2] = _mm_sub_ps(lhs._data[2], rhs._data[2]);
     lhs._data[3] = _mm_sub_ps(lhs._data[3], rhs._data[3]);
     return lhs;
+}
+
+inline matrix3<float> operator-(const matrix3<float> & lhs, const matrix3<float> &rhs)
+{
+    matrix4<float> m4(lhs), m4_rhs(rhs);
+    m4._data[0] = _mm_sub_ps(m4._data[0], m4_rhs._data[0]);
+    m4._data[1] = _mm_sub_ps(m4._data[1], m4_rhs._data[1]);
+    m4._data[2] = _mm_sub_ps(m4._data[2], m4_rhs._data[2]);
+    return math::basis(m4);
 }
 
 #endif

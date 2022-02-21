@@ -11,7 +11,7 @@ struct matrix2
     matrix2() : data{{1, 0}, {0, 1}}
     {}
 
-    matrix2(const T &val) : data({val}, {val})
+    matrix2(const T &val) : data{{val}, {val}}
     {}
 
     matrix2(const vector2<T> &row1_, const vector2<T> &row2_) : row1(row1_), row2(row2_)
@@ -129,6 +129,12 @@ vector2<T> translation_component(const matrix2<T> &tform)
 #if NOBLE_STEED_SIMD
 
 template<>
+inline void transpose(matrix2<float> *mat)
+{
+    mat->_packed = _mm_shuffle_ps(mat->_packed, mat->_packed, 0b11011000);
+}
+
+template<>
 void compwise_mult(matrix2<float> *lhs, const matrix2<float> &rhs)
 {
     lhs->_packed = _mm_mul_ps(lhs->_packed, rhs._packed);
@@ -139,52 +145,53 @@ void compwise_div(matrix2<float> *lhs, const matrix2<float> &rhs)
 {
     lhs->_packed = _mm_div_ps(lhs->_packed, rhs._packed);
 }
+
+template<>
+void compwise_mult_rows(matrix2<float> *lhs, const vector2<float> &row_vec)
+{
+    __m128 rv = _mm_set_ps(row_vec.y, row_vec.x, row_vec.y, row_vec.x);
+    lhs->_packed = _mm_mul_ps(lhs->_packed, rv);
+}
+
+template<>
+void compwise_div_rows(matrix2<float> *lhs, const vector2<float> &row_vec)
+{
+    __m128 rv = _mm_set_ps(row_vec.y, row_vec.x, row_vec.y, row_vec.x);
+    lhs->_packed = _mm_div_ps(lhs->_packed, rv);
+}
+
+template<>
+void compwise_div_rows(const vector2<float> &row_vec, matrix2<float> *lhs)
+{
+    __m128 rv = _mm_set_ps(row_vec.y, row_vec.x, row_vec.y, row_vec.x);
+    lhs->_packed = _mm_div_ps(rv, lhs->_packed);
+}
+
+template<>
+void compwise_mult_columns(matrix2<float> *lhs, const vector2<float> &col_vec)
+{
+    __m128 rv = _mm_set_ps(col_vec.y, col_vec.y, col_vec.x, col_vec.x);
+    lhs->_packed = _mm_mul_ps(lhs->_packed, rv);
+}
+
+template<>
+void compwise_div_columns(matrix2<float> *lhs, const vector2<float> &col_vec)
+{
+    __m128 rv = _mm_set_ps(col_vec.y, col_vec.y, col_vec.x, col_vec.x);
+    lhs->_packed = _mm_div_ps(lhs->_packed, rv);
+}
+
+template<>
+void compwise_div_columns(const vector2<float> &col_vec, matrix2<float> *lhs)
+{
+    __m128 rv = _mm_set_ps(col_vec.y, col_vec.y, col_vec.x, col_vec.x);
+    lhs->_packed = _mm_div_ps(rv, lhs->_packed);
+}
+
 #endif
 
 } // namespace math
 
-#if NOBLE_STEED_SIMD
-
-// inline matrix2<float> operator*(matrix2<float> lhs, const matrix2<float> &rhs)
-// {
-//     lhs._v4 = _mm_mul_ps(lhs._packed, rhs._packed);
-//     return lhs;
-// }
-
-// inline matrix2<float> operator/(matrix2<float> lhs, const matrix2<float> &rhs)
-// {
-//     lhs._v4 = _mm_div_ps(lhs._v4, rhs._v4);
-//     return lhs;
-// }
-
-inline matrix2<float> operator+(matrix2<float> lhs, const matrix2<float> &rhs)
-{
-    lhs._packed = _mm_add_ps(lhs._packed, rhs._packed);
-    return lhs;
-}
-
-inline matrix2<float> operator-(matrix2<float> lhs, const matrix2<float> &rhs)
-{
-    lhs._packed = _mm_sub_ps(lhs._packed, rhs._packed);
-    return lhs;
-}
-
-template<basic_number T>
-inline matrix2<float> operator*(matrix2<float> lhs, T rhs)
-{
-    __m128 s = _mm_set1_ps(rhs);
-    lhs._packed = _mm_mul_ps(lhs._packed, s);
-    return lhs;
-}
-
-template<basic_number T>
-inline matrix2<float> operator/(matrix2<float> lhs, T rhs)
-{
-    __m128 s = _mm_set1_ps(1.0 / rhs);
-    lhs._packed = _mm_mul_ps(lhs._packed, s);
-    return lhs;
-}
-#endif
 
 // Overloaded operators
 template<class T>
@@ -195,7 +202,7 @@ matrix2<T> operator*(const matrix2<T> &lhs, const matrix2<T> &rhs)
     ret.data[0][1] = lhs.data[0][0] * rhs.data[0][1] + lhs.data[0][1] * rhs.data[1][1];
     ret.data[1][0] = lhs.data[1][0] * rhs.data[0][0] + lhs.data[1][1] * rhs.data[1][0];
     ret.data[1][1] = lhs.data[1][0] * rhs.data[0][1] + lhs.data[1][1] * rhs.data[1][1];
-    return lhs;
+    return ret;
 }
 
 template<class T>
@@ -239,6 +246,42 @@ vector2<T> operator/(const vector2<T> &lhs, const matrix2<T> &rhs)
     return lhs * math::inverse(rhs);
 }
 
+#if NOBLE_STEED_SIMD
+
+inline matrix2<float> operator+(matrix2<float> lhs, const matrix2<float> &rhs)
+{
+    lhs._packed = _mm_add_ps(lhs._packed, rhs._packed);
+    return lhs;
+}
+
+inline matrix2<float> operator-(matrix2<float> lhs, const matrix2<float> &rhs)
+{
+    lhs._packed = _mm_sub_ps(lhs._packed, rhs._packed);
+    return lhs;
+}
+
+template<basic_number T>
+inline matrix2<float> operator*(matrix2<float> lhs, T rhs)
+{
+    __m128 s = _mm_set1_ps(rhs);
+    lhs._packed = _mm_mul_ps(lhs._packed, s);
+    return lhs;
+}
+
+template<basic_number T>
+inline matrix2<float> operator/(matrix2<float> lhs, T rhs)
+{
+    __m128 s = _mm_set1_ps(1.0 / rhs);
+    lhs._packed = _mm_mul_ps(lhs._packed, s);
+    return lhs;
+}
+
+inline vector2<float> operator*(const vector2<float> &lhs, const matrix2<float> &rhs)
+{
+    return math::transpose(rhs) * lhs;
+}
+
+#endif
 
 using i8mat2 = matrix2<i8>;
 using i16mat2 = matrix2<i16>;

@@ -85,6 +85,13 @@ struct vector4
     };
 };
 
+// Enable type trait
+template<class U>
+struct is_vec<vector4<U>>
+{
+    static constexpr bool value = true;
+};
+
 namespace math
 {
 #if NOBLE_STEED_SIMD
@@ -162,12 +169,6 @@ inline vector4<float> operator/(vector4<float> lhs, T rhs)
 
 #endif
 
-// Enable type trait
-template<class U>
-struct is_vec<vector4<U>>
-{
-    static constexpr bool value = true;
-};
 
 using i8vec4 = vector4<i8>;
 using i16vec4 = vector4<i16>;

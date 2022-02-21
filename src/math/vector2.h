@@ -8,7 +8,7 @@ namespace noble_steed
 template<class T>
 struct vector2
 {
-    explicit vector2(T init_ = 0) : data{init_, init_}
+    vector2(T init_ = 0) : data{init_, init_}
     {}
 
     vector2(T x_, T y_) : data{x_, y_}
@@ -46,8 +46,26 @@ struct vector2
     };
 };
 
+// Enable type trait
+template<class U>
+struct is_vec<vector2<U>>
+{
+    static constexpr bool value = true;
+};
+
 namespace math
 {
+#if NOBLE_STEED_SIMD
+template<>
+inline float dot(const vector2<float> &lhs, const vector2<float> &rhs)
+{
+    __m128 l = _mm_set_ps(0.0f, 0.0f, lhs.y, lhs.x);
+    __m128 r = _mm_set_ps(0.0f, 0.0f, rhs.y, rhs.x);
+    return _mm_cvtss_f32(_sse_dp(l, r));
+}
+
+#endif
+
 template<floating_pt T>
 vector2<T> polar_to_cartesian(const vector2<T> &polar)
 {
@@ -67,13 +85,6 @@ vector2<T> cartesian_to_polar(const vector2<T> &cartesian)
 }
 
 } // namespace math
-
-// Enable type trait
-template<class U>
-struct is_vec<vector2<U>>
-{
-    static constexpr bool value = true;
-};
 
 // Math typedefs
 using i8vec2 = vector2<i8>;

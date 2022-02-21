@@ -82,8 +82,27 @@ struct vector3
     };
 };
 
+// Enable type trait
+template<class U>
+struct is_vec<vector3<U>>
+{
+    static constexpr bool value = true;
+};
+
 namespace math
 {
+
+#if NOBLE_STEED_SIMD
+
+template<>
+inline float dot(const vector3<float> &lhs, const vector3<float> &rhs)
+{
+    __m128 l = _mm_set_ps(0.0f, lhs.z, lhs.y, lhs.x);
+    __m128 r = _mm_set_ps(0.0f, rhs.z, rhs.y, rhs.x);
+    return _mm_cvtss_f32(_sse_dp(l, r));
+}
+
+#endif
 
 template<basic_number T>
 void cross(vector3<T> *srcvec, const vector3<T> &cross_with_)
@@ -162,13 +181,6 @@ vector3<T> cartesian_to_spherical(const vector3<T> &cartesian)
     return ret;
 }
 } // namespace math
-
-// Enable type trait
-template<class U>
-struct is_vec<vector3<U>>
-{
-    static constexpr bool value = true;
-};
 
 using i8vec3 = vector3<i8>;
 using i16vec3 = vector3<i16>;

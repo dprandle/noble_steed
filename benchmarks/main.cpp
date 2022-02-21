@@ -2,11 +2,13 @@
 #include "math/matrix4.h"
 
 //#define MISC_BENCH
-//#define MAT4_BENCH
-//#define MAT3_BENCH
+// #define MAT4_BENCH
+// #define MAT3_BENCH
 #define MAT2_BENCH
-//#define VEC4_BENCH
-//#define QUAT_BENCH
+// #define QUAT_BENCH
+// #define VEC4_BENCH
+// #define VEC3_BENCH
+// #define VEC2_BENCH
 
 using namespace noble_steed;
 
@@ -868,6 +870,224 @@ static void Vec4_Sub(benchmark::State &state)
 }
 BENCHMARK(Vec4_Sub);
 #endif
+
+
+#ifdef VEC3_BENCH
+// Define another benchmark
+static void Vec3_Dot_Product(benchmark::State &state)
+{
+    vec3 v{1, 2, 3};
+    vec3 v2{5, 6, 7};
+    for (auto _ : state)
+    {
+        float ret = math::dot(v, v2);
+    }
+}
+BENCHMARK(Vec3_Dot_Product);
+
+static void Vec3_Length(benchmark::State &state)
+{
+    vec3 v{1, 2, 3};
+    float res;
+    for (auto _ : state)
+         res = math::length(v);
+}
+BENCHMARK(Vec3_Length);
+
+static void Vec3_Normalize(benchmark::State &state)
+{
+    vec3 param{3.6, 9, -3.55};
+    vec3 res;
+    for (auto _ : state)
+         res = math::normalize(param);
+}
+BENCHMARK(Vec3_Normalize);
+
+// Define another benchmark
+static void Vec3_Scalar_Mult(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v * 2.5f;
+    }
+}
+BENCHMARK(Vec3_Scalar_Mult);
+
+// Define another benchmark
+static void Vec3_Scalar_Div(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v / 2.5f;
+    }
+}
+BENCHMARK(Vec3_Scalar_Div);
+
+// Define another benchmark
+static void Vec3_Comp_Mult(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 v2{5.5, 8.2, -3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v * v2;
+    }
+}
+BENCHMARK(Vec3_Comp_Mult);
+
+// Define another benchmark
+static void Vec3_Comp_Div(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 v2{5.5, 8.2, -3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v / v2;
+    }
+}
+BENCHMARK(Vec3_Comp_Div);
+
+// Define another benchmark
+static void Vec3_Add(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 v2{5.5, 8.2, -3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v + v2;
+    }
+}
+BENCHMARK(Vec3_Add);
+
+// Define another benchmark
+static void Vec3_Sub(benchmark::State &state)
+{
+    vec3 v{1, 2.2, 3.5};
+    vec3 v2{5.5, 8.2, -3.5};
+    vec3 res;
+    for (auto _ : state)
+    {
+         res = v - v2;
+    }
+}
+BENCHMARK(Vec3_Sub);
+#endif
+
+#ifdef VEC2_BENCH
+// Define another benchmark
+static void Vec2_Dot_Product(benchmark::State &state)
+{
+    vec2 v{1, 2};
+    vec2 v2{5, 6};
+    for (auto _ : state)
+    {
+        float ret = math::dot(v, v2);
+    }
+}
+BENCHMARK(Vec2_Dot_Product);
+
+static void Vec2_Length(benchmark::State &state)
+{
+    vec2 v{1, 2};
+    float res;
+    for (auto _ : state)
+         res = math::length(v);
+}
+BENCHMARK(Vec2_Length);
+
+static void Vec2_Normalize(benchmark::State &state)
+{
+    vec2 param{3.6, 9};
+    vec2 res;
+    for (auto _ : state)
+         res = math::normalize(param);
+}
+BENCHMARK(Vec2_Normalize);
+
+// Define another benchmark
+static void Vec2_Scalar_Mult(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v * 2.5f;
+    }
+}
+BENCHMARK(Vec2_Scalar_Mult);
+
+// Define another benchmark
+static void Vec2_Scalar_Div(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v / 2.5f;
+    }
+}
+BENCHMARK(Vec2_Scalar_Div);
+
+// Define another benchmark
+static void Vec2_Comp_Mult(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 v2{5.5, 8.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v * v2;
+    }
+}
+BENCHMARK(Vec2_Comp_Mult);
+
+// Define another benchmark
+static void Vec2_Comp_Div(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 v2{5.5, 8.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v / v2;
+    }
+}
+BENCHMARK(Vec2_Comp_Div);
+
+// Define another benchmark
+static void Vec2_Add(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 v2{5.5, 8.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v + v2;
+    }
+}
+BENCHMARK(Vec2_Add);
+
+// Define another benchmark
+static void Vec2_Sub(benchmark::State &state)
+{
+    vec2 v{1, 2.2};
+    vec2 v2{5.5, 8.2};
+    vec2 res;
+    for (auto _ : state)
+    {
+         res = v - v2;
+    }
+}
+BENCHMARK(Vec2_Sub);
+#endif
+
 
 #ifdef QUAT_BENCH
 // Define another benchmark
