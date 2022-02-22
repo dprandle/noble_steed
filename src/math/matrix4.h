@@ -22,6 +22,28 @@ struct matrix4
     matrix4(const matrix3<T> &basis) : row1(basis[0], 0), row2(basis[1], 0), row3(basis[2], 0), row4(basis[3], 1)
     {}
 
+    matrix4(T data_[16])
+        : elements{data_[0],
+                   data_[1],
+                   data_[2],
+                   data_[3],
+                   data_[4],
+                   data_[5],
+                   data_[6],
+                   data_[7],
+                   data_[8],
+                   data_[9],
+                   data_[10],
+                   data_[11],
+                   data_[12],
+                   data_[13],
+                   data_[14],
+                   data_[15]}
+    {}
+
+    matrix4(T data_[4][4]) : data{data_[0], data_[1], data_[2], data_[3]}
+    {}
+
     COMMON_OPERATORS(matrix4<T>, 4, vector4<T>)
 #if NOBLE_STEED_SIMD
     using _simd_type = typename simd_traits<T, size_>::_simd_type;
@@ -34,6 +56,7 @@ struct matrix4
 
     union
     {
+        T elements[size_ * vector4<T>::size_];
         vector4<T> data[size_];
         struct
         {
@@ -356,7 +379,6 @@ void compwise_mult_columns(matrix4<float> *lhs, const vector4<float> &col_vec)
     transpose(lhs);
 }
 
-
 template<>
 void compwise_div_columns(matrix4<float> *lhs, const vector4<float> &col_vec)
 {
@@ -486,7 +508,7 @@ inline matrix4<float> operator*(matrix4<float> lhs, const matrix4<float> &rhs)
     return lhs;
 }
 
-inline matrix3<float> operator*(const matrix3<float> & lhs, const matrix3<float> &rhs)
+inline matrix3<float> operator*(const matrix3<float> &lhs, const matrix3<float> &rhs)
 {
     matrix4<float> m4(lhs);
     m4._data[0] = _linear_combine_sse(m4._data[0], rhs);
@@ -494,7 +516,6 @@ inline matrix3<float> operator*(const matrix3<float> & lhs, const matrix3<float>
     m4._data[2] = _linear_combine_sse(m4._data[2], rhs);
     return math::basis(m4);
 }
-
 
 inline vector4<float> operator*(const matrix4<float> &lhs, const vector4<float> &rhs)
 {
@@ -517,7 +538,7 @@ inline vector3<float> operator*(const matrix3<float> &lhs, const vector3<float> 
     return ret;
 }
 
-inline vector4<float> operator*(const vector4<float> &lhs, const matrix4<float> & rhs)
+inline vector4<float> operator*(const vector4<float> &lhs, const matrix4<float> &rhs)
 {
     return math::transpose(rhs) * lhs;
 }
@@ -534,7 +555,7 @@ inline matrix4<float> operator*(matrix4<float> lhs, T rhs)
 }
 
 template<basic_number T>
-inline matrix3<float> operator*(const matrix3<float> & lhs, T rhs)
+inline matrix3<float> operator*(const matrix3<float> &lhs, T rhs)
 {
     __m128 r = _mm_set_ss(rhs);
     matrix4<T> m4(lhs);
@@ -556,7 +577,7 @@ inline matrix4<float> operator/(matrix4<float> lhs, T rhs)
 }
 
 template<basic_number T>
-inline matrix3<float> operator/(const matrix3<float> & lhs, T rhs)
+inline matrix3<float> operator/(const matrix3<float> &lhs, T rhs)
 {
     __m128 r = _mm_set_ss(1.0f / rhs);
     matrix4<T> m4(lhs);
@@ -565,7 +586,6 @@ inline matrix3<float> operator/(const matrix3<float> & lhs, T rhs)
     m4._data[2] = _mm_mul_ps(m4._data[2], r);
     return math::basis(m4);
 }
-
 
 inline matrix4<float> operator+(matrix4<float> lhs, const matrix4<float> &rhs)
 {
@@ -576,7 +596,7 @@ inline matrix4<float> operator+(matrix4<float> lhs, const matrix4<float> &rhs)
     return lhs;
 }
 
-inline matrix3<float> operator+(const matrix3<float> & lhs, const matrix3<float> &rhs)
+inline matrix3<float> operator+(const matrix3<float> &lhs, const matrix3<float> &rhs)
 {
     matrix4<float> m4(lhs), m4_rhs(rhs);
     m4._data[0] = _mm_add_ps(m4._data[0], m4_rhs._data[0]);
@@ -594,7 +614,7 @@ inline matrix4<float> operator-(matrix4<float> lhs, const matrix4<float> &rhs)
     return lhs;
 }
 
-inline matrix3<float> operator-(const matrix3<float> & lhs, const matrix3<float> &rhs)
+inline matrix3<float> operator-(const matrix3<float> &lhs, const matrix3<float> &rhs)
 {
     matrix4<float> m4(lhs), m4_rhs(rhs);
     m4._data[0] = _mm_sub_ps(m4._data[0], m4_rhs._data[0]);

@@ -30,6 +30,12 @@ using namespace noble_steed;
 int main()
 {
     // mat4 m = math::perspective(90.0f, 9/16.0f, 1.0f, 100.0f);
+    float data1[4][4] = {{1.7f, 3.2f, 0.4f, 6.2f}, {4.3f, 5.0f, 0.4f,6.2f}, {4.3f, 5.0f, 0.4f, 6.2f}, {4.3f, 5.0f, 0.4f, 6.2f}};
+    float data2[16] = {1.7f, 3.2f, 4.3f, 5.0f, 1.7f, 3.2f, 4.3f, 5.0f, 6.5f, 4.3f, 5.0f, 1.7f, 3.2f, 4.3f, 5.0f, 6.5f};
+    mat4 m2(data1);
+    mat4 m3(data2);
+    std::cout << "data1: " << m2 << std::endl;
+    std::cout << "data2: " << m3 << std::endl;
 
     mat3 m({1,2, 3},{4, 5, 6}, {7, 8, 9});
     vec3 v(3.2, 6, 5.3);

@@ -25,13 +25,19 @@ struct vector3
         ZYX
     };
 
-    explicit vector3(T val_ = 0) : x(val_), y(val_), z(val_)
+    vector3(T val_ = 0) : x(val_), y(val_), z(val_)
     {}
+
     vector3(const vector2<T> &xy_, T z_) : xy(xy_), _z(z_)
     {}
+
     vector3(T x_, const vector2<T> &yz_) : _x(x_), yz(yz_)
     {}
+
     vector3(T x_, T y_, T z_ = 0) : x(x_), y(y_), z(z_)
+    {}
+
+    vector3(T data_[3]) : data{data_[0], data_[1], data_[2]}
     {}
 
     COMMON_OPERATORS(vector3<T>, 3, T)

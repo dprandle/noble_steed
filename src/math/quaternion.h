@@ -10,8 +10,13 @@ struct quaternion
 {
     quaternion() : x(0), y(0), z(0), w(1)
     {}
+
     quaternion(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_)
     {}
+
+    quaternion(T data_[4]) : data{data_[0], data_[1], data_[2], data_[3]}
+    {}
+
 
     COMMON_OPERATORS(quaternion<T>, 4, T)
 

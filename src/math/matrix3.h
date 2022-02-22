@@ -14,12 +14,8 @@ struct matrix3
     matrix3(const T &val_) : data{{val_}, {val_}, {val_}}
     {}
 
-    matrix3(const vector3<T> &row1, const vector3<T> &row2, const vector3<T> &row3)
-    {
-        data[0] = row1;
-        data[1] = row2;
-        data[2] = row3;
-    }
+    matrix3(const vector3<T> &row1_, const vector3<T> &row2_, const vector3<T> &row3_): row1(row1_), row2(row2_), row3(row3_)
+    {}
 
     matrix3(const matrix2<T> &basis_)
     {
@@ -34,6 +30,12 @@ struct matrix3
         data[2][2] = 1;
     }
 
+    matrix3(T data_[9]): elements{data_[0], data_[1], data_[2], data_[3], data_[4], data_[5], data_[6], data_[7], data_[8]}
+    {}
+
+    matrix3(T data_[3][3]): data{data_[0], data_[1], data_[2]}
+    {}
+
     COMMON_OPERATORS(matrix3<T>, 3, vector3<T>)
 
     vector3<T> operator()(i8 ind) const
@@ -43,7 +45,8 @@ struct matrix3
 
     union
     {
-        vector3<T> data[3];
+        T elements[size_*vector3<T>::size_];
+        vector3<T> data[size_];
         struct
         {
             vector3<T> row1;

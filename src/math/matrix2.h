@@ -17,6 +17,12 @@ struct matrix2
     matrix2(const vector2<T> &row1_, const vector2<T> &row2_) : row1(row1_), row2(row2_)
     {}
 
+    matrix2(T data_[4]): elements{data_[0], data_[1], data_[2], data_[3]}
+    {}
+
+    matrix2(T data_[2][2]): data{data_[0], data_[1]}
+    {}
+
     COMMON_OPERATORS(matrix2<T>, 2, vector2<T>)
 
 #if NOBLE_STEED_SIMD
@@ -30,7 +36,8 @@ struct matrix2
 
     union
     {
-        vector2<T> data[2];
+        T elements[size_*vector2<T>::size_];
+        vector2<T> data[size_];
         struct
         {
             vector2<T> row1;

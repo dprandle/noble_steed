@@ -9,15 +9,23 @@ struct vector4
 {
     vector4(T val = 0) : x(val), y(val), z(val), w(val)
     {}
+
     vector4(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_)
     {}
+
     vector4(const vector3<T> &xyz_, T w_ = 1) : xyz(xyz_), _wvec3(w_)
     {}
+
     vector4(T x_, const vector3<T> &yzw_) : _xvec3(x_), yzw(yzw_)
     {}
+
     vector4(const vector2<T> &xy_, const vector2<T> &zw_) : xy(xy_), zw(zw_)
     {}
+
     vector4(T x_, const vector2<T> &yz_, T w_) : _xvec2(x_), yz(yz_), _wvec2(w_)
+    {}
+
+    vector4(T data_[4]) : data{data_[0], data_[1], data_[2], data_[3]}
     {}
 
     COMMON_OPERATORS(vector4<T>, 4, T)
