@@ -120,8 +120,8 @@ struct bounding_box
 };
 
 using cbbox = bounding_box<char>;
-using c16bbox = bounding_box<char16>;
-using c32bbox = bounding_box<char32>;
+using c16bbox = bounding_box<c16>;
+using c32bbox = bounding_box<c32>;
 using cwbbox = bounding_box<wchar>;
 using i8bbox = bounding_box<i8>;
 using i16bbox = bounding_box<i16>;

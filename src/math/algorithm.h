@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/basic_types.h"
+#include "../basic_types.h"
 #include <math.h>
 #include <iomanip>
 #include <type_traits>

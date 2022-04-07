@@ -69,13 +69,7 @@ add_definitions(-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM)
 # Set the src files for the project
 file(GLOB SRC_FILES 
   ${NOBLE_STEED_SRC_DIR}/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/core/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/graphics/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/scene/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/io/*.cpp
   ${NOBLE_STEED_SRC_DIR}/math/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/hash/*.cpp
-  ${NOBLE_STEED_SRC_DIR}/memory/*.cpp
   )
 
 file(GLOB BENCHMARK_FILES 
