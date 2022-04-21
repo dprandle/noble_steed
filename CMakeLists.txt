@@ -161,11 +161,11 @@ else()
     target_compile_options(${TARGET_NAME} PUBLIC -msse4.1)
 endif()
 
-configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/shaderc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/texturec COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/texturev COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/geometryc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/geometryv COPYONLY)
+configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
 
 # Copy the shader lib source to the default shader lib directory in build folder
 # message("Trying to copy " ${CMAKE_SOURCE_DIR}/data " to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shaders)
