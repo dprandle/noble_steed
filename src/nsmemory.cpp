@@ -8,6 +8,8 @@
 namespace noble_steed
 {
 
+static mem_store * g_mem_store {};
+
 intern void *platform_alloc(sizet byte_size)
 {
     return malloc(byte_size);
@@ -322,6 +324,9 @@ void *ns_alloc(mem_store *mem, sizet size, sizet alignment)
 
 void ns_free(mem_store *mem, void *ptr)
 {
+    if (!ptr)
+        return;
+    
     switch (mem->alloc_type)
     {
     case (MEM_ALLOC_FREE_LIST):
@@ -347,12 +352,22 @@ void mem_store_alloc(mem_store *mem)
     // If pool allocator total size must be multiple of chunk size, and chunk size must not be zero
     nsassert(mem->alloc_type != MEM_ALLOC_POOL || (((mem->total_size % mem->mpool.chunk_size) == 0) && (mem->mpool.chunk_size >= 8)));
 
-    mem->start = platform_alloc(mem->total_size);
+    if (!mem->upstream_allocator)
+        mem->start = platform_alloc(mem->total_size);
+    else
+        mem->start = ns_alloc(mem->upstream_allocator, mem->total_size);
 }
 
 void mem_free_list_alloc(mem_store *mem, sizet total_byte_size)
 {
     mem->alloc_type = MEM_ALLOC_FREE_LIST;
+    mem->total_size = total_byte_size;
+    mem_store_alloc(mem);
+}
+
+void mem_stack_alloc(mem_store *mem, sizet total_byte_size)
+{
+    mem->alloc_type = MEM_ALLOC_STACK;
     mem->total_size = total_byte_size;
     mem_store_alloc(mem);
 }
@@ -399,6 +414,16 @@ void mem_store_term(mem_store *mem)
         mem_linear_term(mem);
         break;
     }
+}
+
+mem_store * global_allocator()
+{
+    return g_mem_store;
+}
+
+void set_global_allocator(mem_store * alloc)
+{
+    g_mem_store = alloc;
 }
 
 } // namespace noble_steed

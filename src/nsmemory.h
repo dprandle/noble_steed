@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "basic_types.h"
 #include "linked_list.h"
 
@@ -68,6 +70,11 @@ struct mem_store
     /// Input parameter for which type of allocator we want
     mem_alloc_type alloc_type;
 
+    /// If null, the allocator memory pool will be allocated with platform_alloc, otherwise the
+    /// upstream_allocator's alloc will be used with ns_alloc (same is true for free). Once an allocator gets its memory,
+    /// don't change this to something different as it will likely crash (cant free from an allocator different than allocated from)
+    mem_store * upstream_allocator {nullptr};
+
     sizet used;
     sizet peak;
     void *start;
@@ -88,11 +95,19 @@ T * ns_alloc(mem_store *mem, sizet alignment=8)
     return (T*)ns_alloc(mem, sizeof(T), alignment);
 }
 
-template<class T>
-T * ns_new(mem_store *mem, sizet alignment=8)
+template<class T, class... Args>
+T * ns_new(mem_store *mem, sizet alignment, Args&&... args)
 {
     T * item = ns_alloc<T>(mem, alignment);
-    new (item) T();
+    new (item) T(std::forward<Args>(args)...);
+    return item;
+}
+
+template<class T, class... Args>
+T * ns_new(mem_store *mem, Args&&... args)
+{
+    T * item = ns_alloc<T>(mem);
+    new (item) T(std::forward<Args>(args)...);
     return item;
 }
 
@@ -121,11 +136,18 @@ void mem_pool_alloc(mem_store *mem, sizet item_count)
 }
 
 /// Convenience function to set mem alloc_type and total_size to MEM_ALLOC_FREE_LIST and total_byte_size respectively
-/// Calls mem_store_allo after setting those in mem_store.
+/// Calls mem_store_alloc after setting those in mem_store.
 void mem_free_list_alloc(mem_store *mem, sizet total_byte_size);
+
+/// Convenience function to set mem alloc_type and total_size to MEM_ALLOC_STACK and total_byte_size respectively
+/// Calls mem_store_alloc after setting those in mem_store.
+void mem_stack_alloc(mem_store *mem, sizet total_byte_size);
 
 void mem_store_free(mem_store *mem);
 void mem_store_init(mem_store *mem);
 void mem_store_term(mem_store *mem);
+
+mem_store * global_allocator();
+void set_global_allocator(mem_store * alloc);
 
 } // namespace noble_steed

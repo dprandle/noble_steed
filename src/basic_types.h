@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "limits.h"
 
 namespace noble_steed
 {
@@ -23,6 +24,8 @@ using ldouble = long double;
 
 const int KB_SIZE = 1024;
 const int MB_SIZE = 1024 * KB_SIZE;
+
+inline constexpr const sizet npos = LONG_MAX;
 
 /// Check if all the bits provided in \param flags are set in \param bitfield
 #define test_flags_all(bitfield, flags) ((bitfield & flags) == flags)

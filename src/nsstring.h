@@ -18,20 +18,22 @@ struct fixed_str
 };
 
 using small_str = fixed_str<32>;
+using path_str = fixed_str<256>;
 
+void clear_str(string *str);
 void copy_str(string *dest, const string &source);
-void copy_str(string * dest, const char *source);
+void copy_str(string *dest, const char *source);
 
 template<sizet N>
 void copy_str(fixed_str<N> *dest, const string &source)
 {
-    copy_str(dest->str, source);
+    copy_str(&dest->str, source);
 }
 
 template<sizet N>
 void copy_str(fixed_str<N> *dest, const char *source)
 {
-    copy_str(dest->str, source);
+    copy_str(&dest->str, source);
 }
 
 template<sizet N, sizet M>

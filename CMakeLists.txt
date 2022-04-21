@@ -27,14 +27,10 @@ set(BX_DIR ${DEPENDENCY_DIR}/bx)
 set(BIMG_DIR ${DEPENDENCY_DIR}/bimg)
 set(ASSIMP_DIR ${DEPENDENCY_DIR}/assimp)
 set(BULLET_DIR ${DEPENDENCY_DIR}/bullet3)
-set(SPDLOG_DIR ${DEPENDENCY_DIR}/spdlog)
 set(PYBIND_DIR ${DEPENDENCY_DIR}/pybind11)
-set(GTEST_DIR ${DEPENDENCY_DIR}/googletest)
 
 # Set library source directory
 set(NOBLE_STEED_SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-set(NOBLE_STEED_TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
-set(NOBLE_STEED_BENCHMARK_DIR ${CMAKE_SOURCE_DIR}/benchmarks)
 
 # Set include directories
 set(BGFX_INCLUDE_DIR ${BGFX_DIR}/include)
@@ -42,7 +38,6 @@ set(GLFW_INCLUDE_DIR ${GLFW_DIR}/include)
 set(BX_INCLUDE_DIR ${BX_DIR}/include)
 set(BIMG_INCLUDE_DIR ${BIMG_DIR}/include)
 set(BULLET_INCLUDE_DIR ${BULLET_DIR}/src)
-set(SPDLOG_INCLUDE_DIR ${SPDLOG_DIR}/include)
 set(PYBIND_INCLUDE_DIR ${PYBIND_DIR}/include)
 set(ASSIMP_INCLUDE_DIR ${ASSIMP_DIR}/assimp)
 
@@ -58,9 +53,7 @@ add_definitions(
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   add_definitions(-DDEBUG_BUILD)
   add_definitions(-DDBG_MACRO_NO_WARNING)
-  add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 else()
-  add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
   add_definitions(-DRELEASE_BUILD)
   add_definitions(-DNDEBUG)
 endif()
@@ -69,18 +62,9 @@ add_definitions(-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM)
 # Set the src files for the project
 file(GLOB SRC_FILES 
   ${NOBLE_STEED_SRC_DIR}/*.cpp
+  ${NOBLE_STEED_SRC_DIR}/*.c
   ${NOBLE_STEED_SRC_DIR}/math/*.cpp
   )
-
-file(GLOB BENCHMARK_FILES 
-  ${NOBLE_STEED_BENCHMARK_DIR}/*.cpp
-)
-
-
-file(GLOB TEST_FILES 
-${NOBLE_STEED_TEST_DIR}/*.cpp
-${NOBLE_STEED_TEST_DIR}/math/*.cpp
-)
 
 # Set project includes dir
 include_directories(
@@ -101,15 +85,11 @@ add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# add_compile_options("-msse4.1")
 
 if (WIN32)
     # Windows stuff here
-    include_directories( ${SPDLOG_INCLUDE_DIR} )
-    add_subdirectory(${SPDLOG_DIR})
     add_definitions(-DPLATFORM_WINDOWS)
     add_definitions(-DGLFW_EXPOSE_NATIVE_WIN32)
-
 elseif(APPLE)
     add_definitions(-DPLATFORM_OSX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_COCOA)
@@ -123,7 +103,7 @@ elseif(APPLE)
     
     link_directories(/usr/local/lib)
     include_directories(/usr/local/include)    
-    add_library(${TARGET_NAME} ${SRC_FILES})
+    add_executable(${TARGET_NAME} ${SRC_FILES})
     target_link_libraries(${TARGET_NAME}
         ${BGFX_LIB_PATH}  
         pybind11::embed
@@ -139,21 +119,14 @@ elseif(APPLE)
         BulletSoftBody
         BulletCollision
         Bullet3Common
-        BulletDynamics
-        spdlog
-        fmt)
+        BulletDynamics)
+
     set_target_properties(${TARGET_NAME} PROPERTIES FRAMEWORK TRUE)
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC
-        ${NOBLE_STEED_SRC_DIR})
-        
 else()
-    # SPDLOG doesn't build correctly on mac - it always crashes clang for some reason :/
-    include_directories(${SPDLOG_INCLUDE_DIR})
-    add_subdirectory(${SPDLOG_DIR})
     add_definitions(-DPLATFORM_LINUX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
-    add_library(${TARGET_NAME} ${SRC_FILES})
+    add_executable(${TARGET_NAME} ${SRC_FILES})
+
     # Set dependency library paths
     set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
     set(BGFX_BIN_DIR "${BGFX_DIR}/.build/linux64_gcc/bin")
@@ -176,15 +149,10 @@ else()
         Bullet3Common
         BulletDynamics
         ${PYTHON_LIBRARIES}
-        spdlog
         X11
         GL
         stdc++fs
         pthread)
-
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC
-        ${NOBLE_STEED_SRC_DIR})
 endif()
 
 if(MSVC)
@@ -193,14 +161,14 @@ else()
     target_compile_options(${TARGET_NAME} PUBLIC -msse4.1)
 endif()
 
-configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
+configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/shaderc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/texturec COPYONLY)
+configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/texturev COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/geometryc COPYONLY)
+configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_SOURCE_DIR}/tools/geometryv COPYONLY)
 
 # Copy the shader lib source to the default shader lib directory in build folder
-# message("Trying to copy " ${CMAKE_SOURCE_DIR}/shader_lib " to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib)
+# message("Trying to copy " ${CMAKE_SOURCE_DIR}/data " to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shaders)
 # add_custom_target(deploy_shader_lib ALL
 #  COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/shader_lib ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader_lib
 #  DEPENDS ${TARGET_NAME}
@@ -208,21 +176,3 @@ configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTP
 
 
 # pybind11_add_module(${PYTHON_MODULE_NAME} ${CMAKE_SOURCE_DIR}/src/core/python_bindings.cpp)
-
-# target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE
-#   ${TARGET_NAME}
-# )
-# enable_testing()
-# set(INSTALL_GTEST OFF)
-# add_subdirectory(${GTEST_DIR})
-# add_executable(${TARGET_NAME}_tests ${TEST_FILES})
-# target_link_libraries(${TARGET_NAME}_tests gtest ${TARGET_NAME})
-# include(GoogleTest)
-# gtest_discover_tests(${TARGET_NAME}_tests)
-
-
-find_package(benchmark REQUIRED)
-add_executable(${TARGET_NAME}_benchmarks ${BENCHMARK_FILES})
-target_link_libraries(${TARGET_NAME}_benchmarks benchmark::benchmark benchmark::benchmark_main ${TARGET_NAME})
-
-add_subdirectory(samples)
