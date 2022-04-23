@@ -99,7 +99,7 @@ quaternion<T> slerp(quaternion<T> first, const quaternion<T> &second, const T &s
     }
 
     if (cos_half_theta >= 1.0)
-        return;
+        return first;
 
     T half_theta = math::acos(cos_half_theta);
     T sin_half_theta = math::sqrt(1.0 - cos_half_theta * cos_half_theta);

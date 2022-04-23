@@ -79,7 +79,6 @@ include_directories(
   )
   
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tools)
-add_subdirectory(${PYBIND_DIR})
 add_subdirectory(${GLFW_DIR})
 add_subdirectory(${ASSIMP_DIR})
 add_subdirectory(${BULLET_DIR})
@@ -106,7 +105,6 @@ elseif(APPLE)
     add_executable(${TARGET_NAME} ${SRC_FILES})
     target_link_libraries(${TARGET_NAME}
         ${BGFX_LIB_PATH}  
-        pybind11::embed
         glfw
         stdc++
         assimp
@@ -134,8 +132,6 @@ else()
   
     target_link_libraries(${TARGET_NAME}
         ${BGFX_LIB_PATH}
-        #pybind11::pybind11
-        pybind11::embed
         glfw
         assimp
         Bullet2FileLoader
