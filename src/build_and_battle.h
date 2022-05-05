@@ -1,6 +1,7 @@
 #pragma once
 #include "math/vector2.h"
 #include "buffer.h"
+#include "nserror.h"
 #include "nsstring.h"
 
 namespace noble_steed

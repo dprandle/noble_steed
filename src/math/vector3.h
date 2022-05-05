@@ -40,7 +40,7 @@ struct vector3
     vector3(T data_[3]) : data{data_[0], data_[1], data_[2]}
     {}
 
-    COMMON_OPERATORS(vector3<T>, 3, T)
+    COMMON_OPERATORS(vector3, 3, T)
 
     union
     {

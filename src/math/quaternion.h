@@ -18,7 +18,7 @@ struct quaternion
     {}
 
 
-    COMMON_OPERATORS(quaternion<T>, 4, T)
+    COMMON_OPERATORS(quaternion, 4, T)
 
 #if NOBLE_STEED_SIMD
     using _simd_type = typename simd_traits<T, size_>::_simd_type;

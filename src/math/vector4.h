@@ -28,7 +28,7 @@ struct vector4
     vector4(T data_[4]) : data{data_[0], data_[1], data_[2], data_[3]}
     {}
 
-    COMMON_OPERATORS(vector4<T>, 4, T)
+    COMMON_OPERATORS(vector4, 4, T)
 
 #if NOBLE_STEED_SIMD
     using _simd_type = typename simd_traits<T, size_>::_simd_type;

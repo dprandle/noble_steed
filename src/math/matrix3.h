@@ -36,7 +36,7 @@ struct matrix3
     matrix3(T data_[3][3]): data{data_[0], data_[1], data_[2]}
     {}
 
-    COMMON_OPERATORS(matrix3<T>, 3, vector3<T>)
+    COMMON_OPERATORS(matrix3, 3, vector3<T>)
 
     vector3<T> operator()(i8 ind) const
     {

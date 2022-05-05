@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iomanip>
 #include <type_traits>
+#include <algorithm>
 
 #include <iostream>
 
@@ -26,19 +27,21 @@
 #define NOBLE_STEED_USE_AVX (NOBLE_STEED_AVX_BIT | NOBLE_STEED_SSE42)
 #define NOBLE_STEED_USE_AVX2 (NOBLE_STEED_AVX2_BIT | NOBLE_STEED_AVX)
 
-#define NOBLE_STEED_SIMD (NOBLE_STEED_USE_SSE41)// | NOBLE_STEED_SSE_SQRT_BIT)
+#define NOBLE_STEED_SIMD (NOBLE_STEED_USE_SSE41) // | NOBLE_STEED_SSE_SQRT_BIT)
 
 #if NOBLE_STEED_SIMD
 #include <immintrin.h>
 namespace noble_steed
 {
-template <typename T,i8 SZ>
-struct simd_traits {
+template<typename T, i8 SZ>
+struct simd_traits
+{
     using _simd_type = T[SZ];
 };
 
-template <>
-struct simd_traits<float,4> {
+template<>
+struct simd_traits<float, 4>
+{
     using _simd_type = __m128;
     // etc
 };
@@ -61,7 +64,7 @@ inline __m128 _sse_dp(const __m128 &left, const __m128 &right)
     return add0;
 #endif
 }
-}
+} // namespace noble_steed
 #endif
 
 #define STR_ALIGN std::right << std::setprecision(ROUND_TO_DEC) << std::fixed
@@ -208,9 +211,15 @@ inline T rsqrt(T val)
 
 #if NOBLE_STEED_SIMD & NOBLE_STEED_USE_SSE
 #if NOBLE_STEED_SIMD & NOBLE_STEED_SSE_SQRT_BIT
-inline float sqrt(float val) {return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(val)));}
+inline float sqrt(float val)
+{
+    return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(val)));
+}
 #endif
-inline float rsqrt(float val) {return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(val)));}
+inline float rsqrt(float val)
+{
+    return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(val)));
+}
 #endif
 
 template<floating_pt T>
@@ -668,7 +677,6 @@ T compwise_mult_columns(const V &column_vec, const T &rhs)
     return compwise_mult_columns(column_vec, &rhs);
 }
 
-
 template<mat_type T, vec_type V>
 void compwise_div_columns(T *lhs, const V &column_vec)
 {
@@ -876,27 +884,39 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
 }
 
 #define COMMON_OPERATORS(type, element_count, ind_ret_type)                                                                                          \
-    inline type &operator+=(const type &rhs_)                                                                                                        \
+    template<class U>                                                                                                                                \
+    using container_type = vector2<U>;                                                                                                               \
+    using value_type = T;                                                                                                                            \
+    using iterator = ind_ret_type *;                                                                                                                 \
+    using const_iterator = const ind_ret_type *;                                                                                                     \
+    static constexpr u8 size_ = element_count;                                                                                                       \
+    template<class U>                                                                                                                                \
+    type(const type<U> &conv)                                                                                                                        \
+    {                                                                                                                                                \
+        for (u8 i{0}; i < size_; ++i)                                                                                                                \
+            data[i] = (T)conv[i];                                                                                                                    \
+    }                                                                                                                                                \
+    inline type<T> &operator+=(const type<T> &rhs_)                                                                                                  \
     {                                                                                                                                                \
         return *this = *this + rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator-=(const type &rhs_)                                                                                                        \
+    inline type<T> &operator-=(const type<T> &rhs_)                                                                                                  \
     {                                                                                                                                                \
         return *this = *this - rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator*=(const type &rhs_)                                                                                                        \
+    inline type<T> &operator*=(const type<T> &rhs_)                                                                                                  \
     {                                                                                                                                                \
         return *this = *this * rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator/=(const type &rhs_)                                                                                                        \
+    inline type<T> &operator/=(const type<T> &rhs_)                                                                                                  \
     {                                                                                                                                                \
         return *this = *this / rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator*=(const T &rhs_)                                                                                                           \
+    inline type<T> &operator*=(const T &rhs_)                                                                                                        \
     {                                                                                                                                                \
         return *this = *this * rhs_;                                                                                                                 \
     }                                                                                                                                                \
-    inline type &operator/=(const T &rhs_)                                                                                                           \
+    inline type<T> &operator/=(const T &rhs_)                                                                                                        \
     {                                                                                                                                                \
         return *this = *this / rhs_;                                                                                                                 \
     }                                                                                                                                                \
@@ -908,12 +928,6 @@ std::ostream &operator<<(std::ostream &os, const T &mat)
     {                                                                                                                                                \
         return data[val_];                                                                                                                           \
     }                                                                                                                                                \
-    template<class U>                                                                                                                                \
-    using container_type = vector2<U>;                                                                                                               \
-    using value_type = T;                                                                                                                            \
-    using iterator = ind_ret_type *;                                                                                                                 \
-    using const_iterator = const ind_ret_type *;                                                                                                     \
-    static constexpr u8 size_ = element_count;                                                                                                       \
     inline constexpr sizet size() const                                                                                                              \
     {                                                                                                                                                \
         return size_;                                                                                                                                \

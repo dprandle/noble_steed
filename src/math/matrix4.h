@@ -44,7 +44,7 @@ struct matrix4
     matrix4(T data_[4][4]) : data{data_[0], data_[1], data_[2], data_[3]}
     {}
 
-    COMMON_OPERATORS(matrix4<T>, 4, vector4<T>)
+    COMMON_OPERATORS(matrix4, 4, vector4<T>)
 #if NOBLE_STEED_SIMD
     using _simd_type = typename simd_traits<T, size_>::_simd_type;
 #endif

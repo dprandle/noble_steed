@@ -1,8 +1,10 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <unistd.h>
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+#include <errno.h>
 
 #include "math/algorithm.h"
 #include "platform.h"
@@ -182,8 +184,8 @@ intern void glfw_error_callback(i32 error, const char *description)
 
 intern void glfw_key_press_callback(GLFWwindow *window, i32 key, i32 scancode, i32 action, i32 mods)
 {
-    auto pform = (platform_ctxt*)glfwGetWindowUserPointer(window);
-    bb_event ev {};
+    auto pform = (platform_ctxt *)glfwGetWindowUserPointer(window);
+    bb_event ev{};
     if (action == GLFW_PRESS)
     {
         ev.type = event_type::INPUT_KEY_PRESS;
@@ -196,6 +198,11 @@ intern void glfw_key_press_callback(GLFWwindow *window, i32 key, i32 scancode, i
         ev.type = event_type::INPUT_KEY_RELEASE;
         ev.krelease.key = (i16)key;
         ev.krelease.normalized_mpos = pform->win.norm_mpos;
+    }
+    else
+    {
+        // Ignore repeats for now
+        return;
     }
     push_back(&pform->bstate.events, ev);
 }
@@ -256,8 +263,8 @@ intern void glfw_scroll_callback(GLFWwindow *window, double x_offset, double y_o
 
 intern void glfw_cursor_pos_callback(GLFWwindow *window, double x_pos, double y_pos)
 {
-    auto pform = (platform_ctxt*)glfwGetWindowUserPointer(window);
-    pform->win.norm_mpos = vec2{float(x_pos), float(y_pos)} /  math::convert_elements<float>(pform->win.current_size);
+    auto pform = (platform_ctxt *)glfwGetWindowUserPointer(window);
+    pform->win.norm_mpos = vec2{float(x_pos), float(y_pos)} / math::convert_elements<float>(pform->win.current_size);
     // using namespace events::window;
     // using namespace imap::mod;
     // Event ev;
@@ -288,26 +295,22 @@ intern void glfw_cursor_pos_callback(GLFWwindow *window, double x_pos, double y_
 
 intern void glfw_resize_window_callback(GLFWwindow *window, i32 width, i32 height)
 {
-    auto pform = (platform_ctxt*)glfwGetWindowUserPointer(window);
-    bb_event ev {};
+    auto pform = (platform_ctxt *)glfwGetWindowUserPointer(window);
+    bb_event ev{};
     ev.type = event_type::WINDOW_RESIZE;
     ev.resize.old_size = pform->win.current_size;
     pform->win.current_size = {width, height};
     ev.resize.new_size = pform->win.current_size;
     push_back(&pform->bstate.events, ev);
 
-    bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC | BGFX_RESET_HIDPI);
+    ilog("Resizing bgfx with framebuffer size {%d %d}", width, height);
+    bgfx::reset((uint32_t)width, (uint32_t)height, (BGFX_RESET_VSYNC | BGFX_RESET_HIDPI));
     bgfx::setViewRect(0, 0, 0, bgfx::BackbufferRatio::Equal);
-
-    // using namespace events;
-    // Event ev;
-    // ev.id = window::resized::id;
-    // ev.data[window::resized::new_size] = itup2(width, height);
-    // post_event(ev);
 }
 
 intern void glfw_focus_change_callback(GLFWwindow *window, i32 focused)
 {
+    ilog("Focus Change");
     // using namespace events;
     // Event ev;
     // ev.id = window::focus_change::id;
@@ -322,14 +325,11 @@ intern void glfw_close_window_callback(GLFWwindow *window)
 {
     platform_ctxt *pctxt = (platform_ctxt *)glfwGetWindowUserPointer(window);
     pctxt->bstate.running = false;
-    // using namespace events;
-    // Event ev;
-    // ev.id = window::closed::id;
-    // post_event(ev);
 }
 
 intern void glfw_iconify_window_callback(GLFWwindow *window, i32 iconified)
 {
+    ilog("Iconified");
     // using namespace events;
     // Event ev;
     // ev.id = window::iconified::id;
@@ -339,6 +339,7 @@ intern void glfw_iconify_window_callback(GLFWwindow *window, i32 iconified)
 
 intern void glfw_maximize_window_callback(GLFWwindow *window, i32 maximized)
 {
+    ilog("Maximize");
     // using namespace events;
     // Event ev;
     // ev.id = window::maximized::id;
@@ -348,6 +349,7 @@ intern void glfw_maximize_window_callback(GLFWwindow *window, i32 maximized)
 
 intern void glfw_window_position_callback(GLFWwindow *window, i32 x_pos, i32 y_pos)
 {
+    ilog("Window position moved to {%d %d}", x_pos, y_pos);
     // using namespace events;
     // Event ev;
     // ev.id = window::moved::id;
@@ -357,6 +359,7 @@ intern void glfw_window_position_callback(GLFWwindow *window, i32 x_pos, i32 y_p
 
 intern void glfw_framebuffer_resized_callback(GLFWwindow *window, i32 width, i32 height)
 {
+    ilog("Resized framebuffer to {%d %d}", width, height);
     // using namespace events;
     // Event ev;
     // ev.id = window::framebuffer_resized::id;
@@ -364,12 +367,54 @@ intern void glfw_framebuffer_resized_callback(GLFWwindow *window, i32 width, i32
     // post_event(ev);
 }
 
+err_desc platform_cwd(path_str *pstr)
+{
+    err_desc ret{};
+    if (getcwd(pstr->str.data, pstr->str.cap) == nullptr)
+    {
+        ret.type = err_code::GET_CWD_FAIL;
+        ret.code = errno;
+    }
+    return ret;
+}
+
+result_err_desc<sizet> platform_file_size(FILE *f)
+{
+    result_err_desc<sizet> ret{};
+
+    sizet cur_p = ftell(f);
+    if (cur_p == -1L)
+        goto ftell_fail;
+
+    if (fseek(f, 0, SEEK_END) != 0)
+        goto fseek_fail;
+
+    ret.val = ftell(f);
+    if (ret.val == -1L)
+        goto ftell_fail;
+
+    if (fseek(f, cur_p, SEEK_SET) != 0)
+        goto fseek_fail;
+
+    return ret;
+
+fseek_fail:
+    ret.err.type = err_code::FSEEK_FAIL;
+    ret.err.code = errno;
+    return ret;
+
+ftell_fail:
+    ret.err.type = err_code::FTELL_FAIL;
+    ret.err.code = errno;
+    return ret;
+}
+
 window create_window(platform_ctxt *pctxt, const window_create_params &param)
 {
     nsassert(pctxt);
 
     window ret = {};
-    ret.type = window_type::glfw;
+    ret.type = window_type::GLFW;
 
     GLFWmonitor *monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode *mode = glfwGetVideoMode(monitor);
@@ -379,6 +424,14 @@ window create_window(platform_ctxt *pctxt, const window_create_params &param)
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+    ret.current_size = param.resolution;
+    if (test_flags(param.win_flags, window_flags::SCALE_TO_MONITOR))
+    {
+        vec2 scale;
+        glfwGetMonitorContentScale(monitor, &scale.x, &scale.y);
+        ret.current_size = vec2(ret.current_size) * scale;
+    }
 
     bool fullsreen = false;
     if (test_flags(param.win_flags, window_flags::FULLSCREEN))
@@ -394,7 +447,7 @@ window create_window(platform_ctxt *pctxt, const window_create_params &param)
         glfwWindowHint(GLFW_FLOATING, (int)test_flags(param.win_flags, window_flags::ALWAYS_ON_TOP));
         monitor = nullptr;
     }
-    ret.wglfw.hndl = glfwCreateWindow(param.resolution.x, param.resolution.y, param.title.buf, monitor, nullptr);
+    ret.wglfw.hndl = glfwCreateWindow(ret.current_size.x, ret.current_size.y, param.title.buf, monitor, nullptr);
 
     if (!ret.wglfw.hndl)
         return ret;
@@ -433,24 +486,21 @@ intern bool setup_bgfx(platform_ctxt *pform)
 
     init.resolution.width = (uint32_t)pform->win.current_size.w;
     init.resolution.height = (uint32_t)pform->win.current_size.h;
-    init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_HIDPI;
-    
+    init.resolution.reset = (BGFX_RESET_VSYNC | BGFX_RESET_HIDPI);
+    ilog("Initializing bgfx with framebuffer size {%d %d}", init.resolution.width, init.resolution.height);
     if (!bgfx::init(init))
         return false;
-    
+
     // Set view 0 to the same dimensions as the window and to clear the color buffer.
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0x22BB4422);
+    bgfx::setViewClear(0, (BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL), 0x22BB4422);
     bgfx::setViewRect(0, 0, 0, bgfx::BackbufferRatio::Equal);
     return true;
 }
 
-
 void platform_init(platform_ctxt *pform, window_create_params cp)
 {
-    log_set_level(LOG_TRACE);
-    ilog("Platform start...");
-
     glfwSetErrorCallback(glfw_error_callback);
+
     if (!glfwInit())
     {
         elog("GLFW init failed - closing");
@@ -458,13 +508,23 @@ void platform_init(platform_ctxt *pform, window_create_params cp)
     }
 
     pform->win = create_window(pform, cp);
-
     if (!setup_bgfx(pform))
     {
         elog("BGFX init failed - closing");
         glfwDestroyWindow(pform->win.wglfw.hndl);
         return;
     }
+
+    auto mon = glfwGetPrimaryMonitor();
+    vec2 scale;
+    glfwGetMonitorContentScale(mon, &scale.x, &scale.y);
+    ilog("Monitor scale is {%f %f}", scale.x, scale.y);
+
+    path_str cwd;
+    platform_cwd(&cwd);
+
+    log_set_level(LOG_TRACE);
+    ilog("Platform start - cwd: %s", cwd.str.data);
 
     mem_free_list_alloc(&pform->mem, 500 * MB_SIZE);
     mem_stack_alloc(&pform->frame_mem, 20 * MB_SIZE);
@@ -493,11 +553,12 @@ void platform_exec(platform_ctxt *pform)
 void platform_term(platform_ctxt *pform)
 {
     ilog("Platform term");
-    glfwDestroyWindow(pform->win.wglfw.hndl);
     bb_term(&pform->bstate);
     mem_store_free(&pform->mem);
     mem_store_free(&pform->frame_mem);
+
     bgfx::shutdown();
+    glfwDestroyWindow(pform->win.wglfw.hndl);
     glfwTerminate();
 }
 

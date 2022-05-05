@@ -23,7 +23,7 @@ struct matrix2
     matrix2(T data_[2][2]): data{data_[0], data_[1]}
     {}
 
-    COMMON_OPERATORS(matrix2<T>, 2, vector2<T>)
+    COMMON_OPERATORS(matrix2, 2, vector2<T>)
 
 #if NOBLE_STEED_SIMD
     using _simd_type = __m128;

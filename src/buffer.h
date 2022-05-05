@@ -315,10 +315,14 @@ typename T::iterator find(T *bufobj, const typename T::value_type &item)
 template<class T>
 void resize(vector<T> *vec, sizet new_size)
 {
+    if (vec->size() == new_size)
+        return;
+    
     nsassert(vec->size() <= vec->capacity());
     sizet cap = vec->buf.cap;
     if (new_size > cap)
     {
+        cap = std::max(cap, (sizet)1);
         while (cap < new_size)
             cap *= 2;
         reallocate_and_copy(vec, cap);

@@ -17,7 +17,7 @@ struct vector2
     vector2(T data_[2]): data{data_[0], data_[1]}
     {}
 
-    COMMON_OPERATORS(vector2<T>, 2, T)
+    COMMON_OPERATORS(vector2, 2, T)
 
     union
     {

@@ -26,6 +26,8 @@ struct shader_prog : public asset_common
     u16 gpu_hndl {};
 };
 
+bool load_shader_to_buffer
+
 bool load_shader(shader_prog * shdr, const path_str & vert, const path_str &frag)
 {
     

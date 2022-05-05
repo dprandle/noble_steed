@@ -95,7 +95,7 @@ elseif(APPLE)
     set(CMAKE_MACOSX_RPATH 1)
     
     # Set dependency library paths
-    set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.dylib)
+    set(BGFX_LIB_NAME libbgfx-shared-lib${BGFX_BUILD_TYPE}.dylib)
     set(BGFX_BIN_DIR "${BGFX_DIR}/.build/osx-x64/bin")
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
     message("BGFX: ${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
@@ -126,10 +126,14 @@ else()
     add_executable(${TARGET_NAME} ${SRC_FILES})
 
     # Set dependency library paths
-    set(BGFX_LIB_NAME libbgfx-shared-lib${CMAKE_BUILD_TYPE}.so)
+    set(BGFX_LIB_NAME libbgfx-shared-lib${BGFX_BUILD_TYPE}.so)
     set(BGFX_BIN_DIR "${BGFX_DIR}/.build/linux64_gcc/bin")
     set(BGFX_LIB_PATH "${BGFX_BIN_DIR}/${BGFX_LIB_NAME}")
-  
+
+    # This is for building the shaders
+    set(SHDR_PLATFORM linux)
+    set(SHDR_PROFILE spirv)
+      
     target_link_libraries(${TARGET_NAME}
         ${BGFX_LIB_PATH}
         glfw
@@ -157,11 +161,39 @@ else()
     target_compile_options(${TARGET_NAME} PUBLIC -msse4.1)
 endif()
 
-configure_file(${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/shaderc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturec COPYONLY)
-configure_file(${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/texturev COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryc COPYONLY)
-configure_file(${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools/geometryv COPYONLY)
+set(SHDR_COMPILER ${BGFX_BIN_DIR}/shaderc${CMAKE_BUILD_TYPE})
+set(TEXC_TOOL ${BGFX_BIN_DIR}/texturec${CMAKE_BUILD_TYPE})
+set(TEXV_TOOL ${BGFX_BIN_DIR}/texturev${CMAKE_BUILD_TYPE})
+set(GEOMC_TOOL ${BGFX_BIN_DIR}/geometryc${CMAKE_BUILD_TYPE})
+set(GEOMV_TOOL ${BGFX_BIN_DIR}/geometryv${CMAKE_BUILD_TYPE})
+
+set(SHDR_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/shaders)
+set(SHDR_DEST_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shaders)
+set(TOOL_DEST_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools)
+
+file(MAKE_DIRECTORY ${SHDR_DEST_DIR})
+file(MAKE_DIRECTORY ${TOOL_DEST_DIR})
+file(COPY_FILE ${SHDR_COMPILER} ${TOOL_DEST_DIR}/shaderc ONLY_IF_DIFFERENT)
+file(COPY_FILE ${TEXC_TOOL} ${TOOL_DEST_DIR}/texturec ONLY_IF_DIFFERENT)
+file(COPY_FILE ${TEXV_TOOL} ${TOOL_DEST_DIR}/texturev ONLY_IF_DIFFERENT)
+file(COPY_FILE ${GEOMC_TOOL} ${TOOL_DEST_DIR}/geometryc ONLY_IF_DIFFERENT)
+file(COPY_FILE ${GEOMV_TOOL} ${TOOL_DEST_DIR}/geometryv ONLY_IF_DIFFERENT)
+
+function(add_shader SHDR_NAME)
+add_custom_command(
+  OUTPUT ${SHDR_DEST_DIR}/${SHDR_NAME}.fbin ${SHDR_DEST_DIR}/${SHDR_NAME}.vbin
+  COMMAND ${SHDR_COMPILER} -f ${SHDR_SRC_DIR}/${SHDR_NAME}.fsh -o ${SHDR_DEST_DIR}/${SHDR_NAME}.fbin -i ${SHDR_SRC_DIR} --platform ${SHDR_PLATFORM} --profile ${SHDR_PROFILE} --type fragment --varyingdef ${SHDR_SRC_DIR}/${SHDR_NAME}.def
+  COMMAND ${SHDR_COMPILER} -f ${SHDR_SRC_DIR}/${SHDR_NAME}.vsh -o ${SHDR_DEST_DIR}/${SHDR_NAME}.vbin -i ${SHDR_SRC_DIR} --platform ${SHDR_PLATFORM} --profile ${SHDR_PROFILE} --type vertex --varyingdef ${SHDR_SRC_DIR}/${SHDR_NAME}.def
+  DEPENDS ${SHDR_SRC_DIR}/${SHDR_NAME}.fsh ${SHDR_SRC_DIR}/${SHDR_NAME}.vsh ${SHDR_SRC_DIR}/${SHDR_NAME}.def
+  VERBATIM
+)
+add_custom_target(shader_${SHDR_NAME} ALL
+  DEPENDS ${SHDR_DEST_DIR}/${SHDR_NAME}.fbin ${SHDR_DEST_DIR}/${SHDR_NAME}.vbin
+)
+endfunction()
+
+add_shader(simple)
+
 
 # Copy the shader lib source to the default shader lib directory in build folder
 # message("Trying to copy " ${CMAKE_SOURCE_DIR}/data " to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shaders)

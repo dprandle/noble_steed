@@ -1,4 +1,7 @@
-#include "bgfx/bgfx.h"
+#include <bgfx/bgfx.h>
+#include <string.h>
+
+#include "platform.h"
 #include "build_and_battle.h"
 #include "log.h"
 #include "keycodes.h"
@@ -6,17 +9,6 @@
 
 namespace noble_steed
 {
-
-struct test_item
-{
-    char scoob;
-    double doob;
-};
-
-bool operator==(const test_item &lhs, const test_item &rhs)
-{
-    return ((lhs.scoob == rhs.scoob) && math::fequals(lhs.doob, rhs.doob));
-}
 
 static bool s_showStats = false;
 
@@ -65,25 +57,35 @@ small_str event_string(const bb_event &ev)
 
 void bb_init(bb_state *bstate)
 {
-    ilog("Try to load shader");
-    vector<test_item> buf;
-    emplace_back(&buf, test_item{'c', 4.6});
-    emplace_back(&buf, test_item{'d', 7.6});
-    emplace_back(&buf, test_item{'a', 4.6});
-    emplace_back(&buf, test_item{'e', 3.6});
-    emplace_back(&buf, test_item{'f', 2.6});
-    emplace_back(&buf, test_item{'g', 1.6});
+    path_str pstr;
+    fixed_str<64> err_str;
+    copy_str(&pstr.str, "data/shaders/simple.fbin");
+    vector<u8> data{};
+    resize(&data, 24);
 
-    resize(&buf, 15, {'z', 5.5});
+    auto result = platform_read_file(pstr.str.data, &data, 300);
+    if (error_occured(result))
+    {
+        error_to_string(result, &err_str.str);
+        ilog("Error code: %s: %s", err_str.str.data, strerror(result.err.code));
+    }
+    else
+    {
+        result = platform_write_file("data/shaders/simple_test_copy.fbin", true, data, 0);
 
-    resize(&buf, 4);
+        if (error_occured(result))
+        {
+            error_to_string(result, &err_str.str);
+            ilog("Error code: %s: %s", err_str.str.data, strerror(result.err.code));
+        }
+    }
 
-    auto fiter = find(&buf, test_item{'d',7.6});
-    if (fiter != buf.end())
-        fiter = erase(&buf, fiter);
-    clear(&buf);
-
-    ilog("Fiter: ");
+    auto ret = platform_write_file("test.txt", false, "test", 4, -1);
+    if (error_occured(ret))
+    {
+        error_to_string(ret, &err_str.str);
+        ilog("Error code: %s: %s", err_str.str.data, strerror(ret.err.code));
+    }
 }
 
 void bb_update_and_render(bb_state *bstate)
@@ -111,5 +113,6 @@ void bb_update_and_render(bb_state *bstate)
 }
 
 void bb_term(bb_state *bstate)
-{}
+{
+}
 } // namespace noble_steed

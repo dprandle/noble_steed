@@ -320,6 +320,7 @@ void *ns_alloc(mem_store *mem, sizet size, sizet alignment)
     case (MEM_ALLOC_LINEAR):
         return mem_linear_alloc(mem, size, alignment);
     }
+    return nullptr;
 }
 
 void ns_free(mem_store *mem, void *ptr)
